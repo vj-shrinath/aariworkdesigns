@@ -3,6 +3,8 @@ import Gallery from '@/components/Gallery';
 import { client } from '@/sanity/client';
 import { GALLERY_QUERY } from '@/sanity/lib/queries';
 
+export const runtime = 'edge'
+
 export const revalidate = 0;
 
 export default async function GalleryPage() {

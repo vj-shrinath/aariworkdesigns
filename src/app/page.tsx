@@ -4,6 +4,8 @@ import BlogList from '@/components/BlogList';
 import { client } from '@/sanity/client';
 import { POSTS_QUERY } from '@/sanity/lib/queries';
 
+export const runtime = 'edge'
+
 export const revalidate = 0; // Force dynamic rendering
 
 export default async function HomePage() {

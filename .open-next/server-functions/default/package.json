@@ -1,0 +1,39 @@
+{
+  "name": "modern-blog",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "deploy": "opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion && opennextjs-cloudflare deploy",
+    "preview": "opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion && opennextjs-cloudflare preview"
+  },
+  "dependencies": {
+    "@portabletext/react": "^3.0.11",
+    "@sanity/icons": "^3.7.4",
+    "@sanity/image-url": "^1.2.0",
+    "@sanity/vision": "^3.99.0",
+    "framer-motion": "^11.2.6",
+    "groq": "^3.43.0",
+    "lucide-react": "^0.378.0",
+    "next": "^14.2.35",
+    "next-sanity": "^9.12.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-is": "^18.3.1",
+    "sanity": "^3.99.0",
+    "styled-components": "^6.4.1"
+  },
+  "devDependencies": {
+    "@opennextjs/cloudflare": "^1.19.10",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.3",
+    "typescript": "^5",
+    "wrangler": "^4.91.0"
+  }
+}

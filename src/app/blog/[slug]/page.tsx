@@ -11,6 +11,8 @@ import Header from '@/components/Header';
 import ShareButtons from '@/components/ShareButtons';
 import styles from './PostPage.module.css';
 
+export const runtime = 'edge'
+
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await client.fetch(POST_QUERY, { slug: params.slug });

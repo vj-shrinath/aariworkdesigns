@@ -1,0 +1,1 @@
+"use strict";exports.id=1981,exports.ids=[1981],exports.modules={81981:(e,r,s)=>{s.r(r),s.d(r,{default:()=>d});var t=s(35047),u=s(17577);function d(){let e=(0,t.useRouter)(),[r,s]=(0,u.useReducer)(()=>!0,!1);return(0,u.useEffect)(()=>{r||(s(),e.refresh())},[r,e]),null}d.displayName="RefreshOnMount"}};

@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "deploy": "opennextjs-cloudflare build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "node build-pages.mjs",
     "preview": "node build-pages.mjs && wrangler pages dev .pages-output"
   },
   "dependencies": {
