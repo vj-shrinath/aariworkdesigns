@@ -1,0 +1,131 @@
+.post {
+  padding-top: 120px;
+  padding-bottom: 8rem;
+}
+
+.header {
+  margin-bottom: 4rem;
+  text-align: center;
+}
+
+.meta {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.category {
+  color: var(--accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+.date {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.title {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 800;
+  margin-bottom: 3rem;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.1;
+}
+
+.author {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.authorImage {
+  border-radius: 50%;
+}
+
+.authorInfo {
+  text-align: left;
+}
+
+.authorName {
+  display: block;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.authorBio {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.mainImageWrapper {
+  max-width: 1000px;
+  margin: 0 auto 5rem;
+  padding: 0 2rem;
+}
+
+.mainImage {
+  width: 100%;
+  height: auto;
+  border-radius: 24px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+}
+
+.content {
+  max-width: 800px;
+}
+
+.richText {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+
+.richText p {
+  margin-bottom: 2rem;
+}
+
+.richText h2 {
+  font-size: 2rem;
+  color: var(--text-primary);
+  margin: 4rem 0 1.5rem;
+}
+
+.richText h3 {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin: 3rem 0 1rem;
+}
+
+.richText blockquote {
+  border-left: 4px solid var(--accent);
+  padding-left: 2rem;
+  margin: 3rem 0;
+  font-style: italic;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.notFound {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+.notFound a {
+  padding: 0.75rem 2rem;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border-radius: 50px;
+  font-weight: 600;
+}
