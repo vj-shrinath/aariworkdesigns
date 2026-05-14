@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion && opennextjs-cloudflare deploy",
-    "preview": "opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion && opennextjs-cloudflare preview"
+    "deploy": "node build-pages.mjs",
+    "preview": "node build-pages.mjs && wrangler pages dev .pages-output"
   },
   "dependencies": {
     "@portabletext/react": "^3.0.11",
