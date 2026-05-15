@@ -76,6 +76,14 @@
   color: var(--text-secondary);
 }
 
+@media (max-width: 768px) {
+  .badge {
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1.5rem;
+  }
+}
+
 .title {
   font-size: clamp(3rem, 8vw, 5rem);
   font-weight: 800;
@@ -142,4 +150,74 @@
   z-index: 1;
   pointer-events: none;
   opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding-top: 120px;
+    padding-bottom: 40px;
+    text-align: center;
+    min-height: auto;
+  }
+
+  .container {
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  .content {
+    max-width: 100%;
+    order: 2;
+  }
+
+  .title {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .description {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+  }
+
+  .features {
+    align-items: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .features li {
+    font-size: 1rem;
+    text-align: left;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .actions {
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .primaryBtn, .secondaryBtn {
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .mockupWrapper {
+    order: 1;
+    width: 100%;
+    margin-top: -20px;
+    margin-bottom: 1rem;
+  }
+
+  .mockup {
+    max-width: 300px;
+    transform: rotate(-3deg);
+    box-shadow: 0 20px 60px rgba(212, 175, 55, 0.3);
+  }
+
+  .glow {
+    width: 300px;
+    height: 300px;
+  }
 }

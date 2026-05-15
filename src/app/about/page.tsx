@@ -1,3 +1,10 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'About Us',
+  description: 'Learn about AARI Work Designs and how our Android app is revolutionizing the way you trace embroidery patterns.',
+};
+
 import Header from '@/components/Header';
 
 export default function AboutPage() {
@@ -6,7 +13,7 @@ export default function AboutPage() {
       <Header />
       <main className="container" style={{ paddingTop: '160px', paddingBottom: '8rem', maxWidth: '800px' }}>
         <h1 className="text-gradient" style={{ fontSize: '3.5rem', fontWeight: 800, marginBottom: '2rem' }}>
-          About <span style={{ color: 'var(--text-primary)' }}>AARI Blog</span>
+          About <span style={{ color: 'var(--text-primary)' }}>AARI Work Designs</span>
         </h1>
         <div style={{ fontSize: '1.2rem', lineHeight: '1.8', color: 'var(--text-secondary)' }}>
           <p style={{ marginBottom: '2rem' }}>
@@ -33,7 +40,7 @@ export default function AboutPage() {
         fontSize: '0.9rem'
       }}>
         <div className="container">
-          <p>© {new Date().getFullYear()} AARI BLOG. Built for excellence.</p>
+          <p>© {new Date().getFullYear()} AARI Work Designs. Built for excellence.</p>
         </div>
       </footer>
     </>

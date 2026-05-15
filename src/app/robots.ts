@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: '/studio/',
     },
-    sitemap: 'https://aariblog.com/sitemap.xml',
+    sitemap: 'https://aariworkdesigns.com/sitemap.xml',
   };
 }

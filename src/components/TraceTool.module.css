@@ -1,0 +1,239 @@
+.container {
+  padding-top: 120px;
+  padding-bottom: 5rem;
+}
+
+.title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 4rem;
+  font-size: 1.1rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.imageCard {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: var(--transition);
+  aspect-ratio: 1;
+  position: relative;
+}
+
+.imageCard:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent);
+  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cardTitle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Trace Mode Styles */
+.traceMode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.canvasContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none; /* Crucial for dragging on mobile */
+  background: #000;
+}
+
+.traceImage {
+  max-width: none;
+  user-select: none;
+  pointer-events: none;
+  transition: transform 0.1s ease-out;
+}
+
+.controls {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  background: rgba(26, 2, 2, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  border: 1px solid var(--glass-border);
+  z-index: 1010;
+  transition: opacity 0.3s ease;
+}
+
+.controlsHidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.controlBtn {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: white;
+  padding: 0.75rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.controlBtn:hover {
+  background: var(--accent-gradient);
+  color: black;
+}
+
+.sliderContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 150px;
+}
+
+.sliderLabel {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.slider {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 1020;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lockOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1005;
+}
+
+.unlockHint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.8);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  pointer-events: none;
+  animation: fadeOut 3s forwards;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.sliderGroup {
+  display: flex;
+  gap: 1.5rem;
+  flex: 1;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 0.75rem;
+}
+
+@media (max-width: 1024px) {
+  .sliderGroup {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .controls {
+    width: 95%;
+    padding: 1rem;
+    bottom: 0.5rem;
+    flex-direction: column;
+    gap: 1.5rem;
+    border-radius: 20px;
+  }
+  
+  .sliderGroup {
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .sliderContainer {
+    min-width: 45%;
+    flex: 1;
+  }
+}

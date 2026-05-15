@@ -1,3 +1,10 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Gallery',
+  description: 'View our gallery of beautiful Aari work designs and traces. Inspiration for your next embroidery project.',
+};
+
 import Header from '@/components/Header';
 import Gallery from '@/components/Gallery';
 import { client } from '@/sanity/client';
@@ -39,7 +46,7 @@ export default async function GalleryPage() {
         fontSize: '0.9rem'
       }}>
         <div className="container">
-          <p>© {new Date().getFullYear()} AARI BLOG. Visual storytelling.</p>
+          <p>© {new Date().getFullYear()} AARI Work Designs. Visual storytelling.</p>
         </div>
       </footer>
     </>

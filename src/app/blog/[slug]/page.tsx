@@ -21,12 +21,12 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const image = post.mainImage ? urlFor(post.mainImage).width(1200).height(630).url() : '';
 
   return {
-    title: `${post.title} | AARI Blog`,
-    description: post.excerpt || `Read about ${post.title} on AARI Blog.`,
+    title: post.title,
+    description: post.excerpt || `Read about ${post.title} on AARI Work Designs.`,
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      url: `https://aariblog.com/blog/${params.slug}`,
+      url: `https://aariworkdesigns.com/blog/${params.slug}`,
       images: [{ url: image }],
       type: 'article',
       publishedTime: post.publishedAt,
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       images: [image],
     },
     alternates: {
-      canonical: `https://aariblog.com/blog/${params.slug}`,
+      canonical: `https://aariworkdesigns.com/blog/${params.slug}`,
     },
   };
 }
@@ -131,7 +131,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
             <PortableText value={post.body} components={portableTextComponents} />
           </div>
           <ShareButtons 
-            url={`https://aariblog.com/blog/${params.slug}`} 
+            url={`https://aariworkdesigns.com/blog/${params.slug}`} 
             title={post.title} 
           />
         </div>

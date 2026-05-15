@@ -4,18 +4,25 @@ import BlogList from '@/components/BlogList';
 import { client } from '@/sanity/client';
 import { POSTS_QUERY } from '@/sanity/lib/queries';
 
+import { Metadata } from 'next';
+
 export const runtime = 'edge'
 
 export const revalidate = 0; // Force dynamic rendering
+
+export const metadata: Metadata = {
+  title: 'Home | AARI Work Designs - Trace Your Imagination',
+  description: 'Download the Aari Android App to trace intricate embroidery designs directly onto fabric. Explore our latest traces and patterns.',
+};
 
 export default async function HomePage() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
-    name: 'AARI Blog & Designs',
+    name: 'AARI Work Designs',
     description: 'Premier destination for modern embroidery designs, Aari work, and creative textile art.',
-    url: 'https://aariblog.com',
-    logo: 'https://aariblog.com/logo.png',
+    url: 'https://aariworkdesigns.com',
+    logo: 'https://aariworkdesigns.com/logo.png',
     address: {
       '@type': 'PostalAddress',
       addressCountry: 'IN', // You can update this to your specific region
@@ -79,7 +86,7 @@ export default async function HomePage() {
         fontSize: '0.9rem'
       }}>
         <div className="container">
-          <p>© {new Date().getFullYear()} AARI BLOG. Crafted for the curious.</p>
+          <p>© {new Date().getFullYear()} AARI Work Designs. Crafted for the curious.</p>
         </div>
       </footer>
     </>

@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import styles from './Hero.module.css';
 
 export default function Hero() {
@@ -6,12 +7,12 @@ export default function Hero() {
     <section className={styles.hero}>
       <div className={`${styles.container} container`}>
         <div className={styles.content}>
-          <span className={`${styles.badge} animate-fade-in`}>Coming Soon to Android</span>
+          <span className={`${styles.badge} animate-fade-in`}>Web Tracing Tool Now Live</span>
           <h1 className={`${styles.title} animate-fade-in`}>
             Trace Your <span className="text-gradient">Imagination</span> Directly on Cloth
           </h1>
           <p className={`${styles.description} animate-fade-in`}>
-            The Aari Android App is coming soon. Pick any design, lock your interface, and trace directly over your mobile screen onto the fabric. 
+            Our full Android app is coming soon, but we couldn't wait to see you create. Our <strong>Web Tracing Studio</strong> is now live—pick any design, lock your screen, and start tracing today.
           </p>
           <ul className={`${styles.features} animate-fade-in`}>
             <li>✨ <strong>Pick & Lock:</strong> Stay focused while tracing</li>
@@ -19,8 +20,8 @@ export default function Hero() {
             <li>🎨 <strong>Trace Anywhere:</strong> Mobile-to-cloth precision</li>
           </ul>
           <div className={`${styles.actions} animate-fade-in`}>
-            <button className={styles.primaryBtn}>Notify Me</button>
-            <button className={styles.secondaryBtn}>See Traces</button>
+            <Link href="/trace" className={styles.primaryBtn}>Start Tracing Now</Link>
+            <button className={styles.secondaryBtn}>App Waitlist</button>
           </div>
         </div>
         <div className={`${styles.mockupWrapper} animate-fade-in`}>
@@ -29,7 +30,7 @@ export default function Hero() {
             alt="Aari App Mockup" 
             width={500} 
             height={800} 
-            className={styles.mockup}
+            className={`${styles.mockup} floating`}
             priority
           />
         </div>
