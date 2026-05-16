@@ -90,8 +90,9 @@
   max-width: none;
   user-select: none;
   pointer-events: none;
-  transition: transform 0.1s ease-out;
+  /* Removed transition for better touch responsiveness */
 }
+
 
 .controls {
   position: absolute;
@@ -237,3 +238,61 @@
     flex: 1;
   }
 }
+
+.uploadSection {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3rem;
+}
+
+.uploadBtn {
+  background: var(--accent-gradient);
+  color: black;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: var(--transition);
+  box-shadow: 0 10px 20px rgba(212, 175, 55, 0.2);
+}
+
+.uploadBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(212, 175, 55, 0.4);
+}
+
+.uploadIndicator {
+  position: absolute;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  backdrop-filter: blur(5px);
+  z-index: 1015;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: var(--accent);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+

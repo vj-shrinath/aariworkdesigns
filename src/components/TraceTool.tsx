@@ -20,6 +20,14 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
   const [isLocked, setIsLocked] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  
+  const [initialDistance, setInitialDistance] = useState<number | null>(null);
+  const [initialAngle, setInitialAngle] = useState<number | null>(null);
+  const [initialScale, setInitialScale] = useState(1);
+  const [initialRotation, setInitialRotation] = useState(0);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const wakeLock = useRef<any>(null);
@@ -73,27 +81,107 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Dragging logic
+  // Helper functions for multi-touch
+  const getDistance = (touches: React.TouchList) => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const getAngle = (touches: React.TouchList) => {
+    const dx = touches[1].clientX - touches[0].clientX;
+    const dy = touches[1].clientY - touches[0].clientY;
+    return Math.atan2(dy, dx) * (180 / Math.PI);
+  };
+
+  // Dragging and Multi-touch logic
   const handleStart = (e: any) => {
     if (isLocked) return;
-    isDragging.current = true;
-    const clientX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
-    const clientY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
-    startPos.current = { x: clientX - position.x, y: clientY - position.y };
+    
+    if (e.type === 'touchstart' && e.touches.length === 2) {
+      // Start multi-touch (pinch/rotate)
+      isDragging.current = false; // Stop dragging when multi-touch starts
+      const dist = getDistance(e.touches);
+      const angle = getAngle(e.touches);
+      setInitialDistance(dist);
+      setInitialAngle(angle);
+      setInitialScale(scale);
+      setInitialRotation(rotation);
+    } else {
+      // Start single touch/mouse (drag)
+      isDragging.current = true;
+      const clientX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+      const clientY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+      startPos.current = { x: clientX - position.x, y: clientY - position.y };
+    }
   };
 
   const handleMove = (e: any) => {
-    if (!isDragging.current || isLocked) return;
-    const clientX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
-    const clientY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
-    setPosition({
-      x: clientX - startPos.current.x,
-      y: clientY - startPos.current.y
-    });
+    if (isLocked) return;
+
+    if (e.type === 'touchmove' && e.touches.length === 2) {
+      if (initialDistance === null || initialAngle === null) return;
+      
+      // Handle Zoom
+      const currentDist = getDistance(e.touches);
+      const newScale = (currentDist / initialDistance) * initialScale;
+      setScale(Math.min(Math.max(newScale, 0.1), 5));
+
+      // Handle Rotation
+      const currentAngle = getAngle(e.touches);
+      const angleDiff = currentAngle - initialAngle;
+      setRotation((initialRotation + angleDiff) % 360);
+      
+      e.preventDefault(); // Prevent scrolling while pinching
+    } else if (isDragging.current) {
+      // Handle Drag
+      const clientX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+      const clientY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
+      setPosition({
+        x: clientX - startPos.current.x,
+        y: clientY - startPos.current.y
+      });
+    }
   };
 
   const handleEnd = () => {
     isDragging.current = false;
+    setInitialDistance(null);
+    setInitialAngle(null);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 1. Show instantly in canvas
+    const localUrl = URL.createObjectURL(file);
+    setSelectedImage({
+      isLocal: true,
+      url: localUrl,
+      title: 'My Design'
+    });
+
+    // 2. Background upload
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      console.log('Background upload success');
+    } catch (err) {
+      console.error('Background upload error:', err);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // Hide controls after inactivity when locked
@@ -110,11 +198,17 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
       <div className={styles.traceMode} ref={containerRef}>
         <button 
           className={styles.closeBtn} 
-          onClick={() => setSelectedImage(null)}
+          onClick={() => {
+            if (document.fullscreenElement) {
+              document.exitFullscreen().catch(err => console.error(err));
+            }
+            setSelectedImage(null);
+          }}
           title="Exit Tool"
         >
           <X size={24} />
         </button>
+
 
         <div 
           className={styles.canvasContainer}
@@ -126,11 +220,12 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
           onTouchMove={handleMove}
           onTouchEnd={handleEnd}
           onClick={() => isLocked && setShowControls(!showControls)}
+          style={{ touchAction: isLocked ? 'none' : 'none' }} // Disable default touch behavior
         >
           {isLocked && <div className={styles.lockOverlay} />}
           
           <img
-            src={urlFor(selectedImage.mainImage).url()}
+            src={selectedImage.isLocal ? selectedImage.url : urlFor(selectedImage.mainImage).url()}
             alt="Tracing design"
             className={styles.traceImage}
             style={{
@@ -140,10 +235,18 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
             draggable={false}
           />
 
+          {isUploading && (
+            <div className={styles.uploadIndicator}>
+              <div className={styles.spinner}></div>
+              <span>Analyzing design...</span>
+            </div>
+          )}
+
           {isLocked && showControls && (
             <div className={styles.unlockHint}>Tap anywhere to show controls</div>
           )}
         </div>
+
 
         <div className={`${styles.controls} ${!showControls ? styles.controlsHidden : ''}`}>
           <div className={styles.sliderGroup}>
@@ -215,12 +318,29 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
   return (
     <div className={`${styles.container} container`}>
       <h1 className={styles.title}>Tracing <span className="text-gradient">Studio</span></h1>
-      <p className={styles.subtitle}>
-        Select any design from our collection to open it in full-screen trace mode. 
-        Adjust the size, lock your screen, and trace directly onto your fabric.
-      </p>
+        <p className={styles.subtitle}>
+          Select any design from our collection or <strong>upload your own</strong> to open it in full-screen trace mode. 
+          Adjust the size, lock your screen, and trace directly onto your fabric.
+        </p>
 
-      <div className={styles.grid}>
+        <div className={styles.uploadSection}>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileUpload} 
+            accept="image/*" 
+            style={{ display: 'none' }} 
+          />
+          <button 
+            className={styles.uploadBtn}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Maximize2 size={20} />
+            Upload Your Own Design
+          </button>
+        </div>
+
+        <div className={styles.grid}>
         {initialImages.map((image, idx) => (
           <div 
             key={image._id || idx} 
