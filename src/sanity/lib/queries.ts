@@ -31,7 +31,7 @@ export const POST_QUERY = groq`*[_type == "post" && slug.current == $slug][0] {
 
 
 export const GALLERY_QUERY = groq`*[_type == "post" && defined(slug.current)] {
-  "images": body[_type == "image"][1..-1] {
+  "images": body[_type == "image" && !(alt match "workflow*")] {
     "_id": _key,
     "title": ^.title,
     "slug": ^.slug,
@@ -39,9 +39,9 @@ export const GALLERY_QUERY = groq`*[_type == "post" && defined(slug.current)] {
       "asset": asset,
       "alt": alt
     },
-    "isMain": asset._ref == ^.mainImage.asset._ref
+    "isFeatured": asset._ref == ^.mainImage.asset._ref || asset._ref == ^.mainImage.asset->_id
   }
-}.images[] [defined(mainImage) && isMain != true] {
+}.images[] [defined(mainImage) && isFeatured != true] {
   "_id": _id,
   "title": title,
   "slug": slug,
