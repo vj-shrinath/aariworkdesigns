@@ -31,16 +31,23 @@ export const POST_QUERY = groq`*[_type == "post" && slug.current == $slug][0] {
 
 
 export const GALLERY_QUERY = groq`*[_type == "post" && defined(slug.current)] {
-  "images": body[_type == "image" && isTracer == true] {
+  "mainImageAsset": mainImage.asset._ref,
+  "images": body[_type == "image" && isDesignTrace == true] {
     "_id": _key,
     "title": ^.title,
     "slug": ^.slug,
     "mainImage": {
       "asset": asset,
       "alt": alt
-    }
+    },
+    "assetRef": asset._ref
   }
-}.images[] [defined(mainImage)]`;
+}.images[] [assetRef != ^.mainImageAsset] {
+  "_id": _id,
+  "title": title,
+  "slug": slug,
+  "mainImage": mainImage
+}`;
 
 
 
