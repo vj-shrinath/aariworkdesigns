@@ -1,21 +1,72 @@
+.mainWrapper {
+  width: 100%;
+}
+
+.heroArea {
+  position: relative;
+  padding-top: 150px;
+  padding-bottom: 2rem;
+  background: radial-gradient(ellipse at top center, rgba(45,5,5,0.8) 0%, transparent 70%);
+  overflow: hidden;
+}
+
+.heroBackground {
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  width: 100vw;
+  height: 100vw;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(212,175,55,0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--accent-glow);
+  border: 1px solid rgba(212,175,55,0.35);
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.8s ease forwards;
+}
+
 .container {
-  padding-top: 120px;
   padding-bottom: 5rem;
 }
 
 .title {
-  font-size: 3rem;
+  font-size: clamp(2.5rem, 6vw, 4rem);
   font-weight: 800;
   margin-bottom: 1rem;
   text-align: center;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 .subtitle {
   text-align: center;
   color: var(--text-secondary);
-  max-width: 600px;
-  margin: 0 auto 4rem;
-  font-size: 1.1rem;
+  max-width: 650px;
+  margin: 0 auto 3rem;
+  font-size: 1.15rem;
+  line-height: 1.8;
 }
 
 .grid {
@@ -242,27 +293,30 @@
 .uploadSection {
   display: flex;
   justify-content: center;
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
+  position: relative;
+  z-index: 2;
 }
 
 .uploadBtn {
   background: var(--accent-gradient);
   color: black;
   border: none;
-  padding: 1rem 2rem;
+  padding: 1.1rem 2.5rem;
   border-radius: 50px;
+  font-size: 1.05rem;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 12px;
   transition: var(--transition);
-  box-shadow: 0 10px 20px rgba(212, 175, 55, 0.2);
+  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.25);
 }
 
 .uploadBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 15px 30px rgba(212, 175, 55, 0.4);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
 }
 
 .uploadIndicator {

@@ -30,18 +30,16 @@ export const POST_QUERY = groq`*[_type == "post" && slug.current == $slug][0] {
 }`;
 
 
-export const GALLERY_QUERY = groq`*[_type == "post"] {
-  "images": [
-    ...body[_type == "image"] {
-      "_id": _key,
-      "title": ^.title,
-      "slug": ^.slug,
-      "mainImage": {
-        "asset": asset,
-        "alt": alt
-      }
+export const GALLERY_QUERY = groq`*[_type == "post" && defined(slug.current)] {
+  "images": body[_type == "image" && asset._ref != ^.mainImage.asset._ref] {
+    "_id": _key,
+    "title": ^.title,
+    "slug": ^.slug,
+    "mainImage": {
+      "asset": asset,
+      "alt": alt
     }
-  ]
+  }
 }.images[] [defined(mainImage)]`;
 
 

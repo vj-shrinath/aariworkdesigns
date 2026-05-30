@@ -316,30 +316,39 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
   }
 
   return (
-    <div className={`${styles.container} container`}>
-      <h1 className={styles.title}>Tracing <span className="text-gradient">Studio</span></h1>
-        <p className={styles.subtitle}>
-          Select any design from our collection or <strong>upload your own</strong> to open it in full-screen trace mode. 
-          Adjust the size, lock your screen, and trace directly onto your fabric.
-        </p>
+    <div className={styles.mainWrapper}>
+      <div className={styles.heroArea}>
+        <div className={styles.heroBackground}></div>
+        <div className={`${styles.container} container`}>
+          <div className={styles.heroContent}>
+            <div className={styles.badge}>✦ Online Tracing Tool</div>
+            <h1 className={styles.title}>Tracing <span className="text-gradient">Studio</span></h1>
+            <p className={styles.subtitle}>
+              Select any design from our collection or <strong>upload your own</strong> to open it in full-screen trace mode. 
+              Adjust the size, lock your screen, and trace directly onto your fabric.
+            </p>
 
-        <div className={styles.uploadSection}>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileUpload} 
-            accept="image/*" 
-            style={{ display: 'none' }} 
-          />
-          <button 
-            className={styles.uploadBtn}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Maximize2 size={20} />
-            Upload Your Own Design
-          </button>
+            <div className={styles.uploadSection}>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileUpload} 
+                accept="image/*" 
+                style={{ display: 'none' }} 
+              />
+              <button 
+                className={styles.uploadBtn}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Maximize2 size={20} />
+                Upload Your Own Design
+              </button>
+            </div>
+          </div>
         </div>
+      </div>
 
+      <div className={`${styles.container} container`}>
         <div className={styles.grid}>
         {initialImages.map((image, idx) => (
           <div 
@@ -356,6 +365,7 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
             <div className={styles.cardTitle}>{image.title}</div>
           </div>
         ))}
+        </div>
       </div>
     </div>
   );
