@@ -7,8 +7,9 @@ export const POSTS_QUERY = groq`*[_type == "post" && defined(slug.current)] | or
   mainImage,
   publishedAt,
   excerpt,
-  author->{name, image},
-  categories[]->{title}
+  author->{name, image, bio},
+  categories[]->{title, slug},
+  "estimatedReadingTime": round(length(pt::text(body)) / 5 / 180)
 }`;
 
 
@@ -18,6 +19,8 @@ export const POST_QUERY = groq`*[_type == "post" && slug.current == $slug][0] {
   slug,
   mainImage,
   publishedAt,
+  _createdAt,
+  _updatedAt,
   body[]{
     ...,
     _type == "image" => {
@@ -26,12 +29,12 @@ export const POST_QUERY = groq`*[_type == "post" && slug.current == $slug][0] {
     }
   },
   author->{name, image, bio},
-  categories[]->{title},
+  categories[]->{title, slug},
   seo,
   ai,
   geo,
-  relatedPosts[]->{_id, title, slug, mainImage},
-  _updatedAt
+  relatedPosts[]->{_id, title, slug, mainImage, categories[]->{title}, publishedAt},
+  "estimatedReadingTime": round(length(pt::text(body)) / 5 / 180)
 }`;
 
 

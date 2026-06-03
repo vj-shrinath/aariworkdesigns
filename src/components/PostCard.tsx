@@ -9,7 +9,7 @@ interface PostCardProps {
 
 export default function PostCard({ post }: PostCardProps) {
   const imageUrl = post.mainImage?.asset 
-    ? urlFor(post.mainImage).width(600).height(400).url() 
+    ? urlFor(post.mainImage).width(600).height(400).auto('format').url() 
     : null;
 
   if (!imageUrl) {
@@ -32,20 +32,22 @@ export default function PostCard({ post }: PostCardProps) {
             <span>No Image</span>
           </div>
         )}
+        <div className={styles.categoryBadge}>
+          {post.categories?.[0]?.title || 'Insight'}
+        </div>
       </Link>
 
       <div className={styles.content}>
         <div className={styles.meta}>
-          <span className={styles.category}>
-            {post.categories?.[0]?.title || 'Insight'}
-          </span>
-          <span className={styles.date}>
+          <time className={styles.date}>
             {new Date(post.publishedAt).toLocaleDateString('en-US', {
-              month: 'long',
+              month: 'short',
               day: 'numeric',
               year: 'numeric',
             })}
-          </span>
+          </time>
+          <span className={styles.dot}>•</span>
+          <span className={styles.readingTime}>{post.estimatedReadingTime || 5} min read</span>
         </div>
         <Link href={`/blog/${post.slug.current}`}>
           <h3 className={styles.title}>{post.title}</h3>
@@ -57,15 +59,18 @@ export default function PostCard({ post }: PostCardProps) {
               <Image
                 src={urlFor(post.author.image).width(40).height(40).url()}
                 alt={post.author.name}
-                width={32}
-                height={32}
+                width={28}
+                height={28}
                 className={styles.authorImage}
               />
             )}
             <span className={styles.authorName}>{post.author?.name}</span>
           </div>
           <Link href={`/blog/${post.slug.current}`} className={styles.readMore}>
-            Read More
+            Read Story
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
           </Link>
         </div>
       </div>

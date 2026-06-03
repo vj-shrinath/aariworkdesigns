@@ -10,6 +10,9 @@ import { portableTextComponents } from '@/sanity/lib/portableText';
 import { getSeoImage } from '@/sanity/schema-utils';
 import Header from '@/components/Header';
 import ShareButtons from '@/components/ShareButtons';
+import ReadingProgressBar from '@/components/ReadingProgressBar';
+import TableOfContents from '@/components/TableOfContents';
+import { AuthorBox, KeyTakeaways, FaqSection } from '@/components/PostComponents';
 import styles from './PostPage.module.css';
 
 export const runtime = 'edge'
@@ -68,6 +71,17 @@ export default async function PostPage({ params }: { params: { slug: string } })
     console.error('Error fetching post:', error);
   }
 
+  if (!post) return <div className="container" style={{ paddingTop: '200px', textAlign: 'center' }}><h1>Post not found</h1></div>;
+
+  // Extract headings for TOC
+  const headings = post.body
+    ?.filter((block: any) => block._type === 'block' && ['h2', 'h3'].includes(block.style))
+    .map((block: any) => ({
+      id: block._key,
+      text: block.children.map((c: any) => c.text).join(''),
+      level: parseInt(block.style.replace('h', ''))
+    })) || [];
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -91,95 +105,122 @@ export default async function PostPage({ params }: { params: { slug: string } })
   return (
     <>
       <Header />
+      <ReadingProgressBar />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      
       <article className={styles.post}>
-
         <header className={styles.header}>
           <div className="container">
             <div className={styles.meta}>
-              <span className={styles.category}>{post.categories?.[0]?.title}</span>
-              <time className={styles.date}>
-                {new Date(post.publishedAt).toLocaleDateString('en-US', {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric'
-                })}
-              </time>
+              <span className={styles.categoryBadge}>{post.categories?.[0]?.title || 'Tutorial'}</span>
+              <div className={styles.metaInfo}>
+                <time className={styles.date}>
+                  {new Date(post.publishedAt).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </time>
+                <span className={styles.dot}>•</span>
+                <span className={styles.readingTime}>{post.estimatedReadingTime || 5} min read</span>
+              </div>
             </div>
             <h1 className={styles.title}>{post.title}</h1>
-            <div className={styles.author}>
+            
+            <div className={styles.heroAuthor}>
               {post.author?.image && (
                 <Image
                   src={urlFor(post.author.image).width(100).height(100).url()}
                   alt={post.author.name}
-                  width={48}
-                  height={48}
-                  className={styles.authorImage}
+                  width={56}
+                  height={56}
+                  className={styles.heroAuthorImage}
                 />
               )}
-              <div className={styles.authorInfo}>
-                <span className={styles.authorName}>{post.author?.name}</span>
-                <span className={styles.authorBio}>{post.author?.bio}</span>
+              <div className={styles.heroAuthorInfo}>
+                <span className={styles.heroAuthorName}>{post.author?.name}</span>
+                <span className={styles.updatedAt}>Last updated: {new Date(post._updatedAt).toLocaleDateString()}</span>
               </div>
             </div>
           </div>
         </header>
 
-        {post.mainImage?.asset ? (
+        {post.mainImage?.asset && (
           <div className={styles.mainImageWrapper}>
             <Image
-              src={urlFor(post.mainImage).width(1200).height(600).url()}
+              src={urlFor(post.mainImage).width(1600).height(800).url()}
               alt={post.title}
-              width={1200}
-              height={600}
+              width={1600}
+              height={800}
               className={styles.mainImage}
               priority
             />
           </div>
-        ) : (
-          <div className={styles.mainImagePlaceholder}>
-            <p>No main image provided for this post.</p>
-          </div>
         )}
 
+        <div className={`${styles.mainContent} container`}>
+          <aside className={styles.sidebar}>
+            <TableOfContents headings={headings} />
+          </aside>
 
-        <div className={`${styles.content} container`}>
-          <div className={styles.richText}>
-            <PortableText value={post.body} components={portableTextComponents} />
-          </div>
-          
-          {post.relatedPosts && post.relatedPosts.length > 0 && (
-            <div className={styles.relatedPosts}>
-              <h3>Related Designs & Patterns</h3>
+          <div className={styles.articleBody}>
+            {post.ai?.keyTakeaways && (
+              <KeyTakeaways items={post.ai.keyTakeaways} />
+            )}
+            
+            <div className={styles.richText}>
+              <PortableText value={post.body} components={portableTextComponents} />
+            </div>
+
+            {post.ai?.faq && (
+              <FaqSection faqs={post.ai.faq} />
+            )}
+
+            <AuthorBox author={post.author} />
+
+            <div className={styles.endShare}>
+              <h4 className={styles.shareCallout}>Enjoyed this article? Share it with others!</h4>
+              <ShareButtons 
+                url={`https://aariworkdesigns.com/blog/${params.slug}`} 
+                title={post.title} 
+              />
+            </div>
+
+            <div className={styles.postFooter}>
+              <h3 className={styles.relatedTitle}>Continue Learning</h3>
               <div className={styles.relatedGrid}>
-                {post.relatedPosts.map((related: any) => (
+                {post.relatedPosts?.slice(0, 6).map((related: any) => (
                   <Link key={related._id} href={`/blog/${related.slug.current}`} className={styles.relatedCard}>
-                    {related.mainImage && (
-                      <Image 
-                        src={urlFor(related.mainImage).width(300).height(200).url()} 
-                        alt={related.title}
-                        width={300}
-                        height={200}
-                      />
-                    )}
-                    <span>{related.title}</span>
+                    <div className={styles.relatedThumb}>
+                      {related.mainImage && (
+                        <Image 
+                          src={urlFor(related.mainImage).width(400).height(250).url()} 
+                          alt={related.title}
+                          width={300}
+                          height={180}
+                        />
+                      )}
+                    </div>
+                    <div className={styles.relatedInfo}>
+                      <span className={styles.relatedCategory}>{related.categories?.[0]?.title}</span>
+                      <h4 className={styles.relatedItemTitle}>{related.title}</h4>
+                    </div>
                   </Link>
                 ))}
               </div>
             </div>
-          )}
-
-          <ShareButtons 
-            url={`https://aariworkdesigns.com/blog/${params.slug}`} 
-            title={post.title} 
-          />
+          </div>
         </div>
-
-
       </article>
+
+      <footer className={styles.siteFooter}>
+        <div className="container">
+          <p>© {new Date().getFullYear()} AARI Work Designs. Elevating the art of embroidery.</p>
+        </div>
+      </footer>
     </>
   );
 }
