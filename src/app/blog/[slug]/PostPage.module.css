@@ -255,11 +255,10 @@
   }
   
   .mainImageWrapper {
-    border-radius: 20px;
-    margin: -2rem auto 3rem;
-    width: calc(100% + 2rem);
-    margin-left: -1rem;
     border-radius: 0;
+    margin: 0 0 3rem 0;
+    width: 100%;
+    margin-left: 0;
   }
   
   .articleBody {
