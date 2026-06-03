@@ -83,10 +83,6 @@
 }
 
 @media (max-width: 768px) {
-  .container {
-    padding: 0 1rem;
-  }
-
   .logo {
     font-size: 1.0rem;
     white-space: nowrap;
@@ -119,5 +115,9 @@
     transform: translateY(0);
     opacity: 1;
     pointer-events: auto;
+  }
+
+  .container {
+    padding: 0 1rem;
   }
 }

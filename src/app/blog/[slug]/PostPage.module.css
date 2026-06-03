@@ -1,5 +1,7 @@
 .post {
   padding-bottom: 8rem;
+  width: 100%;
+  max-width: 100%;
   overflow-x: hidden;
 }
 
@@ -8,6 +10,8 @@
   text-align: center;
   background: var(--bg-tertiary);
   border-bottom: 1px solid var(--border);
+  width: 100%;
+  max-width: 100%;
 }
 
 .meta {
@@ -88,15 +92,15 @@
   overflow: hidden;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
-  aspect-ratio: 16 / 9; /* Standard cinematic aspect ratio */
+  aspect-ratio: auto;
   position: relative;
   z-index: 2;
 }
 
 .mainImage {
-  object-fit: cover;
+  display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
 }
 
 .mainContent {
@@ -255,10 +259,18 @@
   }
   
   .mainImageWrapper {
-    border-radius: 0;
-    margin: 0 0 3rem 0;
     width: 100%;
-    margin-left: 0;
+    margin: 0 0 3rem 0;
+    border-radius: 0;
+    aspect-ratio: unset;
+    max-height: none;
+    box-shadow: none;
+    border-left: none;
+    border-right: none;
+  }
+
+  .mainImage {
+    height: auto;
   }
   
   .articleBody {
@@ -267,8 +279,12 @@
   }
 
   .mainContent {
+    display: flex;
+    flex-direction: column;
     gap: 2rem;
     padding: 0;
+    width: 100%;
+    max-width: 100%;
   }
   
   .richText {

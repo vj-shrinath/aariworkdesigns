@@ -51,7 +51,8 @@ export const metadata: Metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  viewportFit: 'cover',
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -60,9 +61,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
-        <main>{children}</main>
+    <html lang="en" style={{ overflowX: 'clip' }}>
+      <body style={{ overflowX: 'clip', width: '100%', margin: 0, padding: 0 }}>
+        <div style={{ overflow: 'hidden' }}>
+          <main style={{ overflowX: 'hidden', width: '100%' }}>{children}</main>
+        </div>
       </body>
     </html>
   );

@@ -151,10 +151,11 @@ export default async function PostPage({ params }: { params: { slug: string } })
         {post.mainImage?.asset && (
           <div className={styles.mainImageWrapper}>
             <Image
-              src={urlFor(post.mainImage).width(1600).height(800).url()}
+              src={urlFor(post.mainImage).width(1600).url()}
               alt={post.title}
               width={1600}
-              height={800}
+              height={900}
+              style={{ width: '100%', height: 'auto', display: 'block' }}
               className={styles.mainImage}
               priority
             />

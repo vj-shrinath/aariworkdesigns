@@ -147,54 +147,25 @@ export const portableTextComponents = {
       
       if (isAffiliate) {
         return (
-          <span style={{ display: 'block', margin: '2rem 0', clear: 'both' }}>
-            <span 
-              style={{ 
-                display: 'flex',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '16px',
-                padding: '1.25rem',
-                gap: '1.25rem',
-                alignItems: 'center',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
-              }}
-            >
-              {productImage && (
-                <img 
-                  src={urlFor(productImage).width(200).height(200).url()} 
-                  alt={productName || 'Product'} 
-                  style={{ 
-                    width: '100px', 
-                    height: '100px', 
-                    borderRadius: '12px', 
-                    objectFit: 'cover' 
-                  }} 
-                />
-              )}
-              <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <strong style={{ fontSize: '1.2rem', color: 'var(--text-primary)' }}>{productName || children}</strong>
-                {price && <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>{price}</span>}
-                <a 
-                  href={href} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-block',
-                    width: 'fit-content',
-                    padding: '0.6rem 1.5rem',
-                    background: 'var(--accent)',
-                    color: 'white',
-                    borderRadius: '50px',
-                    textDecoration: 'none',
-                    fontWeight: '600',
-                    fontSize: '0.9rem',
-                    marginTop: '0.25rem'
-                  }}
-                >
-                  Buy Now
-                </a>
-              </span>
+          <span className="affiliate-card">
+            {productImage && (
+              <img 
+                src={urlFor(productImage).width(300).height(300).url()} 
+                alt={productName || 'Product'} 
+                className="affiliate-img"
+              />
+            )}
+            <span className="affiliate-info">
+              <strong className="affiliate-title">{productName || children}</strong>
+              {price && <span className="affiliate-price">{price}</span>}
+              <a 
+                href={href} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="affiliate-button"
+              >
+                Buy Now
+              </a>
             </span>
           </span>
         );
