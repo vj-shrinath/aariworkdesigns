@@ -118,12 +118,16 @@ export const portableTextComponents = {
       </p>
     ),
     blockquote: ({ children }: any) => (
-      <blockquote className="border-l-4 border-accent pl-10 my-20 italic text-2xl glass" style={{ 
-        padding: '3.5rem', 
-        borderRadius: '0 48px 48px 0',
+      <blockquote style={{ 
+        padding: 'var(--blockquote-padding)', 
+        borderRadius: '0 24px 24px 0',
         background: 'rgba(212, 175, 55, 0.05)',
         color: 'var(--accent)',
-        lineHeight: '1.8'
+        lineHeight: '1.8',
+        margin: '2rem 0',
+        borderLeft: '4px solid var(--accent)',
+        fontStyle: 'italic',
+        fontSize: '1.4rem'
       }}>
         {children}
       </blockquote>
