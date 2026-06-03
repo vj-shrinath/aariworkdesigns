@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { Maximize2, Minimize2, ZoomIn, ZoomOut, Lock, Unlock, X, Move, RotateCw } from 'lucide-react';
+import { Maximize2, Minimize2, ZoomIn, ZoomOut, Lock, Unlock, X, Move, RotateCw, Type } from 'lucide-react';
 import { urlFor } from '@/sanity/lib/image';
 import styles from './TraceTool.module.css';
 
@@ -21,7 +21,74 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [isTextModalOpen, setIsTextModalOpen] = useState(false);
+  const [textToTrace, setTextToTrace] = useState('');
+  const [selectedFont, setSelectedFont] = useState('Inter');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fonts = [
+    // English/Global
+    'Inter', 'Playfair Display', 'Dancing Script', 'Pacifico', 'Great Vibes', 'Montserrat', 'Cinzel', 'Homemade Apple',
+    // Devanagari
+    'Poppins', 'Hind', 'Kalam', 'Rozha One', 'Teko',
+    // Special
+    'Infinity-05'
+  ];
+
+  // Enhanced Unicode to AMS Mapping
+  const convertUnicodeToAMS = (text: string) => {
+    if (!text) return '';
+    
+    let converted = text;
+
+    // 1. Handle the 'i' matra (ि) reordering
+    // Unicode: Consonant + \u093f -> AMS: i + mapped(Consonant)
+    converted = converted.replace(/([\u0915-\u0939])(\u093f)/g, 'i$1');
+
+    // 2. Map other common matras
+    const matraMapping: { [key: string]: string } = {
+      '\u093e': 'A', // ा
+      '\u0940': 'I', // ी
+      '\u0941': 'u', // ु
+      '\u0942': 'U', // ू
+      '\u0947': 'e', // े
+      '\u0948': 'E', // ै
+      '\u094b': 'o', // ो
+      '\u094c': 'O', // ौ
+      '\u0902': 'M', // ं
+      '\u0903': 'H', // ः
+    };
+
+    // 3. Map consonants
+    const consonantMapping: { [key: string]: string } = {
+      'क': 'k', 'ख': 'K', 'ग': 'g', 'घ': 'G', 'ङ': 'f',
+      'च': 'c', 'छ': 'C', 'ज': 'j', 'झ': 'J', 'ञ': 'F',
+      'ट': 't', 'ठ': 'T', 'ड': 'd', 'ढ': 'D', 'ण': 'N',
+      'त': 'v', 'थ': 'V', 'द': 'y', 'ध': 'Y', 'न': 'n',
+      'प': 'p', 'फ': 'P', 'ब': 'b', 'भ': 'B', 'म': 'm',
+      'य': 'z', 'र': 'r', 'ल': 'l', 'व': 'w', 'श': 'S',
+      'ष': 'q', 'स': 's', 'ह': 'h', 'ळ': 'L', 'क्ष': 'X', 'ज्ञ': 'Z',
+      // Vowels
+      'अ': 'a', 'आ': 'A', 'इ': 'i', 'ई': 'I', 'उ': 'u', 'ऊ': 'U',
+      'ए': 'e', 'ऐ': 'E', 'ओ': 'o', 'औ': 'O'
+    };
+
+    // Apply mappings
+    Object.keys(matraMapping).forEach(key => {
+      converted = converted.replace(new RegExp(key, 'g'), matraMapping[key]);
+    });
+    
+    Object.keys(consonantMapping).forEach(key => {
+      converted = converted.replace(new RegExp(key, 'g'), consonantMapping[key]);
+    });
+
+    return converted;
+  };
+
+  const getDisplayText = (text: string, font: string) => {
+    if (font === 'Infinity-05') return convertUnicodeToAMS(text);
+    return text;
+  };
 
   
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
@@ -224,16 +291,30 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
         >
           {isLocked && <div className={styles.lockOverlay} />}
           
-          <img
-            src={selectedImage.isLocal ? selectedImage.url : urlFor(selectedImage.mainImage).url()}
-            alt="Tracing design"
-            className={styles.traceImage}
-            style={{
-              transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
-              filter: `brightness(${brightness}) contrast(${contrast})`
-            }}
-            draggable={false}
-          />
+          {selectedImage.isText ? (
+            <div
+              className={styles.traceText}
+              style={{
+                transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
+                filter: `brightness(${brightness}) contrast(${contrast})`,
+                fontFamily: `'${selectedFont}', sans-serif`,
+                fontSize: '100px'
+              }}
+            >
+              {getDisplayText(selectedImage.text, selectedFont)}
+            </div>
+          ) : (
+            <img
+              src={selectedImage.isLocal ? selectedImage.url : urlFor(selectedImage.mainImage).url()}
+              alt="Tracing design"
+              className={styles.traceImage}
+              style={{
+                transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
+                filter: `brightness(${brightness}) contrast(${contrast})`
+              }}
+              draggable={false}
+            />
+          )}
 
           {isUploading && (
             <div className={styles.uploadIndicator}>
@@ -309,6 +390,19 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
             >
               {isLocked ? <Lock size={20} /> : <Unlock size={20} />}
             </button>
+
+            {selectedImage?.isText && (
+              <select 
+                className={styles.toolbarSelect}
+                value={selectedFont}
+                onChange={(e) => setSelectedFont(e.target.value)}
+                disabled={isLocked}
+              >
+                {fonts.map(font => (
+                  <option key={font} value={font}>{font}</option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
       </div>
@@ -341,9 +435,80 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Maximize2 size={20} />
-                Upload Your Own Design
+                Upload Photo
+              </button>
+              <button 
+                className={styles.textBtn}
+                onClick={() => setIsTextModalOpen(true)}
+              >
+                <Type size={20} />
+                Write Text
               </button>
             </div>
+
+            {isTextModalOpen && (
+              <div className={styles.modalOverlay}>
+                <div className={styles.modalContent}>
+                  <button className={styles.closeModalBtn} onClick={() => setIsTextModalOpen(false)}>
+                    <X size={24} />
+                  </button>
+                  <h2 className={styles.modalTitle}>Write Your Text</h2>
+                  
+                  <div className={styles.inputGroup}>
+                    <label className={styles.inputLabel}>Text to Trace</label>
+                    <textarea 
+                      className={styles.textInput}
+                      placeholder="Type your text here..."
+                      value={textToTrace}
+                      onChange={(e) => setTextToTrace(e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+
+                  {textToTrace && (
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel}>Font Preview</label>
+                      <div 
+                        className={styles.fontPreview}
+                        style={{ 
+                          fontFamily: `'${selectedFont}', sans-serif`
+                        }}
+                      >
+                        {getDisplayText(textToTrace, selectedFont)}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className={styles.inputGroup}>
+                    <label className={styles.inputLabel}>Choose Font</label>
+                    <select 
+                      className={styles.selectInput}
+                      value={selectedFont}
+                      onChange={(e) => setSelectedFont(e.target.value)}
+                    >
+                      {fonts.map(font => (
+                        <option key={font} value={font}>{font}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button 
+                    className={styles.startBtn}
+                    onClick={() => {
+                      if (!textToTrace.trim()) return;
+                      setSelectedImage({
+                        isText: true,
+                        text: textToTrace,
+                        font: selectedFont
+                      });
+                      setIsTextModalOpen(false);
+                    }}
+                  >
+                    Start Tracing
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -293,9 +293,12 @@
 .uploadSection {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
   margin-bottom: 4rem;
   position: relative;
   z-index: 2;
+  flex-wrap: wrap;
 }
 
 .uploadBtn {
@@ -312,6 +315,26 @@
   gap: 12px;
   transition: var(--transition);
   box-shadow: 0 10px 30px rgba(212, 175, 55, 0.25);
+}
+
+.textBtn {
+  background: transparent;
+  color: var(--accent);
+  border: 2px solid var(--accent);
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: var(--transition);
+}
+
+.textBtn:hover {
+  background: var(--accent-glow);
+  transform: translateY(-3px);
 }
 
 .uploadBtn:hover {
@@ -350,3 +373,138 @@
   to { transform: rotate(360deg); }
 }
 
+.traceText {
+  color: white;
+  user-select: none;
+  pointer-events: none;
+  text-align: center;
+  white-space: pre-wrap;
+  line-height: 1.2;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(10px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalContent {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  padding: 2.5rem;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+}
+
+.modalTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inputLabel {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.textInput {
+  background: #1a1a1a;
+  border: 1px solid var(--border);
+  color: white;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.textInput:focus {
+  border-color: var(--accent);
+}
+
+.fontPreview {
+  background: #0d0d0d;
+  border: 1px dashed var(--accent-glow);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  font-size: 2.5rem;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.selectInput {
+  background: #1a1a1a;
+  border: 1px solid var(--border);
+  color: white;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.selectInput:focus {
+  border-color: var(--accent);
+}
+
+.startBtn {
+  background: var(--accent-gradient);
+  color: black;
+  border: none;
+  padding: 1rem;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.closeModalBtn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.toolbarSelect {
+  background: #1a1a1a;
+  border: 1px solid var(--glass-border);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  outline: none;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.toolbarSelect:focus {
+  border-color: var(--accent);
+}
