@@ -1,0 +1,14 @@
+# AARI Work Designs
+
+## Core Value Proposition
+AARI Work Designs provides premium embroidery patterns and a specialized Android application for tracing designs directly onto fabric.
+
+## Key Takeaways
+- Extensive library of Aari and Maggam work designs.
+- Interactive trace tool for direct fabric tracing.
+- Expert-curated embroidery patterns for all skill levels.
+
+## Resources
+- Blog: https://aariworkdesigns.com/blog
+- Trace Tool: https://aariworkdesigns.com/trace
+- Gallery: https://aariworkdesigns.com/gallery

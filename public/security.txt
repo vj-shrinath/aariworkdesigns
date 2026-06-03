@@ -1,0 +1,5 @@
+Contact: support@aariworkdesigns.com
+Expires: 2027-06-03T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://aariworkdesigns.com/.well-known/security.txt
+Policy: https://aariworkdesigns.com/security-policy

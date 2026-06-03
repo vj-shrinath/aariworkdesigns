@@ -11,6 +11,15 @@ export const metadata: Metadata = {
   keywords: ['Aari work', 'embroidery designs', 'traces', 'embroidery app', 'maggam work', 'neck designs'],
   authors: [{ name: 'AARI Work Designs' }],
   creator: 'AARI Work Designs',
+  verification: {
+    google: 'verification_token', // Replace with actual token
+    yandex: 'verification_token',
+    yahoo: 'verification_token',
+    other: {
+      'msvalidate.01': 'verification_token',
+      'facebook-domain-verification': 'verification_token',
+    },
+  },
   icons: {
     icon: '/favicon.ico',
     apple: '/logo.png',
@@ -32,6 +41,11 @@ export const metadata: Metadata = {
     title: 'AARI Work Designs',
     description: 'Premium Aari work traces and embroidery designs.',
     images: ['/logo.png'],
+  },
+  alternates: {
+    types: {
+      'application/rss+xml': 'https://aariworkdesigns.com/feed.xml',
+    },
   },
 };
 

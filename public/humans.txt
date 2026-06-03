@@ -1,0 +1,9 @@
+/* TEAM */
+Founder/Designer: AARI Work Designs Team
+Developer: Deepmind Agentic AI
+
+/* SITE */
+Last update: 2026/06/03
+Language: English
+Software: Next.js, Sanity CMS, Vercel
+Standard: HTML5, CSS3, Schema.org

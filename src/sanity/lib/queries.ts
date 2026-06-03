@@ -26,7 +26,12 @@ export const POST_QUERY = groq`*[_type == "post" && slug.current == $slug][0] {
     }
   },
   author->{name, image, bio},
-  categories[]->{title}
+  categories[]->{title},
+  seo,
+  ai,
+  geo,
+  relatedPosts[]->{_id, title, slug, mainImage},
+  _updatedAt
 }`;
 
 

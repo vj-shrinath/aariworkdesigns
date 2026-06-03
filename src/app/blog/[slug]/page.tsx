@@ -7,40 +7,53 @@ import { client } from '@/sanity/client';
 import { POST_QUERY } from '@/sanity/lib/queries';
 import { urlFor } from '@/sanity/lib/image';
 import { portableTextComponents } from '@/sanity/lib/portableText';
+import { getSeoImage } from '@/sanity/schema-utils';
 import Header from '@/components/Header';
 import ShareButtons from '@/components/ShareButtons';
 import styles from './PostPage.module.css';
 
 export const runtime = 'edge'
+export const revalidate = 3600; // Revalidate every hour
 
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await client.fetch(POST_QUERY, { slug: params.slug });
   if (!post) return { title: 'Post Not Found' };
 
-  const image = post.mainImage ? urlFor(post.mainImage).width(1200).height(630).url() : '';
+  const ogImageSource = getSeoImage(post);
+  const image = ogImageSource ? urlFor(ogImageSource).width(1200).height(630).url() : '';
 
   return {
-    title: post.title,
-    description: post.excerpt || `Read about ${post.title} on AARI Work Designs.`,
+    title: post.seo?.title || post.title,
+    description: post.seo?.description || post.ai?.aiSummary || post.excerpt || `Read about ${post.title} on AARI Work Designs.`,
+    robots: {
+      index: post.seo?.robotsIndex ?? true,
+      follow: post.seo?.robotsFollow ?? true,
+    },
     openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      url: `https://aariworkdesigns.com/blog/${params.slug}`,
+      title: post.seo?.ogTitle || post.seo?.title || post.title,
+      description: post.seo?.ogDescription || post.seo?.description || post.ai?.aiSummary || post.excerpt,
+      url: post.seo?.canonicalUrl || `https://aariworkdesigns.com/blog/${params.slug}`,
       images: [{ url: image }],
       type: 'article',
       publishedTime: post.publishedAt,
+      modifiedTime: post._updatedAt,
       authors: [post.author?.name],
     },
     twitter: {
       card: 'summary_large_image',
-      title: post.title,
-      description: post.excerpt,
+      title: post.seo?.twitterTitle || post.seo?.title || post.title,
+      description: post.seo?.twitterDescription || post.seo?.description || post.ai?.aiSummary || post.excerpt,
       images: [image],
     },
     alternates: {
-      canonical: `https://aariworkdesigns.com/blog/${params.slug}`,
+      canonical: post.seo?.canonicalUrl || `https://aariworkdesigns.com/blog/${params.slug}`,
     },
+    other: {
+      'ai-summary': post.ai?.aiSummary || '',
+      'tldr': post.ai?.tldr || '',
+      'primary-entity': post.geo?.primaryEntity || '',
+    }
   };
 }
 
@@ -58,14 +71,21 @@ export default async function PostPage({ params }: { params: { slug: string } })
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    headline: post.title,
+    headline: post.seo?.title || post.title,
     image: post.mainImage ? urlFor(post.mainImage).url() : '',
     datePublished: post.publishedAt,
+    dateModified: post._updatedAt,
     author: {
       '@type': 'Person',
       name: post.author?.name,
     },
-    description: post.excerpt,
+    description: post.seo?.description || post.ai?.aiSummary || post.excerpt,
+    keywords: post.geo?.semanticKeywords?.join(', '),
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': post.seo?.canonicalUrl || `https://aariworkdesigns.com/blog/${params.slug}`,
+    },
+    ...(post.ai?.keyTakeaways && { abstract: post.ai.keyTakeaways.join('. ') }),
   };
 
   return (
@@ -130,6 +150,28 @@ export default async function PostPage({ params }: { params: { slug: string } })
           <div className={styles.richText}>
             <PortableText value={post.body} components={portableTextComponents} />
           </div>
+          
+          {post.relatedPosts && post.relatedPosts.length > 0 && (
+            <div className={styles.relatedPosts}>
+              <h3>Related Designs & Patterns</h3>
+              <div className={styles.relatedGrid}>
+                {post.relatedPosts.map((related: any) => (
+                  <Link key={related._id} href={`/blog/${related.slug.current}`} className={styles.relatedCard}>
+                    {related.mainImage && (
+                      <Image 
+                        src={urlFor(related.mainImage).width(300).height(200).url()} 
+                        alt={related.title}
+                        width={300}
+                        height={200}
+                      />
+                    )}
+                    <span>{related.title}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           <ShareButtons 
             url={`https://aariworkdesigns.com/blog/${params.slug}`} 
             title={post.title} 
