@@ -40,16 +40,41 @@ export const POST_QUERY = groq`*[_type == "post" && slug.current == $slug][0] {
 
 export const GALLERY_QUERY = groq`*[_type == "post" && defined(slug.current)] {
   "mainImageAsset": mainImage.asset._ref,
-  "images": body[_type == "image" && isDesignTrace == true] {
+  "postTitle": title,
+  "postSlug": slug,
+  "standaloneImages": body[_type == "image" && isDesignTrace == true] {
     "_id": _key,
-    "title": ^.title,
-    "slug": ^.slug,
     "mainImage": {
       "asset": asset,
       "alt": alt
     },
     "assetRef": asset._ref
-  }
+  },
+  "galleryImages": body[_type == "imageGallery"] {
+    "images": images[isDesignTrace == true || ^.allImagesAreTrace == true] {
+      "_id": _key,
+      "mainImage": {
+        "asset": asset,
+        "alt": alt
+      },
+      "assetRef": asset._ref
+    }
+  }.images[]
+} {
+  "mainImageAsset": mainImageAsset,
+  "images": coalesce(standaloneImages[] {
+    "_id": _id,
+    "title": ^.postTitle,
+    "slug": ^.postSlug,
+    "mainImage": mainImage,
+    "assetRef": assetRef
+  }, []) + coalesce(galleryImages[] {
+    "_id": _id,
+    "title": ^.postTitle,
+    "slug": ^.postSlug,
+    "mainImage": mainImage,
+    "assetRef": assetRef
+  }, [])
 }.images[] [assetRef != ^.mainImageAsset] {
   "_id": _id,
   "title": title,

@@ -82,6 +82,8 @@ export const portableTextComponents = {
       if (!value.images || value.images.length === 0) return null;
 
       const displayMode = value.display || 'grid';
+      // Gallery-level flag: if true, ALL images are treated as design traces
+      const allTrace = value.allImagesAreTrace === true;
 
       if (displayMode === 'grid') {
         return (
@@ -95,10 +97,8 @@ export const portableTextComponents = {
               const imageUrl = urlFor(img).url();
               if (!imageUrl) return null;
               
-              const isTracingDesign = img.isDesignTrace || 
-                                      img.categories?.some((c: any) => 
-                                        ['Tracing Design', 'Embroidery Design', 'Aari Pattern'].includes(c.title)
-                                      );
+              // allTrace: gallery-level flag overrides individual per-image flag
+              const isTracingDesign = allTrace || img.isDesignTrace;
 
               return (
                 <div 
@@ -177,7 +177,7 @@ export const portableTextComponents = {
       }
 
       return (
-        <GallerySlider images={value.images} displayMode={displayMode} />
+        <GallerySlider images={value.images} displayMode={displayMode} allTrace={allTrace} />
       );
     },
   },

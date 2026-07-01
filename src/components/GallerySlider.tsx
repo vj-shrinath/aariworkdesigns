@@ -23,9 +23,10 @@ interface GalleryImage {
 interface GallerySliderProps {
   images: GalleryImage[];
   displayMode: 'slider' | 'carousel';
+  allTrace?: boolean;
 }
 
-export default function GallerySlider({ images, displayMode }: GallerySliderProps) {
+export default function GallerySlider({ images, displayMode, allTrace = false }: GallerySliderProps) {
   if (!images || images.length === 0) return null;
 
   const isCarousel = displayMode === 'carousel';
@@ -77,11 +78,9 @@ export default function GallerySlider({ images, displayMode }: GallerySliderProp
           {images.map((img, index) => {
             const imageUrl = urlFor(img).url();
             if (!imageUrl) return null;
+            // Gallery-level allTrace flag OR per-image flag
+            const isTrace = allTrace || img.isDesignTrace;
 
-            const isTracingDesign = img.isDesignTrace || 
-                                    img.categories?.some((c: any) => 
-                                      ['Tracing Design', 'Embroidery Design', 'Aari Pattern'].includes(c.title)
-                                    );
 
             return (
               <SwiperSlide key={img._key || index}>
@@ -95,12 +94,12 @@ export default function GallerySlider({ images, displayMode }: GallerySliderProp
                     />
                   </div>
                   
-                  {(img.alt || img.caption || isTracingDesign) && (
+                  {(img.alt || img.caption || isTrace) && (
                     <div className={styles.slideMeta}>
                       {img.alt && <span className={styles.alt}>{img.alt}</span>}
                       {img.caption && <span className={styles.caption}>{img.caption}</span>}
                       
-                      {isTracingDesign && (
+                      {isTrace && (
                         <div className={styles.traceButtonContainer}>
                           <a 
                             href={`/trace?img=${encodeURIComponent(imageUrl)}`}
