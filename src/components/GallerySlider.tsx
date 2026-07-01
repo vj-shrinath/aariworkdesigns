@@ -15,6 +15,7 @@ interface GalleryImage {
   _key?: string;
   alt?: string;
   caption?: string;
+  isDesignTrace?: boolean;
   asset: any;
 }
 
@@ -86,6 +87,35 @@ export default function GallerySlider({ images, displayMode }: GallerySliderProp
                       className={styles.image}
                       loading="lazy"
                     />
+                    {img.isDesignTrace && (
+                      <a
+                        href={`/trace?img=${encodeURIComponent(imageUrl)}`}
+                        className={styles.traceButton}
+                        style={{
+                          position: 'absolute',
+                          top: '0.75rem',
+                          right: '0.75rem',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.4rem',
+                          padding: '0.4rem 0.9rem',
+                          background: 'var(--accent-gradient)',
+                          color: 'var(--bg-primary)',
+                          borderRadius: '50px',
+                          fontWeight: '700',
+                          textDecoration: 'none',
+                          fontSize: '0.8rem',
+                          boxShadow: 'var(--shadow-md)',
+                          transition: 'var(--transition)',
+                          zIndex: 10,
+                        }}
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+                        </svg>
+                        Trace
+                      </a>
+                    )}
                   </div>
                   
                   {(img.alt || img.caption) && (
