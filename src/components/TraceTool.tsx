@@ -25,6 +25,8 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
   const [textToTrace, setTextToTrace] = useState('');
   const [selectedFont, setSelectedFont] = useState('Inter');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const wasOpenedFromUrl = useRef(false);
+
 
   const fonts = [
     // English/Global
@@ -107,6 +109,7 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
       const params = new URLSearchParams(window.location.search);
       const imgUrl = params.get('img');
       if (imgUrl) {
+        wasOpenedFromUrl.current = true;
         setSelectedImage({
           isLocal: true,
           url: imgUrl,
@@ -284,9 +287,21 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
             if (document.fullscreenElement) {
               document.exitFullscreen().catch(err => console.error(err));
             }
-            setSelectedImage(null);
-            if (typeof window !== 'undefined') {
-              window.history.replaceState({}, '', window.location.pathname);
+            if (wasOpenedFromUrl.current && typeof window !== 'undefined') {
+              if (document.referrer && document.referrer.includes(window.location.host)) {
+                if (window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  window.location.href = document.referrer;
+                }
+              } else {
+                window.location.href = '/';
+              }
+            } else {
+              setSelectedImage(null);
+              if (typeof window !== 'undefined') {
+                window.history.replaceState({}, '', window.location.pathname);
+              }
             }
           }}
           title="Exit Tool"
