@@ -101,6 +101,21 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
   const isDragging = useRef(false);
   const startPos = useRef({ x: 0, y: 0 });
 
+  // Handle URL query parameter 'img' to automatically open in tracing studio
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const imgUrl = params.get('img');
+      if (imgUrl) {
+        setSelectedImage({
+          isLocal: true,
+          url: imgUrl,
+          title: 'Tracing Image'
+        });
+      }
+    }
+  }, []);
+
   // Handle Screen Wake Lock
   useEffect(() => {
     const requestWakeLock = async () => {
@@ -263,13 +278,16 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
   if (selectedImage) {
     return (
       <div className={styles.traceMode} ref={containerRef}>
-        <button 
+         <button 
           className={styles.closeBtn} 
           onClick={() => {
             if (document.fullscreenElement) {
               document.exitFullscreen().catch(err => console.error(err));
             }
             setSelectedImage(null);
+            if (typeof window !== 'undefined') {
+              window.history.replaceState({}, '', window.location.pathname);
+            }
           }}
           title="Exit Tool"
         >
