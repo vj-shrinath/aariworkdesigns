@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import { urlFor } from './image';
+import GallerySlider from '@/components/GallerySlider';
+
 
 export const portableTextComponents = {
   types: {
@@ -74,6 +76,75 @@ export const portableTextComponents = {
             </div>
           )}
         </div>
+      );
+    },
+    imageGallery: ({ value }: any) => {
+      if (!value.images || value.images.length === 0) return null;
+
+      const displayMode = value.display || 'grid';
+
+      if (displayMode === 'grid') {
+        return (
+          <div className="image-gallery-grid" style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+            gap: '1.5rem', 
+            margin: '3.5rem 0'
+          }}>
+            {value.images.map((img: any, index: number) => {
+              const imageUrl = urlFor(img).url();
+              if (!imageUrl) return null;
+              
+              return (
+                <div 
+                  key={img._key || index} 
+                  style={{ 
+                    position: 'relative', 
+                    borderRadius: '16px', 
+                    overflow: 'hidden', 
+                    aspectRatio: '4/3',
+                    border: '1px solid var(--border)',
+                    boxShadow: 'var(--shadow-md)',
+                    background: 'var(--bg-tertiary)'
+                  }}
+                >
+                  <img
+                    src={imageUrl}
+                    alt={img.alt || `Gallery image ${index + 1}`}
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover', 
+                      display: 'block',
+                      transition: 'transform 0.4s ease'
+                    }}
+                    className="gallery-grid-image"
+                  />
+                  {(img.alt || img.caption) && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      padding: '1.25rem',
+                      background: 'linear-gradient(to top, rgba(10,10,10,0.9) 0%, rgba(10,10,10,0) 100%)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.2rem'
+                    }}>
+                      {img.alt && <span style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.95rem' }}>{img.alt}</span>}
+                      {img.caption && <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontStyle: 'italic' }}>{img.caption}</span>}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+      }
+
+      return (
+        <GallerySlider images={value.images} displayMode={displayMode} />
       );
     },
   },

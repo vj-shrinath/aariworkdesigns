@@ -1,0 +1,199 @@
+.galleryContainer {
+  margin: 3.5rem 0;
+  width: 100%;
+  position: relative;
+}
+
+.swiperWrapper {
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  transition: var(--transition);
+}
+
+.sliderMode .swiperWrapper {
+  padding: 0;
+}
+
+.slideContent {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/10;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #000;
+}
+
+.sliderMode .imageWrapper {
+  border-radius: 0;
+  aspect-ratio: 16/9;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s cubic-bezier(0.2, 0, 0.2, 1);
+  display: block;
+}
+
+.imageWrapper:hover .image {
+  transform: scale(1.03);
+}
+
+.slideMeta {
+  padding: 1.25rem 0.5rem 0.5rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sliderMode .slideMeta {
+  padding: 1.5rem 2rem 2rem 2rem;
+  background: linear-gradient(180deg, var(--bg-tertiary) 0%, rgba(26, 2, 2, 0.95) 100%);
+}
+
+.alt {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+}
+
+.caption {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* Customizing Swiper dots and navigation buttons globally within the scope of our CSS Module */
+.galleryContainer :global(.swiper) {
+  padding-bottom: 3.5rem !important; /* give space for pagination dots underneath */
+  width: 100%;
+  height: 100%;
+}
+
+/* For sliderMode we might want different pagination spacing */
+.sliderMode :global(.swiper) {
+  padding-bottom: 0 !important;
+}
+
+.galleryContainer :global(.swiper-pagination) {
+  bottom: 0.5rem !important;
+}
+
+.sliderMode :global(.swiper-pagination) {
+  bottom: 1.5rem !important;
+}
+
+.galleryContainer :global(.swiper-pagination-bullet) {
+  background: var(--text-muted) !important;
+  opacity: 0.4;
+  width: 8px;
+  height: 8px;
+  transition: var(--transition) !important;
+}
+
+.galleryContainer :global(.swiper-pagination-bullet-active) {
+  background: var(--accent) !important;
+  opacity: 1;
+  width: 24px;
+  border-radius: 4px;
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.galleryContainer :global(.swiper-button-next),
+.galleryContainer :global(.swiper-button-prev) {
+  color: var(--text-primary) !important;
+  background: rgba(26, 2, 2, 0.7) !important;
+  border: 1px solid var(--border);
+  width: 48px;
+  height: 48px;
+  border-radius: 50% !important;
+  transition: var(--transition) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-md);
+  top: 50% !important; /* Center vertically */
+  margin-top: -24px !important; /* Half of height to truly align in center */
+}
+
+/* Swiper default centering puts it exactly in vertical center, but since we have metadata/padding, we should align it strictly based on the image container's height */
+.galleryContainer :global(.swiper-button-next),
+.galleryContainer :global(.swiper-button-prev) {
+  /* We adjusts alignment specifically for carousel with padding and margin */
+  top: 40% !important;
+}
+
+.sliderMode :global(.swiper-button-next),
+.sliderMode :global(.swiper-button-prev) {
+  top: 50% !important;
+}
+
+.galleryContainer :global(.swiper-button-next)::after,
+.galleryContainer :global(.swiper-button-prev)::after {
+  font-size: 1.15rem !important;
+  font-weight: bold;
+}
+
+.galleryContainer :global(.swiper-button-next):hover,
+.galleryContainer :global(.swiper-button-prev):hover {
+  background: var(--accent-gradient) !important;
+  color: var(--bg-primary) !important;
+  border-color: var(--accent);
+  box-shadow: 0 0 20px var(--accent-glow);
+  transform: scale(1.08) !important;
+}
+
+/* Adjust standard swiper button spacing */
+.galleryContainer :global(.swiper-button-next) {
+  right: 1.5rem !important;
+}
+
+.galleryContainer :global(.swiper-button-prev) {
+  left: 1.5rem !important;
+}
+
+.sliderMode :global(.swiper-button-next) {
+  right: 2rem !important;
+}
+
+.sliderMode :global(.swiper-button-prev) {
+  left: 2rem !important;
+}
+
+/* Responsive adjustment */
+@media (max-width: 768px) {
+  .imageWrapper {
+    aspect-ratio: 4/3;
+  }
+  
+  .sliderMode .imageWrapper {
+    aspect-ratio: 4/3;
+  }
+  
+  .alt {
+    font-size: 1.1rem;
+  }
+  
+  .caption {
+    font-size: 0.85rem;
+  }
+  
+  .galleryContainer :global(.swiper-button-next),
+  .galleryContainer :global(.swiper-button-prev) {
+    display: none !important; /* Hide arrows on mobile for better touch-only usability */
+  }
+}
