@@ -95,72 +95,78 @@ export const portableTextComponents = {
               const imageUrl = urlFor(img).url();
               if (!imageUrl) return null;
               
+              const isTracingDesign = img.isDesignTrace || 
+                                      img.categories?.some((c: any) => 
+                                        ['Tracing Design', 'Embroidery Design', 'Aari Pattern'].includes(c.title)
+                                      );
+
               return (
                 <div 
                   key={img._key || index} 
                   style={{ 
-                    position: 'relative', 
+                    display: 'flex',
+                    flexDirection: 'column',
                     borderRadius: '16px', 
                     overflow: 'hidden', 
-                    aspectRatio: '4/3',
                     border: '1px solid var(--border)',
                     boxShadow: 'var(--shadow-md)',
-                    background: 'var(--bg-tertiary)'
+                    background: 'var(--bg-tertiary)',
+                    padding: '1.25rem'
                   }}
                 >
-                  <img
-                    src={imageUrl}
-                    alt={img.alt || `Gallery image ${index + 1}`}
-                    style={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'cover', 
-                      display: 'block',
-                      transition: 'transform 0.4s ease'
-                    }}
-                    className="gallery-grid-image"
-                  />
-                  {(img.alt || img.caption) && (
+                  <div style={{ borderRadius: '12px', overflow: 'hidden', width: '100%' }}>
+                    <img
+                      src={imageUrl}
+                      alt={img.alt || `Gallery image ${index + 1}`}
+                      style={{ 
+                        width: '100%', 
+                        height: 'auto', 
+                        objectFit: 'contain', 
+                        display: 'block',
+                        transition: 'transform 0.4s ease'
+                      }}
+                      className="gallery-grid-image"
+                    />
+                  </div>
+                  {(img.alt || img.caption || isTracingDesign) && (
                     <div style={{
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      padding: '1.25rem',
-                      background: 'linear-gradient(to top, rgba(10,10,10,0.9) 0%, rgba(10,10,10,0) 100%)',
+                      paddingTop: '1.25rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '0.2rem'
+                      gap: '0.35rem'
                     }}>
-                      {img.alt && <span style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.95rem' }}>{img.alt}</span>}
-                      {img.caption && <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontStyle: 'italic' }}>{img.caption}</span>}
-                    </div>
-                  )}
-                  {img.isDesignTrace && (
-                    <div style={{ position: 'absolute', top: '0.75rem', right: '0.75rem' }}>
-                      <a
-                        href={`/trace?img=${encodeURIComponent(imageUrl)}`}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.4rem',
-                          padding: '0.4rem 0.9rem',
-                          background: 'var(--accent-gradient)',
-                          color: 'var(--bg-primary)',
-                          borderRadius: '50px',
-                          fontWeight: '700',
-                          textDecoration: 'none',
-                          fontSize: '0.8rem',
-                          boxShadow: 'var(--shadow-md)',
-                          transition: 'var(--transition)'
-                        }}
-                        className="trace-button"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
-                        </svg>
-                        Trace
-                      </a>
+                      {img.alt && <span style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '1.1rem', fontFamily: 'var(--font-heading)' }}>{img.alt}</span>}
+                      {img.caption && <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontStyle: 'italic' }}>{img.caption}</span>}
+                      
+                      {isTracingDesign && (
+                        <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
+                          <a
+                            href={`/trace?img=${encodeURIComponent(imageUrl)}`}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.6rem',
+                              padding: '0.6rem 1.4rem',
+                              background: 'var(--accent-gradient)',
+                              color: 'var(--bg-primary)',
+                              borderRadius: '50px',
+                              fontWeight: '700',
+                              textDecoration: 'none',
+                              fontSize: '0.85rem',
+                              boxShadow: 'var(--shadow-md)',
+                              transition: 'var(--transition)',
+                              width: '100%',
+                              justifyContent: 'center'
+                            }}
+                            className="trace-button"
+                          >
+                            <span>Open in Tracing Tool</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+                            </svg>
+                          </a>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
