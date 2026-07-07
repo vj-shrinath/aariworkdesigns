@@ -592,12 +592,14 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
                 className={styles.imageCard}
                 onClick={() => setSelectedImage(image)}
               >
-                <Image
-                  src={urlFor(image.mainImage).width(400).height(400).url()}
-                  alt={image.title || 'Design'}
-                  fill
-                  className={styles.cardImage}
-                />
+                <div className={styles.cardImageContainer}>
+                  <Image
+                    src={urlFor(image.mainImage).width(400).height(400).url()}
+                    alt={image.title || 'Design'}
+                    fill
+                    className={styles.cardImage}
+                  />
+                </div>
                 <div className={styles.cardTitle}>{image.title}</div>
               </div>
             ))}
