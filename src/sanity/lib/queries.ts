@@ -110,7 +110,7 @@ export const GALLERY_QUERY = groq`(
     "caption": description
   }
 ) + (
-  *[_type == "userSubmission" && approvedForGallery == true] {
+  *[_type == "userSubmission" && approvedForGallery == true && !defined(*[_type == "galleryDesign" && _id == "galleryDesign-" + ^._id][0])] {
     "_id": _id,
     "title": title,
     "slug": null,
