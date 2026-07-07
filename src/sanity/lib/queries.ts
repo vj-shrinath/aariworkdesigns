@@ -45,6 +45,7 @@ export const GALLERY_QUERY = groq`(
     "mainImageAsset": mainImage.asset._ref,
     "postTitle": title,
     "postSlug": slug,
+    "postCategories": categories[]->{title, slug},
     "standaloneImages": body[_type == "image" && isDesignTrace == true] {
       "_id": _key,
       "mainImage": {
@@ -77,7 +78,8 @@ export const GALLERY_QUERY = groq`(
       "alt": alt,
       "caption": caption,
       "date": coalesce(^.publishedAt, ^._createdAt),
-      "assetRef": assetRef
+      "assetRef": assetRef,
+      "categories": ^.postCategories
     }, []) + coalesce(galleryImages[] {
       "_id": _id,
       "title": ^.postTitle,
@@ -86,7 +88,8 @@ export const GALLERY_QUERY = groq`(
       "alt": alt,
       "caption": caption,
       "date": coalesce(^.publishedAt, ^._createdAt),
-      "assetRef": assetRef
+      "assetRef": assetRef,
+      "categories": ^.postCategories
     }, [])
   }.images[] [assetRef != ^.mainImageAsset] {
     "_id": _id,
@@ -96,7 +99,8 @@ export const GALLERY_QUERY = groq`(
     "type": "article",
     "date": date,
     "alt": alt,
-    "caption": caption
+    "caption": caption,
+    "categories": categories
   }
 ) + (
   *[_type == "galleryDesign"] {
@@ -107,8 +111,44 @@ export const GALLERY_QUERY = groq`(
     "type": "standalone",
     "date": coalesce(publishedAt, _createdAt),
     "alt": title,
-    "caption": description
+    "caption": description,
+    "categories": categories[]->{title, slug}
   }
+) + (
+  *[_type == "galleryUploadGroup"] {
+    "groupTitle": titlePrefix,
+    "groupCategory": category->{title, slug},
+    "groupDescription": description,
+    "groupDate": coalesce(publishedAt, _createdAt),
+    "groupImages": images[] {
+      "_id": _key,
+      "mainImage": {
+        "asset": asset,
+        "alt": alt
+      },
+      "alt": alt,
+      "caption": caption
+    }
+  } {
+    "images": groupImages[] {
+      "_id": _id,
+      "title": select(
+        defined(alt) && alt != "" => ^.groupTitle + " - " + alt,
+        defined(caption) && caption != "" => ^.groupTitle + " - " + caption,
+        ^.groupTitle
+      ),
+      "slug": null,
+      "mainImage": mainImage,
+      "type": "standalone",
+      "date": ^.groupDate,
+      "alt": coalesce(alt, ^.groupTitle),
+      "caption": coalesce(caption, ^.groupDescription),
+      "categories": select(
+        defined(^.groupCategory) => [^.groupCategory],
+        []
+      )
+    }
+  }.images[]
 ) + (
   *[_type == "userSubmission" && approvedForGallery == true && !defined(*[_type == "galleryDesign" && _id == "galleryDesign-" + ^._id][0])] {
     "_id": _id,
@@ -118,7 +158,8 @@ export const GALLERY_QUERY = groq`(
     "type": "standalone",
     "date": coalesce(uploadDate, _createdAt),
     "alt": title,
-    "caption": "User Uploaded Design"
+    "caption": "User Uploaded Design",
+    "categories": []
   }
 ) | order(title asc)`;
 

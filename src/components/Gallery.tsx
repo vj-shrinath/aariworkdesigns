@@ -14,6 +14,7 @@ interface GalleryProps {
 export default function Gallery({ items }: GalleryProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'article' | 'standalone'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'title-asc' | 'title-desc' | 'date-desc' | 'date-asc'>('title-asc');
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
@@ -34,6 +35,32 @@ export default function Gallery({ items }: GalleryProps) {
     }
   };
 
+  // Get all unique categories present in items for the current active tab dynamically
+  const uniqueCategories = items.reduce((acc: { title: string; slug: string; count: number }[], item) => {
+    // Check if item matches current tab
+    let matchesTab = true;
+    if (activeTab === 'article') {
+      matchesTab = item.type === 'article';
+    } else if (activeTab === 'standalone') {
+      matchesTab = item.type === 'standalone';
+    }
+
+    if (matchesTab && item.categories && Array.isArray(item.categories)) {
+      item.categories.forEach((cat: any) => {
+        if (cat && cat.title) {
+          const slugVal = cat.slug?.current || cat.slug || cat.title.toLowerCase().replace(/\s+/g, '-');
+          const existing = acc.find((elem) => elem.slug === slugVal);
+          if (existing) {
+            existing.count += 1;
+          } else {
+            acc.push({ title: cat.title, slug: slugVal, count: 1 });
+          }
+        }
+      });
+    }
+    return acc;
+  }, []);
+
   // Filter items
   const filteredItems = items.filter((item) => {
     const query = searchQuery.toLowerCase();
@@ -43,10 +70,24 @@ export default function Gallery({ items }: GalleryProps) {
     
     const matchesSearch = matchesTitle || matchesAlt || matchesCaption;
     
-    if (activeTab === 'all') return matchesSearch;
-    if (activeTab === 'article') return matchesSearch && item.type === 'article';
-    if (activeTab === 'standalone') return matchesSearch && item.type === 'standalone';
-    return matchesSearch;
+    // Active tab matching
+    let matchesTab = true;
+    if (activeTab === 'article') {
+      matchesTab = item.type === 'article';
+    } else if (activeTab === 'standalone') {
+      matchesTab = item.type === 'standalone';
+    }
+
+    // Category matching
+    let matchesCategory = true;
+    if (selectedCategory !== 'all') {
+      matchesCategory = item.categories?.some((cat: any) => {
+        const slugVal = cat.slug?.current || cat.slug || cat.title?.toLowerCase().replace(/\s+/g, '-');
+        return slugVal === selectedCategory;
+      }) || false;
+    }
+
+    return matchesSearch && matchesTab && matchesCategory;
   });
 
   // Client-side sort dynamic evaluation
@@ -120,19 +161,19 @@ export default function Gallery({ items }: GalleryProps) {
         <div className={styles.tabsWrapper}>
           <div className={styles.tabsGrid}>
             <button
-              onClick={() => setActiveTab('all')}
+              onClick={() => { setActiveTab('all'); setSelectedCategory('all'); }}
               className={`${styles.tabBtn} ${activeTab === 'all' ? styles.tabActive : ''}`}
             >
               All Designs
             </button>
             <button
-              onClick={() => setActiveTab('article')}
+              onClick={() => { setActiveTab('article'); setSelectedCategory('all'); }}
               className={`${styles.tabBtn} ${activeTab === 'article' ? styles.tabActive : ''}`}
             >
               From Articles
             </button>
             <button
-              onClick={() => setActiveTab('standalone')}
+              onClick={() => { setActiveTab('standalone'); setSelectedCategory('all'); }}
               className={`${styles.tabBtn} ${activeTab === 'standalone' ? styles.tabActive : ''}`}
             >
               Design Templates
@@ -194,6 +235,32 @@ export default function Gallery({ items }: GalleryProps) {
           </div>
         </div>
       </div>
+
+      {/* ── CATEGORY FILTER PILLS ── */}
+      {uniqueCategories.length > 0 && (
+        <div className={styles.categoriesWrapper}>
+          <button
+            onClick={() => setSelectedCategory('all')}
+            className={`${styles.categoryBtn} ${selectedCategory === 'all' ? styles.categoryBtnActive : ''}`}
+          >
+            All Categories ({items.filter(item => {
+              if (activeTab === 'all') return true;
+              if (activeTab === 'article') return item.type === 'article';
+              if (activeTab === 'standalone') return item.type === 'standalone';
+              return true;
+            }).length})
+          </button>
+          {uniqueCategories.map((cat) => (
+            <button
+              key={cat.slug}
+              onClick={() => setSelectedCategory(cat.slug)}
+              className={`${styles.categoryBtn} ${selectedCategory === cat.slug ? styles.categoryBtnActive : ''}`}
+            >
+              {cat.title} ({cat.count})
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* ── GALLERY GRID OR LIST ── */}
       {sortedItems.length === 0 ? (
