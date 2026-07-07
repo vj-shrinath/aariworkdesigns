@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import PWARegistration from '@/components/PWARegistration';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://aariworkdesigns.com'),
@@ -63,6 +64,7 @@ export default function RootLayout({
   return (
     <html lang="en" style={{ overflowX: 'clip' }}>
       <body style={{ overflowX: 'clip', width: '100%', margin: 0, padding: 0 }}>
+        <PWARegistration />
         <div style={{ overflow: 'hidden' }}>
           <main style={{ overflowX: 'hidden', width: '100%' }}>{children}</main>
         </div>
