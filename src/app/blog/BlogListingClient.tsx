@@ -6,6 +6,7 @@ import PostCard from '@/components/PostCard';
 import BlogHero from '@/components/BlogHero';
 import BlogSearch from '@/components/BlogSearch';
 import { Newsletter, TrendingPosts } from '@/components/BlogSections';
+import Footer from '@/components/Footer';
 import styles from '@/components/BlogList.module.css';
 
 export default function BlogListingClient({ initialPosts }: { initialPosts: any[] }) {
@@ -89,17 +90,7 @@ export default function BlogListingClient({ initialPosts }: { initialPosts: any[
         </div>
       </main>
 
-      <footer style={{ 
-        padding: '4rem 0', 
-        borderTop: '1px solid var(--border)', 
-        textAlign: 'center',
-        color: 'var(--text-muted)',
-        fontSize: '0.9rem'
-      }}>
-        <div className="container">
-          <p>© {new Date().getFullYear()} AARI Work Designs. Premium Embroidery Insights.</p>
-        </div>
-      </footer>
+      <Footer subtext="Premium Embroidery Insights." />
     </>
   );
 }

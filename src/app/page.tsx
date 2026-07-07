@@ -1,6 +1,7 @@
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import BlogList from '@/components/BlogList';
+import Footer from '@/components/Footer';
 import { client } from '@/sanity/client';
 import { POSTS_QUERY } from '@/sanity/lib/queries';
 
@@ -78,17 +79,7 @@ export default async function HomePage() {
 
       <Hero />
       <BlogList posts={posts} />
-      <footer style={{ 
-        padding: '4rem 0', 
-        borderTop: '1px solid var(--border)', 
-        textAlign: 'center',
-        color: 'var(--text-muted)',
-        fontSize: '0.9rem'
-      }}>
-        <div className="container">
-          <p>© {new Date().getFullYear()} AARI Work Designs. Crafted for the curious.</p>
-        </div>
-      </footer>
+      <Footer subtext="Crafted for the curious." />
     </>
   );
 }

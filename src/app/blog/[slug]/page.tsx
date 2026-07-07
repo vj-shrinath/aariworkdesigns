@@ -13,6 +13,7 @@ import ShareButtons from '@/components/ShareButtons';
 import ReadingProgressBar from '@/components/ReadingProgressBar';
 import TableOfContents from '@/components/TableOfContents';
 import { AuthorBox, KeyTakeaways, FaqSection } from '@/components/PostComponents';
+import Footer from '@/components/Footer';
 import styles from './PostPage.module.css';
 
 export const runtime = 'edge'
@@ -217,11 +218,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
         </div>
       </article>
 
-      <footer className={styles.siteFooter}>
-        <div className="container">
-          <p>© {new Date().getFullYear()} AARI Work Designs. Elevating the art of embroidery.</p>
-        </div>
-      </footer>
+      <Footer subtext="Elevating the art of embroidery." />
     </>
   );
 }

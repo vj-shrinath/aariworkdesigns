@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Header from '@/components/Header';
 import TraceTool from '@/components/TraceTool';
 import TraceSEOContent from '@/components/TraceSEOContent';
+import Footer from '@/components/Footer';
 import { client } from '@/sanity/client';
 import { GALLERY_QUERY } from '@/sanity/lib/queries';
 
@@ -79,6 +80,7 @@ export default async function TracePage() {
         {/* ── SECTIONS 2–9: SEO Content (below the tool) ── */}
         <TraceSEOContent />
       </main>
+      <Footer subtext="Trace your designs accurately onto fabric with our online Aari Tool." />
     </>
   );
 }
