@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { Maximize2, Minimize2, ZoomIn, ZoomOut, Lock, Unlock, X, Move, RotateCw, Type } from 'lucide-react';
+import { Maximize2, Minimize2, ZoomIn, ZoomOut, Lock, Unlock, X, Move, RotateCw, Type, LayoutGrid, List, Sparkles } from 'lucide-react';
 import { urlFor } from '@/sanity/lib/image';
 import styles from './TraceTool.module.css';
 
@@ -24,8 +24,22 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
   const [isTextModalOpen, setIsTextModalOpen] = useState(false);
   const [textToTrace, setTextToTrace] = useState('');
   const [selectedFont, setSelectedFont] = useState('Inter');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('trace_view_mode');
+      return (saved === 'list' || saved === 'grid') ? saved : 'grid';
+    }
+    return 'grid';
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const wasOpenedFromUrl = useRef(false);
+
+  const handleSetViewMode = (mode: 'grid' | 'list') => {
+    setViewMode(mode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('trace_view_mode', mode);
+    }
+  };
 
 
   const fonts = [
@@ -547,23 +561,79 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
       </div>
 
       <div className={`${styles.container} container`}>
-        <div className={styles.grid}>
-        {initialImages.map((image, idx) => (
-          <div 
-            key={image._id || idx} 
-            className={styles.imageCard}
-            onClick={() => setSelectedImage(image)}
-          >
-            <Image
-              src={urlFor(image.mainImage).width(400).height(400).url()}
-              alt={image.title || 'Design'}
-              fill
-              className={styles.cardImage}
-            />
-            <div className={styles.cardTitle}>{image.title}</div>
+        {/* Controls block for Grid/List view */}
+        <div className={styles.listControls}>
+          <h2 className={styles.sectionTitle}>Select a Design Template</h2>
+          <div className={styles.viewToggleWrapper}>
+            <button
+              type="button"
+              onClick={() => handleSetViewMode('grid')}
+              className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.viewBtnActive : ''}`}
+              title="Grid View"
+            >
+              <LayoutGrid size={18} />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSetViewMode('list')}
+              className={`${styles.viewBtn} ${viewMode === 'list' ? styles.viewBtnActive : ''}`}
+              title="List View"
+            >
+              <List size={18} />
+            </button>
           </div>
-        ))}
         </div>
+
+        {viewMode === 'grid' ? (
+          <div className={styles.grid}>
+            {initialImages.map((image, idx) => (
+              <div 
+                key={image._id || idx} 
+                className={styles.imageCard}
+                onClick={() => setSelectedImage(image)}
+              >
+                <Image
+                  src={urlFor(image.mainImage).width(400).height(400).url()}
+                  alt={image.title || 'Design'}
+                  fill
+                  className={styles.cardImage}
+                />
+                <div className={styles.cardTitle}>{image.title}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.listViewContainer}>
+            {initialImages.map((image, idx) => (
+              <div 
+                key={image._id || idx} 
+                className={styles.listItem}
+                onClick={() => setSelectedImage(image)}
+              >
+                <div className={styles.listItemLeft}>
+                  <div className={styles.listImageWrapper}>
+                    <img
+                      src={urlFor(image.mainImage).width(150).height(150).url()}
+                      alt={image.title || 'Design'}
+                      className={styles.listImage}
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className={styles.listItemInfo}>
+                    <h3 className={styles.listItemTitle}>{image.title}</h3>
+                    <span className={styles.listBadge}>Tracing Pattern</span>
+                  </div>
+                </div>
+                <div className={styles.listItemRight}>
+                  <div className={styles.listItemAction}>
+                    <span>Open in Studio</span>
+                    <Sparkles size={16} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { urlFor } from '@/sanity/lib/image';
-import { Search, Download, Share2, BookOpen, Sparkles, X, Check, ArrowRight } from 'lucide-react';
+import { Search, Download, Share2, BookOpen, Sparkles, X, Check, ArrowRight, LayoutGrid, List } from 'lucide-react';
 import styles from './Gallery.module.css';
 
 interface GalleryProps {
@@ -16,9 +16,23 @@ export default function Gallery({ items }: GalleryProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'article' | 'standalone'>('all');
   const [sortBy, setSortBy] = useState<'title-asc' | 'title-desc' | 'date-desc' | 'date-asc'>('title-asc');
   const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('gallery_view_mode');
+      return (saved === 'list' || saved === 'grid') ? saved : 'grid';
+    }
+    return 'grid';
+  });
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const handleSetViewMode = (mode: 'grid' | 'list') => {
+    setViewMode(mode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('gallery_view_mode', mode);
+    }
+  };
 
   // Filter items
   const filteredItems = items.filter((item) => {
@@ -158,15 +172,35 @@ export default function Gallery({ items }: GalleryProps) {
               <option value="date-asc">Oldest First</option>
             </select>
           </div>
+
+          {/* View Toggle */}
+          <div className={styles.viewToggleWrapper}>
+            <button
+              type="button"
+              onClick={() => handleSetViewMode('grid')}
+              className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.viewBtnActive : ''}`}
+              title="Grid View"
+            >
+              <LayoutGrid size={18} />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSetViewMode('list')}
+              className={`${styles.viewBtn} ${viewMode === 'list' ? styles.viewBtnActive : ''}`}
+              title="List View"
+            >
+              <List size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* ── GALLERY GRID ── */}
+      {/* ── GALLERY GRID OR LIST ── */}
       {sortedItems.length === 0 ? (
         <div className={styles.empty}>
           <p>No designs match your filters.</p>
         </div>
-      ) : (
+      ) : viewMode === 'grid' ? (
         <div className={styles.grid}>
           {sortedItems.map((item) => {
             const imgUrl = urlFor(item.mainImage).width(600).height(600).url();
@@ -194,6 +228,46 @@ export default function Gallery({ items }: GalleryProps) {
                         <span className={`${styles.badge} ${styles.badgeTemplate}`}>Trace Template</span>
                       )}
                     </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className={styles.listViewContainer}>
+          {sortedItems.map((item) => {
+            const imgUrl = urlFor(item.mainImage).width(200).height(200).url();
+            return (
+              <div
+                key={item._id}
+                className={styles.listItem}
+                onClick={() => setSelectedItem(item)}
+              >
+                <div className={styles.listItemLeft}>
+                  <div className={styles.listImageWrapper}>
+                    <img
+                      src={imgUrl}
+                      alt={item.title || 'Design'}
+                      className={styles.listImage}
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className={styles.listItemInfo}>
+                    <h3 className={styles.listItemTitle}>{item.title}</h3>
+                    <div className={styles.listItemBadges}>
+                      {item.type === 'article' ? (
+                        <span className={`${styles.badge} ${styles.badgeArticle}`}>Blog Article</span>
+                      ) : (
+                        <span className={`${styles.badge} ${styles.badgeTemplate}`}>Trace Template</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.listItemRight}>
+                  <div className={styles.listItemAction}>
+                    <span>View Details</span>
+                    <ArrowRight size={16} />
                   </div>
                 </div>
               </div>
