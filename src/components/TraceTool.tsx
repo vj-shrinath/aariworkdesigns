@@ -117,6 +117,19 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
   const isDragging = useRef(false);
   const startPos = useRef({ x: 0, y: 0 });
 
+  // Dynamically load tracing fonts only when Tracing Studio is loaded
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Pacifico&family=Great+Vibes&family=Montserrat:wght@400;700&family=Cinzel:wght@400;700&family=Homemade+Apple&family=Poppins:wght@400;700&family=Hind:wght@400;700&family=Kalam:wght@400;700&family=Rozha+One&family=Teko:wght@400;700&display=swap';
+    document.head.appendChild(link);
+    return () => {
+      if (document.head.contains(link)) {
+        document.head.removeChild(link);
+      }
+    };
+  }, []);
+
   // Handle URL query parameter 'img' to automatically open in tracing studio
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -597,8 +610,21 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
                     src={urlFor(image.mainImage).width(400).height(400).url()}
                     alt={image.title || 'Design'}
                     fill
+                    sizes="(max-width: 600px) 150px, (max-width: 900px) 300px, 400px"
                     className={styles.cardImage}
                   />
+                  {/* Traceable badge in corner */}
+                  <div className={styles.traceableBadgeCard}>
+                    <Sparkles size={12} className={styles.sparkleIcon} />
+                    <span>Traceable</span>
+                  </div>
+                  {/* Hover action overlay */}
+                  <div className={styles.cardOverlayHover}>
+                    <span className={styles.overlayBtnText}>
+                      <Sparkles size={16} />
+                      Start Tracing
+                    </span>
+                  </div>
                 </div>
                 <div className={styles.cardTitle}>{image.title}</div>
               </div>
@@ -615,7 +641,7 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
                 <div className={styles.listItemLeft}>
                   <div className={styles.listImageWrapper}>
                     <img
-                      src={urlFor(image.mainImage).width(600).height(600).url()}
+                      src={urlFor(image.mainImage).width(150).height(150).url()}
                       alt={image.title || 'Design'}
                       className={styles.listImage}
                       loading="lazy"
@@ -623,12 +649,15 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
                   </div>
                   <div className={styles.listItemInfo}>
                     <h3 className={styles.listItemTitle}>{image.title}</h3>
-                    <span className={styles.listBadge}>Tracing Pattern</span>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <span className={styles.listBadge}>Tracing Pattern</span>
+                      <span className={styles.traceableBadge}>Traceable</span>
+                    </div>
                   </div>
                 </div>
                 <div className={styles.listItemRight}>
                   <div className={styles.listItemAction}>
-                    <span>Open in Studio</span>
+                    <span>Start Tracing</span>
                     <Sparkles size={16} />
                   </div>
                 </div>

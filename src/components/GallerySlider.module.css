@@ -213,3 +213,20 @@
   box-shadow: 0 5px 15px var(--accent-glow);
 }
 
+.traceableBadge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--accent, #ffd700);
+  color: #121212;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  z-index: 5;
+}
+
+

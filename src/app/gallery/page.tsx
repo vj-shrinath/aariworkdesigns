@@ -17,12 +17,12 @@ export const metadata: Metadata = {
 
 export const runtime = 'edge'
 
-export const revalidate = 0;
+export const revalidate = 60; // Enable ISR (cache for 60s)
 
 export default async function GalleryPage() {
   let items = [];
   try {
-    items = await client.fetch(GALLERY_QUERY);
+    items = await client.fetch(GALLERY_QUERY, {}, { next: { revalidate: 60 } });
   } catch (error) {
     console.error('Gallery fetch error:', error);
   }

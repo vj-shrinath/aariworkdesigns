@@ -92,6 +92,9 @@ export default function GallerySlider({ images, displayMode, allTrace = false }:
                       className={styles.image}
                       loading="lazy"
                     />
+                    {isTrace && (
+                      <div className={styles.traceableBadge}>Traceable</div>
+                    )}
                   </div>
                   
                   {(img.alt || img.caption || isTrace) && (
@@ -105,7 +108,7 @@ export default function GallerySlider({ images, displayMode, allTrace = false }:
                             href={`/trace?img=${encodeURIComponent(imageUrl)}`}
                             className={styles.traceButton}
                           >
-                            <span>Open in Tracing Tool</span>
+                            <span>Start Tracing</span>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                               <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
                             </svg>

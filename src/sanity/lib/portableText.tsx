@@ -25,6 +25,29 @@ export const portableTextComponents = {
               alt={value.alt || 'Aari Design Pattern'}
               style={{ width: '100%', height: 'auto', display: 'block' }}
             />
+            {isTracingDesign && (
+              <div style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                background: 'var(--accent, #ffd700)',
+                color: '#121212',
+                padding: '0.35rem 0.75rem',
+                borderRadius: '50px',
+                fontSize: '0.75rem',
+                fontWeight: '800',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.4)',
+                zIndex: 5,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem'
+              }}>
+                <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#121212' }}></span>
+                Traceable Image
+              </div>
+            )}
             <div className="image-overlay" style={{
               position: 'absolute',
               bottom: 0,
@@ -68,7 +91,7 @@ export const portableTextComponents = {
                 }}
                 className="trace-button"
               >
-                <span>Open in Tracing Tool</span>
+                <span>Start Tracing this Design</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
                 </svg>
@@ -114,7 +137,7 @@ export const portableTextComponents = {
                     padding: '1.25rem'
                   }}
                 >
-                  <div style={{ borderRadius: '12px', overflow: 'hidden', width: '100%' }}>
+                  <div style={{ borderRadius: '12px', overflow: 'hidden', width: '100%', position: 'relative' }}>
                     <img
                       src={imageUrl}
                       alt={img.alt || `Gallery image ${index + 1}`}
@@ -127,6 +150,25 @@ export const portableTextComponents = {
                       }}
                       className="gallery-grid-image"
                     />
+                    {isTracingDesign && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '0.75rem',
+                        right: '0.75rem',
+                        background: 'var(--accent, #ffd700)',
+                        color: '#121212',
+                        padding: '0.3rem 0.7rem',
+                        borderRadius: '50px',
+                        fontSize: '0.7rem',
+                        fontWeight: '800',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.4)',
+                        zIndex: 5
+                      }}>
+                        Traceable
+                      </div>
+                    )}
                   </div>
                   {(img.alt || img.caption || isTracingDesign) && (
                     <div style={{
@@ -160,7 +202,7 @@ export const portableTextComponents = {
                             }}
                             className="trace-button"
                           >
-                            <span>Open in Tracing Tool</span>
+                            <span>Start Tracing</span>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                               <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
                             </svg>

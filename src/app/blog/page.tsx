@@ -4,7 +4,7 @@ import BlogListingClient from './BlogListingClient';
 import { Metadata } from 'next';
 
 export const runtime = 'edge'
-export const revalidate = 0; 
+export const revalidate = 60; // Enable ISR (cache for 60s)
 
 export const metadata: Metadata = {
   title: 'Blog | Aari Work Designs & Tutorials',
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default async function BlogPage() {
   let posts = [];
   try {
-    posts = await client.fetch(POSTS_QUERY, {}, { next: { revalidate: 0 } });
+    posts = await client.fetch(POSTS_QUERY, {}, { next: { revalidate: 60 } });
   } catch (error) {
     console.error('Sanity fetch error:', error);
     posts = []; 

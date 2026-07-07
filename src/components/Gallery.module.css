@@ -165,10 +165,12 @@
   position: relative;
   border-radius: 16px;
   overflow: hidden;
-  background: var(--bg-tertiary, #181818);
+  background: var(--bg-tertiary, #18191a);
   border: 1px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;
-  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  height: auto;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -181,11 +183,13 @@
 .imageContainer {
   position: relative;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
 }
 
 .image {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -198,14 +202,13 @@
 
 /* Overlays & Badges */
 .cardOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(10, 10, 10, 0.95) 0%, rgba(10, 10, 10, 0.6) 40%, transparent 80%);
+  position: relative;
+  background: transparent;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  padding: 1.5rem;
-  opacity: 0.9;
+  justify-content: flex-start;
+  padding: 1.25rem;
+  opacity: 1;
   transition: opacity 0.3s ease;
 }
 
@@ -215,6 +218,11 @@
   color: #ffffff;
   margin-bottom: 0.6rem;
   line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .cardBadges {
@@ -776,9 +784,10 @@
   }
 
   .card {
-    aspect-ratio: auto;
-    display: flex;
-    flex-direction: column;
+    aspect-ratio: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
   }
 
   .imageContainer {
@@ -794,15 +803,30 @@
   }
 
   .cardOverlay {
-    position: relative;
-    inset: auto;
-    background: transparent;
-    padding: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    opacity: 1;
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    background: transparent !important;
+    padding: 0.75rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    opacity: 1 !important;
+    transform: none !important;
+    height: auto !important;
   }
+
+  .traceableBadgeCard {
+    top: 0.5rem !important;
+    right: 0.5rem !important;
+    padding: 0.2rem 0.5rem !important;
+    font-size: 0.6rem !important;
+    gap: 0.2rem !important;
+  }
+
   
   .cardTitle {
     font-size: 0.85rem;
@@ -943,4 +967,113 @@
   box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
   font-weight: 700;
 }
+
+.traceableBadgeCard {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: var(--accent, #ffd700);
+  color: #121212;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  z-index: 5;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.sparkleIcon {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.badgeTraceable {
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--accent, #ffd700);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.quickActions {
+  margin-top: 0.75rem;
+  width: 100%;
+  opacity: 1;
+  transform: none;
+}
+
+.quickTraceBtn {
+  background: var(--accent-gradient);
+  color: #121212 !important;
+  text-decoration: none;
+  font-weight: 850;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.quickTraceBtn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 16px rgba(255, 215, 0, 0.35);
+  filter: brightness(1.05);
+}
+
+.listActionsGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.listTraceBtn {
+  background: rgba(255, 215, 0, 0.1);
+  color: var(--accent, #ffd700) !important;
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  text-decoration: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.listTraceBtn:hover {
+  background: var(--accent-gradient);
+  color: #121212 !important;
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  /* On mobile, make quick actions persistently visible but fit properly */
+  .quickActions {
+    opacity: 1;
+    transform: none;
+    margin-top: 0.5rem;
+  }
+  
+  .quickTraceBtn {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.8rem;
+  }
+}
+
 

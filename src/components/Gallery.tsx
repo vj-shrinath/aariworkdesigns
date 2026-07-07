@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { urlFor } from '@/sanity/lib/image';
 import { Search, Download, Share2, BookOpen, Sparkles, X, Check, ArrowRight, LayoutGrid, List } from 'lucide-react';
 import styles from './Gallery.module.css';
+import { watermarkDownload } from '@/lib/watermarkDownload';
 
 interface GalleryProps {
   items: any[];
@@ -114,26 +115,13 @@ export default function Gallery({ items }: GalleryProps) {
   const handleDownload = async (imgUrl: string, title: string) => {
     setDownloading(true);
     const cleanTitle = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const filename = `aari_design_${cleanTitle}.jpg`;
+    const filename = `aari_design_${cleanTitle}_aariworkdesigns.jpg`;
 
     try {
-      const response = await fetch(imgUrl);
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
+      // Download with watermark applied via Canvas API
+      await watermarkDownload(imgUrl, filename);
     } catch (error) {
-      console.error('CORS download failed, falling back to direct open:', error);
-      const link = document.createElement('a');
-      link.href = imgUrl;
-      link.target = '_blank';
-      link.download = filename;
-      link.click();
+      console.error('Watermark download failed:', error);
     } finally {
       setDownloading(false);
     }
@@ -284,17 +272,34 @@ export default function Gallery({ items }: GalleryProps) {
                     width={400}
                     height={400}
                     className={styles.image}
+                    sizes="(max-width: 600px) 150px, (max-width: 900px) 300px, 400px"
                     loading="lazy"
                   />
-                  <div className={styles.cardOverlay}>
-                    <h3 className={styles.cardTitle}>{item.title}</h3>
-                    <div className={styles.cardBadges}>
-                      {item.type === 'article' ? (
-                        <span className={`${styles.badge} ${styles.badgeArticle}`}>Blog Article</span>
-                      ) : (
-                        <span className={`${styles.badge} ${styles.badgeTemplate}`}>Trace Template</span>
-                      )}
-                    </div>
+                  {/* Traceable badge in upper right corner */}
+                  <div className={styles.traceableBadgeCard}>
+                    <Sparkles size={12} className={styles.sparkleIcon} />
+                    <span>Traceable</span>
+                  </div>
+                </div>
+                <div className={styles.cardOverlay}>
+                  <h3 className={styles.cardTitle}>{item.title}</h3>
+                  <div className={styles.cardBadges}>
+                    {item.type === 'article' ? (
+                      <span className={`${styles.badge} ${styles.badgeArticle}`}>Blog Article</span>
+                    ) : (
+                      <span className={`${styles.badge} ${styles.badgeTemplate}`}>Trace Template</span>
+                    )}
+                  </div>
+                  {/* Start Tracing quick button on hover */}
+                  <div className={styles.quickActions}>
+                    <Link
+                      href={`/trace?img=${encodeURIComponent(urlFor(item.mainImage).url())}`}
+                      className={styles.quickTraceBtn}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Sparkles size={14} />
+                      <span>Start Tracing</span>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -304,7 +309,7 @@ export default function Gallery({ items }: GalleryProps) {
       ) : (
         <div className={styles.listViewContainer}>
           {sortedItems.map((item) => {
-            const imgUrl = urlFor(item.mainImage).width(600).height(600).url();
+            const listImgUrl = urlFor(item.mainImage).width(150).height(150).url();
             return (
               <div
                 key={item._id}
@@ -314,7 +319,7 @@ export default function Gallery({ items }: GalleryProps) {
                 <div className={styles.listItemLeft}>
                   <div className={styles.listImageWrapper}>
                     <img
-                      src={imgUrl}
+                      src={listImgUrl}
                       alt={item.title || 'Design'}
                       className={styles.listImage}
                       loading="lazy"
@@ -328,13 +333,24 @@ export default function Gallery({ items }: GalleryProps) {
                       ) : (
                         <span className={`${styles.badge} ${styles.badgeTemplate}`}>Trace Template</span>
                       )}
+                      <span className={`${styles.badge} ${styles.badgeTraceable}`}>Traceable</span>
                     </div>
                   </div>
                 </div>
                 <div className={styles.listItemRight}>
-                  <div className={styles.listItemAction}>
-                    <span>View Details</span>
-                    <ArrowRight size={16} />
+                  <div className={styles.listActionsGroup}>
+                    <Link
+                      href={`/trace?img=${encodeURIComponent(urlFor(item.mainImage).url())}`}
+                      className={styles.listTraceBtn}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Sparkles size={14} />
+                      <span>Start Tracing</span>
+                    </Link>
+                    <div className={styles.listItemAction}>
+                      <span>Details</span>
+                      <ArrowRight size={16} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -435,7 +451,7 @@ export default function Gallery({ items }: GalleryProps) {
                     className={styles.actionBtnPrimary}
                   >
                     <Sparkles size={18} />
-                    <span>Open in Tracing Studio</span>
+                    <span>Start Tracing in Studio</span>
                   </a>
 
                   {/* Context-Specific Article Button */}

@@ -26,11 +26,12 @@ export default function Hero() {
         </div>
         <div className={`${styles.mockupWrapper} animate-fade-in`}>
           <Image 
-            src="/app-mockup.png" 
+            src="/app-mockup.webp" 
             alt="Aari App Mockup" 
             width={500} 
             height={800} 
             className={`${styles.mockup} floating`}
+            sizes="(max-width: 768px) 300px, (max-width: 1200px) 400px, 500px"
             priority
           />
         </div>

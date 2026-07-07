@@ -9,7 +9,7 @@ import { Metadata } from 'next';
 
 export const runtime = 'edge'
 
-export const revalidate = 0; // Force dynamic rendering
+export const revalidate = 60; // Enable ISR (cache for 60s)
 
 export const metadata: Metadata = {
   title: 'Home | AARI Work Designs - Trace Your Imagination',
@@ -32,7 +32,7 @@ export default async function HomePage() {
 
   let posts = [];
   try {
-    posts = await client.fetch(POSTS_QUERY, {}, { next: { revalidate: 0 } });
+    posts = await client.fetch(POSTS_QUERY, {}, { next: { revalidate: 60 } });
     console.log(`Fetched ${posts.length} posts from Sanity`);
   } catch (error) {
 
