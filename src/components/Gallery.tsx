@@ -237,7 +237,7 @@ export default function Gallery({ items }: GalleryProps) {
       ) : (
         <div className={styles.listViewContainer}>
           {sortedItems.map((item) => {
-            const imgUrl = urlFor(item.mainImage).width(200).height(200).url();
+            const imgUrl = urlFor(item.mainImage).width(600).height(600).url();
             return (
               <div
                 key={item._id}

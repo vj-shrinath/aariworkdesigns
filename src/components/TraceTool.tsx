@@ -613,7 +613,7 @@ export default function TraceTool({ initialImages }: TraceToolProps) {
                 <div className={styles.listItemLeft}>
                   <div className={styles.listImageWrapper}>
                     <img
-                      src={urlFor(image.mainImage).width(150).height(150).url()}
+                      src={urlFor(image.mainImage).width(600).height(600).url()}
                       alt={image.title || 'Design'}
                       className={styles.listImage}
                       loading="lazy"
