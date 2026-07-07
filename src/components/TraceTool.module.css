@@ -122,20 +122,23 @@
   top: 0;
   left: 0;
   width: 100vw;
+  /* 100vh fallback for legacy browsers; 100dvh accounts for browser chrome on mobile */
   height: 100vh;
+  height: 100dvh;
   background: black;
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
+  /* Account for notch / gesture-nav safe area */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .canvasContainer {
   position: relative;
   width: 100%;
-  height: 100%;
+  flex: 1 1 0;          /* fill remaining height after controls */
+  min-height: 0;        /* allow shrinking below intrinsic height */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -152,6 +155,7 @@
 
 
 .controls {
+  /* Desktop: float above canvas as pill */
   position: absolute;
   bottom: 2rem;
   left: 50%;
@@ -159,13 +163,15 @@
   display: flex;
   gap: 1rem;
   align-items: center;
-  background: rgba(26, 2, 2, 0.8);
+  background: rgba(26, 2, 2, 0.85);
   backdrop-filter: blur(10px);
   padding: 1rem 2rem;
   border-radius: 50px;
   border: 1px solid var(--glass-border);
   z-index: 1010;
   transition: opacity 0.3s ease;
+  /* prevent controls from going behind phone chrome on desktop too */
+  max-width: calc(100vw - 2rem);
 }
 
 .controlsHidden {
@@ -213,10 +219,10 @@
 
 .closeBtn {
   position: absolute;
-  top: 1.5rem;
+  top: max(1.5rem, env(safe-area-inset-top, 1.5rem));
   right: 1.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: white;
   width: 40px;
   height: 40px;
@@ -226,6 +232,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(6px);
+  transition: background 0.2s ease;
+}
+
+.closeBtn:hover,
+.closeBtn:active {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .lockOverlay {
@@ -276,23 +289,58 @@
 }
 
 @media (max-width: 768px) {
+  /* On mobile, dock controls to the bottom as a flat panel (not a pill float) */
   .controls {
-    width: 95%;
-    padding: 1rem;
-    bottom: 0.5rem;
+    position: relative;   /* take up flow inside flex column of .traceMode */
+    bottom: auto;
+    left: auto;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    border-top: 1px solid var(--glass-border);
+    padding: 0.9rem 1rem;
     flex-direction: column;
-    gap: 1.5rem;
-    border-radius: 20px;
+    gap: 0.75rem;
+    /* ensure it is never clipped by browser chrome */
+    flex-shrink: 0;
   }
-  
+
   .sliderGroup {
     width: 100%;
-    gap: 0.75rem;
+    display: grid;
+    /* 2 sliders per row, contrast on its own row below */
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+
+  /* Let contrast slider span full width */
+  .sliderGroup > .sliderContainer:last-child {
+    grid-column: 1 / -1;
   }
 
   .sliderContainer {
-    min-width: 45%;
-    flex: 1;
+    min-width: 0;
+    flex: unset;
+  }
+
+  .sliderLabel {
+    font-size: 0.68rem;
+    margin-bottom: 0.15rem;
+  }
+
+  .buttonGroup {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .controlBtn {
+    padding: 0.6rem;
   }
 }
 
