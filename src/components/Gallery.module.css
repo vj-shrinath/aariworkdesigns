@@ -771,8 +771,8 @@
   }
   
   .grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
   
   .cardTitle {
@@ -812,17 +812,28 @@
   }
 
   .listItem {
-    padding: 0.85rem 1rem;
-    gap: 1rem;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1.25rem;
+    gap: 1.25rem;
+  }
+
+  .listItemLeft {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.25rem;
   }
   
   .listImageWrapper {
-    width: 60px;
-    height: 60px;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
   }
   
   .listItemTitle {
-    font-size: 0.95rem;
+    font-size: 1.1rem;
+    white-space: normal;
   }
   
   .listItemRight {
