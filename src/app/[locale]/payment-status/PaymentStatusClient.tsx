@@ -12,16 +12,18 @@ type Status = 'loading' | 'success' | 'failed';
 
 function PaymentStatusContent({ locale }: { locale: Locale }) {
   const searchParams = useSearchParams();
-  const { setSubscriptionStatus, checkSubscription } = useSubscription();
+  const { setSubscriptionStatus, checkSubscription, openModal } = useSubscription();
   const { t } = useTranslation();
   const [status, setStatus] = useState<Status>('loading');
   const [message, setMessage] = useState('');
+  const [orderId, setOrderId] = useState('');
 
   useEffect(() => {
     const orderId = searchParams ? searchParams.get('order_id') : null;
     const mockStatus = searchParams ? searchParams.get('status') : null;
     const email = searchParams ? searchParams.get('email') : null;
     const userId = searchParams ? searchParams.get('user_id') : null;
+    setOrderId(orderId || '');
 
     if (!orderId) {
       setStatus('failed');
@@ -134,6 +136,7 @@ function PaymentStatusContent({ locale }: { locale: Locale }) {
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>
               {message}
             </p>
+            {orderId && <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Order ID: <strong>{orderId}</strong><br />A confirmation email is sent to the payment email when available. Your digital access is available from the account area.</p>}
             <Link href={`/${locale}/pdf-maker`} style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
               padding: '0.9rem 2rem',
@@ -181,6 +184,8 @@ function PaymentStatusContent({ locale }: { locale: Locale }) {
             }}>
               {t('paymentStatus.returnHome', 'Return Home')}
             </Link>
+            <button type="button" onClick={openModal} style={{ marginTop: '1rem', display: 'inline-flex', padding: '.75rem 1.25rem', borderRadius: 8, border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--accent)', cursor: 'pointer', fontWeight: 700 }}>Retry payment</button>
+            <p style={{ marginTop: '1rem', color: 'var(--text-muted)', fontSize: '.85rem' }}>Need help? <a href={`/${locale}/support`} style={{ color: 'var(--accent)', textDecoration: 'underline' }}>Contact support</a> or retry checkout.</p>
           </>
         )}
       </div>

@@ -32,15 +32,10 @@ export default async function HomePage({ params }: { params: PageParams }) {
   
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
-    name: 'AARI Work Designs',
-    description: dict.meta?.siteDescription || 'Premier destination for modern embroidery designs, Aari work, and creative textile art.',
-    url: `https://aariworkdesigns.com/${locale}`,
-    logo: 'https://aariworkdesigns.com/logo.png',
-    address: {
-      '@type': 'PostalAddress',
-      addressCountry: 'IN',
-    },
+    '@graph': [
+      { '@type': 'LocalBusiness', name: 'AARI Work Designs', description: dict.meta?.siteDescription || 'Digital tracing designs and embroidery resources.', url: `https://aariworkdesigns.com/${locale}`, logo: 'https://aariworkdesigns.com/logo.png', address: { '@type': 'PostalAddress', addressCountry: 'IN' } },
+      { '@type': 'Product', name: 'AARI Work Designs Premium', description: 'Digital access to premium tracing and embroidery resources.', brand: { '@type': 'Brand', name: 'AARI Work Designs' }, offers: [{ '@type': 'Offer', name: 'Monthly Basic', price: '99', priceCurrency: 'INR', availability: 'https://schema.org/InStock', url: `https://aariworkdesigns.com/${locale}/pdf-maker` }, { '@type': 'Offer', name: 'Annual VIP', price: '499', priceCurrency: 'INR', availability: 'https://schema.org/InStock', url: `https://aariworkdesigns.com/${locale}/pdf-maker` }] }
+    ],
   };
 
   let posts = [];

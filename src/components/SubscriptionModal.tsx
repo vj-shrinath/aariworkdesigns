@@ -36,6 +36,7 @@ export default function SubscriptionModal() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [authMessage, setAuthMessage] = useState('');
@@ -145,6 +146,10 @@ export default function SubscriptionModal() {
     e.preventDefault();
     if (!name || !email || !phone) {
       setErrorMsg(t('subscription.fillAllDetails', 'Please fill in all customer details'));
+      return;
+    }
+    if (!termsAccepted) {
+      setErrorMsg('Please accept the Terms and Conditions and Privacy Policy before continuing.');
       return;
     }
     // Simple phone validator (10 digits minimum)
@@ -465,6 +470,10 @@ export default function SubscriptionModal() {
               </>
             )}
           </button>
+          <label style={{display:'flex',gap:'.6rem',alignItems:'flex-start',marginTop:'1rem',color:'var(--text-secondary)',fontSize:'.82rem',lineHeight:1.5}}>
+            <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} required style={{marginTop:'.2rem'}} />
+            <span>I agree to the <a href={`/${locale}/terms`} target="_blank" rel="noreferrer" style={{color:'var(--accent)',textDecoration:'underline'}}>Terms</a> and <a href={`/${locale}/privacy-policy`} target="_blank" rel="noreferrer" style={{color:'var(--accent)',textDecoration:'underline'}}>Privacy Policy</a>. Digital access is delivered instantly and refunds are handled under the <a href={`/${locale}/refund-policy`} target="_blank" rel="noreferrer" style={{color:'var(--accent)',textDecoration:'underline'}}>Refund Policy</a>.</span>
+          </label>
         </form>
 
         <p className={styles.footerNotes}>

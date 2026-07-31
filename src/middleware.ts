@@ -81,6 +81,8 @@ export function middleware(request: NextRequest) {
       response.cookies.set('NEXT_LOCALE', possibleLocale, {
         path: '/',
         maxAge: 365 * 24 * 60 * 60, // 1 year sticky preference
+        sameSite: 'lax',
+        secure: request.nextUrl.protocol === 'https:',
       });
     }
     return response;
@@ -100,6 +102,8 @@ export function middleware(request: NextRequest) {
   response.cookies.set('NEXT_LOCALE', locale, {
     path: '/',
     maxAge: 365 * 24 * 60 * 60,
+    sameSite: 'lax',
+    secure: request.nextUrl.protocol === 'https:',
   });
   return response;
 }

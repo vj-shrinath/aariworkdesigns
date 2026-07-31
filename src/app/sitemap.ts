@@ -12,7 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     groq`*[_type == "post" && defined(slug.current)] { "slug": slug.current, _updatedAt }`
   );
 
-  const staticPaths = ['', '/blog', '/trace', '/pdf-maker', '/gallery', '/about'];
+  const staticPaths = ['', '/blog', '/trace', '/pdf-maker', '/gallery', '/about', '/contact', '/privacy-policy', '/terms', '/refund-policy', '/shipping-policy', '/cancellation-policy', '/faq', '/support'];
 
   const sitemapItems: MetadataRoute.Sitemap = [];
 

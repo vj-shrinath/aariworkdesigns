@@ -45,6 +45,22 @@ export default function Footer({ subtext }: FooterProps) {
             <Link href={`/${locale}/gallery`}>{t('footer.gallery', 'Gallery')}</Link>
             <Link href={`/${locale}/blog`}>{t('footer.articles', 'Articles')}</Link>
             <Link href={`/${locale}/about`}>{t('footer.aboutUs', 'About Us')}</Link>
+            <Link href={`/${locale}/contact`}>Contact</Link>
+            <Link href={`/${locale}/faq`}>FAQ</Link>
+            <Link href={`/${locale}/support`}>Support</Link>
+            <Link href={`/${locale}/orders`}>Order history</Link>
+          </nav>
+        </div>
+
+        <div>
+          <h4 className={styles.sectionTitle}>Policies</h4>
+          <nav className={styles.linksList} aria-label="Legal policies">
+            <Link href={`/${locale}/privacy-policy`}>Privacy Policy</Link>
+            <Link href={`/${locale}/terms`}>Terms</Link>
+            <Link href={`/${locale}/refund-policy`}>Refund Policy</Link>
+            <Link href={`/${locale}/shipping-policy`}>Shipping Policy</Link>
+            <Link href={`/${locale}/cancellation-policy`}>Cancellation Policy</Link>
+            <Link href="/sitemap.xml">Sitemap</Link>
           </nav>
         </div>
 

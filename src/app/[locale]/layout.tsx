@@ -106,6 +106,12 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={dir} className={devanagariFont.variable} style={{ overflowX: 'clip' }}>
       <body style={{ overflowX: 'clip', width: '100%', margin: 0, padding: 0 }}>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org', '@graph': [
+            { '@type': 'Organization', '@id': 'https://aariworkdesigns.com/#organization', name: 'AARI Work Designs', url: 'https://aariworkdesigns.com', logo: 'https://aariworkdesigns.com/logo.png', email: 'vjshrinath2@outlook.com' },
+            { '@type': 'WebSite', '@id': 'https://aariworkdesigns.com/#website', name: 'AARI Work Designs', url: 'https://aariworkdesigns.com', publisher: { '@id': 'https://aariworkdesigns.com/#organization' }, inLanguage: locale }
+          ]
+        }) }} />
         <LanguageProvider locale={locale} dict={dict}>
           <SubscriptionProvider>
             <ImageProtection />
