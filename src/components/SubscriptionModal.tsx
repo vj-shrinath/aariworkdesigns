@@ -5,7 +5,7 @@ import { X, ShieldCheck, Crown, Mail, Lock, User, Eye, EyeOff, Loader2 } from 'l
 import { useSubscription } from '@/context/SubscriptionContext';
 import styles from './SubscriptionModal.module.css';
 import { useTranslation } from '@/context/LanguageContext';
-import { supabase } from '@/lib/supabase';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 // Programmatically load Cashfree SDK from CDN
 const loadCashfree = (): Promise<any> => {
@@ -80,6 +80,11 @@ export default function SubscriptionModal() {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isSupabaseConfigured) {
+      setAuthMessageType('error');
+      setAuthMessage(t('subscription.authUnavailable', 'Account services are temporarily unavailable. Please try again later.'));
+      return;
+    }
     if (!authEmail || (authMode !== 'reset' && !authPassword)) {
       setAuthMessageType('error');
       setAuthMessage(t('subscription.fillAllDetails', 'Please fill in all fields'));

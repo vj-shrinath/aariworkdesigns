@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 interface SubscriptionContextType {
   isSubscribed: boolean;
@@ -59,6 +59,11 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   };
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setLoading(false);
+      return;
+    }
+
     // 1. Initial Local Storage Load (for quick UI load)
     const localStatus = localStorage.getItem('aari_premium_status');
     const localEmail = localStorage.getItem('aari_sub_email') || '';
