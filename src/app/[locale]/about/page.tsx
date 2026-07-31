@@ -4,6 +4,8 @@ import Footer from '@/components/Footer';
 import { getDictionary } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 
+export const runtime = 'edge';
+
 interface PageParams {
   locale: Locale;
 }
