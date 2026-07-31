@@ -7,12 +7,15 @@ import { urlFor } from '@/sanity/lib/image';
 import { Search, Download, Share2, BookOpen, Sparkles, X, Check, ArrowRight, LayoutGrid, List } from 'lucide-react';
 import styles from './Gallery.module.css';
 import { watermarkDownload } from '@/lib/watermarkDownload';
+import { useTranslation } from '@/context/LanguageContext';
+import { translateField } from '@/lib/i18n';
 
 interface GalleryProps {
   items: any[];
 }
 
 export default function Gallery({ items }: GalleryProps) {
+  const { t, locale } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'article' | 'standalone'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -49,12 +52,13 @@ export default function Gallery({ items }: GalleryProps) {
     if (matchesTab && item.categories && Array.isArray(item.categories)) {
       item.categories.forEach((cat: any) => {
         if (cat && cat.title) {
-          const slugVal = cat.slug?.current || cat.slug || cat.title.toLowerCase().replace(/\s+/g, '-');
+          const catTitle = translateField(cat, 'title', locale);
+          const slugVal = cat.slug?.current || cat.slug || catTitle.toLowerCase().replace(/\s+/g, '-');
           const existing = acc.find((elem) => elem.slug === slugVal);
           if (existing) {
             existing.count += 1;
           } else {
-            acc.push({ title: cat.title, slug: slugVal, count: 1 });
+            acc.push({ title: catTitle, slug: slugVal, count: 1 });
           }
         }
       });
@@ -65,7 +69,8 @@ export default function Gallery({ items }: GalleryProps) {
   // Filter items
   const filteredItems = items.filter((item) => {
     const query = searchQuery.toLowerCase();
-    const matchesTitle = item.title?.toLowerCase().includes(query);
+    const translatedTitle = translateField(item, 'title', locale);
+    const matchesTitle = translatedTitle?.toLowerCase().includes(query);
     const matchesAlt = item.alt?.toLowerCase().includes(query);
     const matchesCaption = item.caption?.toLowerCase().includes(query);
     
@@ -83,7 +88,8 @@ export default function Gallery({ items }: GalleryProps) {
     let matchesCategory = true;
     if (selectedCategory !== 'all') {
       matchesCategory = item.categories?.some((cat: any) => {
-        const slugVal = cat.slug?.current || cat.slug || cat.title?.toLowerCase().replace(/\s+/g, '-');
+        const catTitle = translateField(cat, 'title', locale);
+        const slugVal = cat.slug?.current || cat.slug || catTitle?.toLowerCase().replace(/\s+/g, '-');
         return slugVal === selectedCategory;
       }) || false;
     }
@@ -93,11 +99,14 @@ export default function Gallery({ items }: GalleryProps) {
 
   // Client-side sort dynamic evaluation
   const sortedItems = [...filteredItems].sort((a, b) => {
+    const titleA = translateField(a, 'title', locale) || '';
+    const titleB = translateField(b, 'title', locale) || '';
+
     if (sortBy === 'title-asc') {
-      return (a.title || '').localeCompare(b.title || '');
+      return titleA.localeCompare(titleB);
     }
     if (sortBy === 'title-desc') {
-      return (b.title || '').localeCompare(a.title || '');
+      return titleB.localeCompare(titleA);
     }
     if (sortBy === 'date-desc') {
       const dateA = a.date ? new Date(a.date).getTime() : 0;
@@ -130,8 +139,8 @@ export default function Gallery({ items }: GalleryProps) {
   const handleShare = (item: any) => {
     const imageUrl = urlFor(item.mainImage).url();
     const shareUrl = item.type === 'article' && item.slug?.current
-      ? `${window.location.origin}/blog/${item.slug.current}`
-      : `${window.location.origin}/trace?img=${encodeURIComponent(imageUrl)}`;
+      ? `${window.location.origin}/${locale}/blog/${item.slug.current}`
+      : `${window.location.origin}/${locale}/trace?img=${encodeURIComponent(imageUrl)}`;
 
     navigator.clipboard.writeText(shareUrl)
       .then(() => {
@@ -152,19 +161,19 @@ export default function Gallery({ items }: GalleryProps) {
               onClick={() => { setActiveTab('all'); setSelectedCategory('all'); }}
               className={`${styles.tabBtn} ${activeTab === 'all' ? styles.tabActive : ''}`}
             >
-              All Designs
+              {t('gallery.allDesigns', 'All Designs')}
             </button>
             <button
               onClick={() => { setActiveTab('article'); setSelectedCategory('all'); }}
               className={`${styles.tabBtn} ${activeTab === 'article' ? styles.tabActive : ''}`}
             >
-              From Articles
+              {t('gallery.fromArticles', 'From Articles')}
             </button>
             <button
               onClick={() => { setActiveTab('standalone'); setSelectedCategory('all'); }}
               className={`${styles.tabBtn} ${activeTab === 'standalone' ? styles.tabActive : ''}`}
             >
-              Design Templates
+              {t('gallery.designTemplates', 'Design Templates')}
             </button>
           </div>
         </div>
@@ -176,7 +185,7 @@ export default function Gallery({ items }: GalleryProps) {
             <Search className={styles.searchIcon} size={18} />
             <input
               type="text"
-              placeholder="Search designs..."
+              placeholder={t('gallery.searchDesigns', 'Search designs...')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={styles.searchInput}
@@ -195,10 +204,10 @@ export default function Gallery({ items }: GalleryProps) {
               onChange={(e) => setSortBy(e.target.value as any)}
               className={styles.sortSelect}
             >
-              <option value="title-asc">Alphabetical (A - Z)</option>
-              <option value="title-desc">Alphabetical (Z - A)</option>
-              <option value="date-desc">Newest First</option>
-              <option value="date-asc">Oldest First</option>
+              <option value="title-asc">{t('gallery.alphabeticalAZ', 'Alphabetical (A - Z)')}</option>
+              <option value="title-desc">{t('gallery.alphabeticalZA', 'Alphabetical (Z - A)')}</option>
+              <option value="date-desc">{t('gallery.newestFirst', 'Newest First')}</option>
+              <option value="date-asc">{t('gallery.oldestFirst', 'Oldest First')}</option>
             </select>
           </div>
 
@@ -231,7 +240,7 @@ export default function Gallery({ items }: GalleryProps) {
             onClick={() => setSelectedCategory('all')}
             className={`${styles.categoryBtn} ${selectedCategory === 'all' ? styles.categoryBtnActive : ''}`}
           >
-            All Categories ({items.filter(item => {
+            {t('gallery.allCategories', 'All Categories')} ({items.filter(item => {
               if (activeTab === 'all') return true;
               if (activeTab === 'article') return item.type === 'article';
               if (activeTab === 'standalone') return item.type === 'standalone';
@@ -253,11 +262,12 @@ export default function Gallery({ items }: GalleryProps) {
       {/* ── GALLERY GRID OR LIST ── */}
       {sortedItems.length === 0 ? (
         <div className={styles.empty}>
-          <p>No designs match your filters.</p>
+          <p>{t('gallery.noDesigns', 'No designs match your filters.')}</p>
         </div>
       ) : viewMode === 'grid' ? (
         <div className={styles.grid}>
           {sortedItems.map((item) => {
+            const itemTitle = translateField(item, 'title', locale);
             const imgUrl = urlFor(item.mainImage).width(600).height(600).url();
             return (
               <div
@@ -268,7 +278,7 @@ export default function Gallery({ items }: GalleryProps) {
                 <div className={styles.imageContainer}>
                   <Image
                     src={imgUrl}
-                    alt={item.title || 'Design'}
+                    alt={itemTitle || 'Design'}
                     width={400}
                     height={400}
                     className={styles.image}
@@ -278,27 +288,27 @@ export default function Gallery({ items }: GalleryProps) {
                   {/* Traceable badge in upper right corner */}
                   <div className={styles.traceableBadgeCard}>
                     <Sparkles size={12} className={styles.sparkleIcon} />
-                    <span>Traceable</span>
+                    <span>{t('gallery.traceable', 'Traceable')}</span>
                   </div>
                 </div>
                 <div className={styles.cardOverlay}>
-                  <h3 className={styles.cardTitle}>{item.title}</h3>
+                  <h3 className={styles.cardTitle}>{itemTitle}</h3>
                   <div className={styles.cardBadges}>
                     {item.type === 'article' ? (
-                      <span className={`${styles.badge} ${styles.badgeArticle}`}>Blog Article</span>
+                      <span className={`${styles.badge} ${styles.badgeArticle}`}>{t('gallery.blogArticle', 'Blog Article')}</span>
                     ) : (
-                      <span className={`${styles.badge} ${styles.badgeTemplate}`}>Trace Template</span>
+                      <span className={`${styles.badge} ${styles.badgeTemplate}`}>{t('gallery.traceTemplate', 'Trace Template')}</span>
                     )}
                   </div>
                   {/* Start Tracing quick button on hover */}
                   <div className={styles.quickActions}>
                     <Link
-                      href={`/trace?img=${encodeURIComponent(urlFor(item.mainImage).url())}`}
+                      href={`/${locale}/trace?img=${encodeURIComponent(urlFor(item.mainImage).url())}`}
                       className={styles.quickTraceBtn}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Sparkles size={14} />
-                      <span>Start Tracing</span>
+                      <span>{t('gallery.startTracing', 'Start Tracing')}</span>
                     </Link>
                   </div>
                 </div>
@@ -309,6 +319,7 @@ export default function Gallery({ items }: GalleryProps) {
       ) : (
         <div className={styles.listViewContainer}>
           {sortedItems.map((item) => {
+            const itemTitle = translateField(item, 'title', locale);
             const listImgUrl = urlFor(item.mainImage).width(150).height(150).url();
             return (
               <div
@@ -320,35 +331,35 @@ export default function Gallery({ items }: GalleryProps) {
                   <div className={styles.listImageWrapper}>
                     <img
                       src={listImgUrl}
-                      alt={item.title || 'Design'}
+                      alt={itemTitle || 'Design'}
                       className={styles.listImage}
                       loading="lazy"
                     />
                   </div>
                   <div className={styles.listItemInfo}>
-                    <h3 className={styles.listItemTitle}>{item.title}</h3>
+                    <h3 className={styles.listItemTitle}>{itemTitle}</h3>
                     <div className={styles.listItemBadges}>
                       {item.type === 'article' ? (
-                        <span className={`${styles.badge} ${styles.badgeArticle}`}>Blog Article</span>
+                        <span className={`${styles.badge} ${styles.badgeArticle}`}>{t('gallery.blogArticle', 'Blog Article')}</span>
                       ) : (
-                        <span className={`${styles.badge} ${styles.badgeTemplate}`}>Trace Template</span>
+                        <span className={`${styles.badge} ${styles.badgeTemplate}`}>{t('gallery.traceTemplate', 'Trace Template')}</span>
                       )}
-                      <span className={`${styles.badge} ${styles.badgeTraceable}`}>Traceable</span>
+                      <span className={`${styles.badge} ${styles.badgeTraceable}`}>{t('gallery.traceable', 'Traceable')}</span>
                     </div>
                   </div>
                 </div>
                 <div className={styles.listItemRight}>
                   <div className={styles.listActionsGroup}>
                     <Link
-                      href={`/trace?img=${encodeURIComponent(urlFor(item.mainImage).url())}`}
+                      href={`/${locale}/trace?img=${encodeURIComponent(urlFor(item.mainImage).url())}`}
                       className={styles.listTraceBtn}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Sparkles size={14} />
-                      <span>Start Tracing</span>
+                      <span>{t('gallery.startTracing', 'Start Tracing')}</span>
                     </Link>
                     <div className={styles.listItemAction}>
-                      <span>Details</span>
+                      <span>{t('gallery.details', 'Details')}</span>
                       <ArrowRight size={16} />
                     </div>
                   </div>
@@ -362,25 +373,25 @@ export default function Gallery({ items }: GalleryProps) {
       {/* ── ON-PAGE FAQ ACCORDION (AEO & GEO Optimization) ── */}
       <section className={styles.faqSection}>
         <h2 className={styles.faqTitle}>
-          Frequently Asked Questions — <span className="text-gradient">Aari Embroideries</span>
+          {t('gallery.faqTitle', 'Frequently Asked Questions — ')}<span className="text-gradient">{t('gallery.faqTitleHighlight', 'Aari Embroideries')}</span>
         </h2>
         <p className={styles.faqSubtitle}>
-          Get quick guides on tracing, downloading, and stitching simple aari work blouse designs for beginners.
+          {t('gallery.faqSubtitle', 'Get quick guides on tracing, downloading, and stitching simple aari work blouse designs for beginners.')}
         </p>
 
         <div className={styles.faqAccordion}>
           {[
             {
-              q: "How do I trace simple aari work blouse designs for beginners?",
-              a: "To trace simple aari work blouse designs, select templates in our visual gallery. Click the 'Open in Tracing Studio' button to load the blueprint in full-screen lightbox simulator. Place your tracing paper or blouse fabric directly on the backlit tablet or phone screen to map patterns accurately."
+               q: t('gallery.faq1q', 'How do I trace simple aari work blouse designs for beginners?'),
+               a: t('gallery.faq1a', 'To trace simple aari work blouse designs, select templates in our visual gallery. Click the \'Open in Tracing Studio\' button to load the blueprint in full-screen lightbox simulator. Place your tracing paper or blouse fabric directly on the backlit tablet or phone screen to map patterns accurately.')
             },
             {
-              q: "Where can I download basic simple aari work blouse designs images?",
-              a: "Every image inside our visual gallery is free to download in high-resolution, featuring basic simple aari work blouse hand designs, neck outlines, and sleeves templates."
+               q: t('gallery.faq2q', 'Where can I download basic simple aari work blouse designs images?'),
+               a: t('gallery.faq2a', 'Every image inside our visual gallery is free to download in high-resolution, featuring basic simple aari work blouse hand designs, neck outlines, and sleeves templates.')
             },
             {
-              q: "What are easy simple aari work designs patterns for beginners?",
-              a: "For beginners starting out, easy simple aari work designs include basic line vectors (chain stitches, wave lines, dots), simple leaves, and flower border designs. These outline traces require fewer changes and are excellent for practicing on sleeve borders and necklines."
+               q: t('gallery.faq3q', 'What are easy simple aari work designs patterns for beginners?'),
+               a: t('gallery.faq3a', 'For beginners starting out, easy simple aari work designs include basic line vectors (chain stitches, wave lines, dots), simple leaves, and flower border designs. These outline traces require fewer changes and are excellent for practicing on sleeve borders and necklines.')
             }
           ].map((item, idx) => {
             const isOpen = openFaq === idx;
@@ -423,7 +434,7 @@ export default function Gallery({ items }: GalleryProps) {
               <div className={styles.modalImageWrapper}>
                 <img
                   src={urlFor(selectedItem.mainImage).url()}
-                  alt={selectedItem.title}
+                  alt={translateField(selectedItem, 'title', locale)}
                   className={styles.modalImage}
                 />
               </div>
@@ -433,35 +444,35 @@ export default function Gallery({ items }: GalleryProps) {
                 <div>
                   <div className={styles.modalSourceBadgeContainer}>
                     {selectedItem.type === 'article' ? (
-                      <span className={`${styles.badge} ${styles.badgeArticle}`}>✦ From Blog Post</span>
+                      <span className={`${styles.badge} ${styles.badgeArticle}`}>{t('gallery.fromBlogPost', '✦ From Blog Post')}</span>
                     ) : (
-                      <span className={`${styles.badge} ${styles.badgeTemplate}`}>✦ Standalone Template</span>
+                      <span className={`${styles.badge} ${styles.badgeTemplate}`}>{t('gallery.standaloneTemplate', '✦ Standalone Template')}</span>
                     )}
                   </div>
-                  <h2 className={styles.modalTitle}>{selectedItem.title}</h2>
+                  <h2 className={styles.modalTitle}>{translateField(selectedItem, 'title', locale)}</h2>
                   <p className={styles.modalDescription}>
-                    {selectedItem.description || 'This beautiful embroidery template is prepared for Maggam and Aari tracing. Upload it to the tracing studio or download to your devices.'}
+                    {translateField(selectedItem, 'description', locale) || t('gallery.defaultDescription', 'This beautiful embroidery template is prepared for Maggam and Aari tracing. Upload it to the tracing studio or download to your devices.')}
                   </p>
                 </div>
 
                 <div className={styles.modalActions}>
                   {/* Primary Tracing Button */}
                   <a
-                    href={`/trace?img=${encodeURIComponent(urlFor(selectedItem.mainImage).url())}`}
+                    href={`/${locale}/trace?img=${encodeURIComponent(urlFor(selectedItem.mainImage).url())}`}
                     className={styles.actionBtnPrimary}
                   >
                     <Sparkles size={18} />
-                    <span>Start Tracing in Studio</span>
+                    <span>{t('gallery.startTracingInStudio', 'Start Tracing in Studio')}</span>
                   </a>
 
                   {/* Context-Specific Article Button */}
                   {selectedItem.type === 'article' && selectedItem.slug?.current && (
                     <Link
-                      href={`/blog/${selectedItem.slug.current}`}
+                      href={`/${locale}/blog/${selectedItem.slug.current}`}
                       className={styles.actionBtnSecondary}
                     >
                       <BookOpen size={18} />
-                      <span>Read Original Article</span>
+                      <span>{t('gallery.readOriginalArticle', 'Read Original Article')}</span>
                       <ArrowRight size={16} style={{ marginLeft: 'auto' }} />
                     </Link>
                   )}
@@ -469,13 +480,13 @@ export default function Gallery({ items }: GalleryProps) {
                   {/* Standard Actions */}
                   <div className={styles.actionsRow}>
                     <button
-                      onClick={() => handleDownload(urlFor(selectedItem.mainImage).url(), selectedItem.title)}
+                      onClick={() => handleDownload(urlFor(selectedItem.mainImage).url(), translateField(selectedItem, 'title', locale))}
                       className={styles.iconActionBtn}
                       disabled={downloading}
                       title="Download Image"
                     >
                       <Download size={18} />
-                      <span>{downloading ? 'Downloading...' : 'Download'}</span>
+                      <span>{downloading ? t('gallery.downloading', 'Downloading...') : t('gallery.download', 'Download')}</span>
                     </button>
 
                     <button
@@ -484,7 +495,7 @@ export default function Gallery({ items }: GalleryProps) {
                       title="Share Design"
                     >
                       {copied ? <Check size={18} style={{ color: 'var(--success)' }} /> : <Share2 size={18} />}
-                      <span>{copied ? 'Link Copied!' : 'Share'}</span>
+                      <span>{copied ? t('gallery.linkCopied', 'Link Copied!') : t('gallery.share', 'Share')}</span>
                     </button>
                   </div>
                 </div>

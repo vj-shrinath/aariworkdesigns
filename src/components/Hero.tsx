@@ -1,27 +1,49 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './Hero.module.css';
+import { useTranslation } from '@/context/LanguageContext';
 
 export default function Hero() {
+  const { t, locale } = useTranslation();
+
   return (
     <section className={styles.hero}>
       <div className={`${styles.container} container`}>
         <div className={styles.content}>
-          <span className={`${styles.badge} animate-fade-in`}>Web Tracing Tool Now Live</span>
+          <span className={`${styles.badge} animate-fade-in`}>
+            {t('hero.badge', 'Web Tracing Tool Now Live')}
+          </span>
           <h1 className={`${styles.title} animate-fade-in`}>
-            Trace Your <span className="text-gradient">Imagination</span> Directly on Cloth
+            {t('hero.title1', 'Trace Your ')}
+            <span className="text-gradient">{t('hero.titleHighlight', 'Imagination')}</span>
+            {t('hero.title2', ' Directly on Cloth')}
           </h1>
-          <p className={`${styles.description} animate-fade-in`}>
-            Our full Android app is coming soon, but we couldn't wait to see you create. Our <strong>Web Tracing Studio</strong> is now live—pick any design, lock your screen, and start tracing today.
-          </p>
+          <p 
+            className={`${styles.description} animate-fade-in`}
+            dangerouslySetInnerHTML={{ 
+              __html: t('hero.description', 'Our full Android app is coming soon, but we couldn\'t wait to see you create. Our <strong>Web Tracing Studio</strong> is now live—pick any design, lock your screen, and start tracing today.') 
+            }}
+          />
           <ul className={`${styles.features} animate-fade-in`}>
-            <li>✨ <strong>Pick & Lock:</strong> Stay focused while tracing</li>
-            <li>✍️ <strong>Custom Canvas:</strong> Write names & text to draw</li>
-            <li>🎨 <strong>Trace Anywhere:</strong> Mobile-to-cloth precision</li>
+            <li>
+              ✨ <strong>{t('hero.feature1Label', 'Pick & Lock:')}</strong> {t('hero.feature1Desc', 'Stay focused while tracing')}
+            </li>
+            <li>
+              ✍️ <strong>{t('hero.feature2Label', 'Custom Canvas:')}</strong> {t('hero.feature2Desc', 'Write names & text to draw')}
+            </li>
+            <li>
+              🎨 <strong>{t('hero.feature3Label', 'Trace Anywhere:')}</strong> {t('hero.feature3Desc', 'Mobile-to-cloth precision')}
+            </li>
           </ul>
           <div className={`${styles.actions} animate-fade-in`}>
-            <Link href="/trace" className={styles.primaryBtn}>Start Tracing Now</Link>
-            <button className={styles.secondaryBtn}>App Waitlist</button>
+            <Link href={`/${locale}/trace`} className={styles.primaryBtn}>
+              {t('hero.primaryBtn', 'Start Tracing Now')}
+            </Link>
+            <button className={styles.secondaryBtn}>
+              {t('hero.secondaryBtn', 'App Waitlist')}
+            </button>
           </div>
         </div>
         <div className={`${styles.mockupWrapper} animate-fade-in`}>
@@ -40,4 +62,3 @@ export default function Hero() {
     </section>
   );
 }
-

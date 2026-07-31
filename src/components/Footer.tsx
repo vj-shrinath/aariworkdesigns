@@ -3,20 +3,24 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import styles from './Footer.module.css';
+import { useTranslation } from '@/context/LanguageContext';
 
 interface FooterProps {
   subtext?: string;
 }
 
-export default function Footer({ subtext = 'Trace your imagination with premium Aari work borders, bridal outlines, and digital embroidery templates.' }: FooterProps) {
+export default function Footer({ subtext }: FooterProps) {
   const currentYear = new Date().getFullYear();
+  const { t, locale } = useTranslation();
+  
+  const footerSubtext = subtext || t('footer.defaultSubtext', 'Trace your imagination with premium Aari work borders, bridal outlines, and digital embroidery templates.');
 
   return (
     <footer className={styles.footer}>
       <div className={`${styles.container} container`}>
         {/* Brand/About Section */}
         <div className={styles.brandSection}>
-          <Link href="/" className={styles.logoWrapper}>
+          <Link href={`/${locale}`} className={styles.logoWrapper}>
             <Image 
               src="/logo.png" 
               alt="AARI Work Designs Logo" 
@@ -29,26 +33,26 @@ export default function Footer({ subtext = 'Trace your imagination with premium 
               <span>AARI</span> Work Designs
             </span>
           </Link>
-          <p className={styles.subtext}>{subtext}</p>
+          <p className={styles.subtext}>{footerSubtext}</p>
         </div>
 
         {/* Quick Links Section */}
         <div>
-          <h4 className={styles.sectionTitle}>Explore</h4>
+          <h4 className={styles.sectionTitle}>{t('footer.explore', 'Explore')}</h4>
           <nav className={styles.linksList}>
-            <Link href="/">Home</Link>
-            <Link href="/trace">Trace Tool</Link>
-            <Link href="/gallery">Gallery</Link>
-            <Link href="/blog">Articles</Link>
-            <Link href="/about">About Us</Link>
+            <Link href={`/${locale}`}>{t('footer.home', 'Home')}</Link>
+            <Link href={`/${locale}/trace`}>{t('footer.traceTool', 'Trace Tool')}</Link>
+            <Link href={`/${locale}/gallery`}>{t('footer.gallery', 'Gallery')}</Link>
+            <Link href={`/${locale}/blog`}>{t('footer.articles', 'Articles')}</Link>
+            <Link href={`/${locale}/about`}>{t('footer.aboutUs', 'About Us')}</Link>
           </nav>
         </div>
 
         {/* Social Links Section */}
         <div>
-          <h4 className={styles.sectionTitle}>Connect</h4>
+          <h4 className={styles.sectionTitle}>{t('footer.connect', 'Connect')}</h4>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1rem', lineHeight: '1.4' }}>
-            Follow our design updates and tracing tools:
+            {t('footer.followUpdates', 'Follow our design updates and tracing tools:')}
           </p>
           <div className={styles.socialIcons}>
             <a 
@@ -97,8 +101,8 @@ export default function Footer({ subtext = 'Trace your imagination with premium 
 
       {/* Copyright Info */}
       <div className={`${styles.bottomSection} container`}>
-        <p>© {currentYear} AARI Work Designs. All rights reserved.</p>
-        <p style={{ fontStyle: 'italic' }}>Trace Your Imagination.</p>
+        <p>{t('footer.copyright', '© {year} AARI Work Designs. All rights reserved.').replace('{year}', currentYear.toString())}</p>
+        <p style={{ fontStyle: 'italic' }}>{t('footer.tagline', 'Trace Your Imagination.')}</p>
       </div>
     </footer>
   );

@@ -1,0 +1,485 @@
+/* ========================================================
+   PDF Maker SEO Content – Mobile-first Responsive Styling
+   ======================================================== */
+
+.seoWrapper {
+  width: 100%;
+  background: var(--bg-primary);
+  overflow-x: hidden;
+}
+
+/* Divider line */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  margin: 0;
+  opacity: 0.35;
+}
+
+/* Main typography & sections */
+.section {
+  padding: 4.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.section:last-child {
+  border-bottom: none;
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Badge styling */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--accent-glow);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.9rem;
+  border-radius: 50px;
+  margin-bottom: 1.25rem;
+}
+
+/* Headings */
+.h1 {
+  font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 1.25rem;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+}
+
+.subheadline {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  line-height: 1.65;
+  color: var(--text-secondary);
+  max-width: 780px;
+  margin-bottom: 2.25rem;
+}
+
+.sectionHeading {
+  font-size: clamp(1.5rem, 3.2vw, 2.2rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  font-family: var(--font-heading);
+}
+
+.sectionSubheading {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 2.25rem;
+  max-width: 640px;
+  line-height: 1.5;
+}
+
+.sectionPara {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+  max-width: 800px;
+}
+
+/* Two Column Intro Layout */
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+/* Feature Bullet List */
+.featureList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.featureIcon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--accent-gradient);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  color: #000;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+/* Steps Grid styling */
+.stepsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  list-style: none;
+}
+
+.stepCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  transition: var(--transition);
+}
+
+.stepCard:hover {
+  border-color: var(--accent);
+  background: rgba(45, 5, 5, 0.45);
+  transform: translateY(-2px);
+}
+
+.stepNumber {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  color: #000;
+  font-weight: 800;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  box-shadow: 0 4px 10px rgba(212, 175, 55, 0.25);
+}
+
+.stepContent h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.35rem;
+  font-family: var(--font-heading);
+}
+
+.stepContent p {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+/* Resource Library Section Cards */
+.resourcesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+.resourceCard {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.75rem;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.resourceCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent-gradient);
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.resourceCard:hover {
+  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(212, 175, 55, 0.12);
+}
+
+.resourceCard:hover::before {
+  opacity: 1;
+}
+
+.resourceIcon {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+.resourceCard h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  line-height: 1.35;
+}
+
+.resourceCard p {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin-bottom: 0.5rem;
+}
+
+.resourceCard strong {
+  color: var(--text-primary);
+}
+
+.pdfBadge {
+  align-self: flex-start;
+  background: rgba(212,175,55,0.08);
+  border: 1px solid rgba(212,175,55,0.25);
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+/* FAQ Accordion Lists */
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.faqItem {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.faqItem:hover {
+  border-color: rgba(212, 175, 55, 0.4);
+}
+
+.faqQuestion {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  text-align: left;
+  cursor: default;
+}
+
+.faqQuestion span:first-child {
+  flex: 1;
+}
+
+.faqIcon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent-glow);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  color: var(--accent);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.faqAnswer {
+  padding: 0 1.5rem 1.25rem;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  border-top: 1px solid var(--border);
+  padding-top: 0.85rem;
+}
+
+/* Internal links grid */
+.linksGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.internalLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.internalLink:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-glow);
+  transform: translateY(-2px);
+}
+
+.internalLinkArrow {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  transition: var(--transition);
+}
+
+.internalLink:hover .internalLinkArrow {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+/* CTA Banner (Mid or bottom block) */
+.ctaBanner {
+  background: linear-gradient(135deg, rgba(45, 5, 5, 0.85), rgba(26, 2, 2, 0.85));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 2.25rem 1.5rem;
+  text-align: center;
+  margin: 3rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.ctaBanner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at top, rgba(212, 175, 55, 0.08), transparent 60%);
+  pointer-events: none;
+}
+
+.ctaBanner h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.6rem;
+  font-family: var(--font-heading);
+}
+
+.ctaBanner p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.ctaBtnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-gradient);
+  color: #000;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition);
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.25);
+}
+
+.ctaBtnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
+}
+
+/* ========================================================
+   Desktop Enhancements (min-width: 768px)
+   ======================================================== */
+@media (min-width: 768px) {
+  .section {
+    padding: 6rem 0;
+  }
+
+  .twoCol {
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+  }
+
+  .stepsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .stepCard {
+    padding: 2rem 1.75rem;
+    height: 100%;
+  }
+
+  .resourcesGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .faqQuestion {
+    padding: 1.4rem 1.75rem;
+    font-size: 1.05rem;
+  }
+
+  .faqAnswer {
+    padding: 0 1.75rem 1.4rem;
+    font-size: 0.92rem;
+    padding-top: 1rem;
+  }
+
+  .ctaBanner {
+    padding: 3.5rem 3rem;
+  }
+
+  .ctaBanner h3 {
+    font-size: 1.8rem;
+  }
+
+  .ctaBanner p {
+    font-size: 1rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

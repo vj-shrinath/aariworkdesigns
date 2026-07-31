@@ -61,13 +61,26 @@ body {
 }
 
 html,
-body {
+body,
+button,
+input,
+select,
+textarea {
   width: 100%;
   max-width: 100%;
   overflow-x: clip;
   position: relative;
   font-family: var(--font-main);
   -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  width: auto;
+  max-width: none;
+  overflow-x: visible;
 }
 
 a {
@@ -285,4 +298,15 @@ h1, h2, h3, h4, h5, h6 {
     height: auto !important;
     max-height: 200px;
   }
+}
+
+/* Devanagari Typography overrides (Hindi and Marathi) */
+html[lang="hi"] {
+  --font-main: var(--font-devanagari), 'Inter', sans-serif;
+  --font-heading: var(--font-devanagari), 'Playfair Display', serif;
+}
+
+html[lang="mr"] {
+  --font-main: var(--font-devanagari), 'Inter', sans-serif;
+  --font-heading: var(--font-devanagari), 'Playfair Display', serif;
 }

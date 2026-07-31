@@ -1,0 +1,368 @@
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 5, 5, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.modal {
+  width: 90%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(45, 5, 5, 0.95) 0%, rgba(15, 2, 2, 0.98) 100%);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), 0 0 40px rgba(212, 175, 55, 0.05);
+  padding: 2rem;
+  position: relative;
+  transform: translateY(20px);
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  transform: rotate(90deg);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  font-family: var(--font-heading);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.planCard {
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 12px;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.planCardActive {
+  border-color: var(--accent);
+  background: rgba(212, 175, 55, 0.06);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
+}
+
+.planBadge {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  background: var(--accent-gradient);
+  color: var(--bg-primary);
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+.planName {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.planPrice {
+  margin-bottom: 1rem;
+}
+
+.currency {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.amount {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.period {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.planFeatures {
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.planFeatures li {
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.planFeatures li::before {
+  content: "✓";
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.formSection {
+  margin-bottom: 1.5rem;
+}
+
+.formTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  padding-bottom: 0.25rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.inputField {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.25);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.payButton {
+  width: 100%;
+  padding: 1rem;
+  background: var(--accent-gradient);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.payButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.35);
+  filter: brightness(1.05);
+}
+
+.payButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(10, 5, 5, 0.1);
+  border-top-color: var(--bg-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.footerNotes {
+  margin-top: 1.2rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Auth Form Styles */
+.authToggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  padding: 4px;
+  border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.authToggleBtn {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.authToggleBtn:hover {
+  color: var(--text-primary);
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.authToggleBtnActive {
+  background: var(--accent-gradient);
+  color: var(--bg-primary);
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+}
+
+.authForm {
+  margin-bottom: 1rem;
+}
+
+.forgotPassword {
+  display: block;
+  margin: 0.9rem auto 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.forgotPassword:hover {
+  color: var(--text-primary);
+}
+
+.inputWithIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 1rem;
+  color: var(--text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.inputWithIcon .inputField {
+  padding-left: 2.5rem;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.passwordToggle:hover {
+  color: var(--accent);
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(10, 5, 5, 0.1);
+  border-top-color: var(--bg-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  to { transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 580px) {
+  .modal {
+    padding: 1.5rem;
+    width: 95%;
+  }
+  .plansGrid {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+  .title {
+    font-size: 1.7rem;
+  }
+}
