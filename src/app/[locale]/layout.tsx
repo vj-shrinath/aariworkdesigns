@@ -105,6 +105,13 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} dir={dir} className={devanagariFont.variable} style={{ overflowX: 'clip' }}>
+      <head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6627399718408055"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body style={{ overflowX: 'clip', width: '100%', margin: 0, padding: 0 }}>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           '@context': 'https://schema.org', '@graph': [
