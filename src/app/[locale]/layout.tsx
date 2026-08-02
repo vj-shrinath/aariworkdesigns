@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Noto_Serif_Devanagari } from 'next/font/google';
 import '../globals.css';
 import PWARegistration from '@/components/PWARegistration';
@@ -102,6 +103,7 @@ export default async function RootLayout({
   const { locale } = params;
   const dict = await getDictionary(locale);
   const dir = isRtl(locale) ? 'rtl' : 'ltr';
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
   return (
     <html lang={locale} dir={dir} className={devanagariFont.variable} style={{ overflowX: 'clip' }}>
@@ -111,6 +113,21 @@ export default async function RootLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6627399718408055"
           crossOrigin="anonymous"
         />
+        {gaMeasurementId ? (
+          <>
+            <Script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+function gtag(){window.dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', ${JSON.stringify(gaMeasurementId)});`}
+            </Script>
+          </>
+        ) : null}
       </head>
       <body style={{ overflowX: 'clip', width: '100%', margin: 0, padding: 0 }}>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
