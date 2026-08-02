@@ -26,6 +26,12 @@ interface PageParams {
   slug: string;
 }
 
+const keyTakeawaysTitles: Record<string, string> = {
+  hi: 'मुख्य बातें', mr: 'मुख्य मुद्दे', ta: 'முக்கிய குறிப்புகள்', te: 'ముఖ్యాంశాలు',
+  es: 'Puntos clave', fr: 'Points clés', ar: 'أهم النقاط', de: 'Wichtigste Erkenntnisse',
+  pt: 'Principais conclusões', ja: '重要なポイント', ko: '핵심 요점',
+}
+
 export async function generateMetadata({ params }: { params: PageParams }): Promise<Metadata> {
   const { locale, slug } = params;
   let post = await client.fetch(POST_QUERY, { slug });
@@ -237,7 +243,7 @@ export default async function PostPage({ params }: { params: PageParams }) {
 
           <div className={styles.articleBody}>
             {post.ai?.keyTakeaways && (
-              <KeyTakeaways items={post.ai.keyTakeaways} title={dict.blog?.keyTakeaways || 'Key Takeaways'} />
+              <KeyTakeaways items={post.ai.keyTakeaways} title={dict.blog?.keyTakeaways || keyTakeawaysTitles[locale] || 'Key Takeaways'} />
             )}
             
             <div className={styles.richText}>
