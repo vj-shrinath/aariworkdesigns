@@ -133,6 +133,11 @@ export async function translateDocument(doc: any, targetLocale: string): Promise
     }
   }
 
+  const localizedAi = getTranslatedValue(doc, 'ai', targetLocale);
+  if (localizedAi && typeof localizedAi === 'object') {
+    translatedDoc.ai = localizedAi;
+  }
+
   // Translate seo fields
   if (doc.seo && typeof doc.seo === 'object') {
     translatedDoc.seo = { ...doc.seo };

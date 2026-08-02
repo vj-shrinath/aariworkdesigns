@@ -44,6 +44,7 @@ export async function POST(req: Request) {
     const locale = typeof input?.locale === 'string' ? input.locale : ''
     const title = typeof input?.title === 'string' ? input.title.slice(0, 300) : ''
     const excerpt = typeof input?.excerpt === 'string' ? input.excerpt.slice(0, 2000) : ''
+    const ai = input?.ai && typeof input.ai === 'object' ? input.ai : null
     const segments = Array.isArray(input?.segments)
       ? input.segments
           .filter((item: any) => item && typeof item.id === 'string' && typeof item.text === 'string')
@@ -55,14 +56,16 @@ export async function POST(req: Request) {
       return jsonResponse({error: 'A locale, title, and article text are required.'}, 400, origin)
     }
 
+    const aiInstruction = ai ? ` Also translate this AI content and return it as an "ai" object with the same keys. Translate all human-readable strings in arrays and objects, but preserve URLs. The AI object is: ${JSON.stringify(ai)}` : ''
     const prompt = `Translate this English embroidery article into the target locale: ${locale}.
-Preserve meaning, names, measurements, URLs, and technical terms. Do not add explanations or content. Return only valid JSON with this exact shape: {"title":"","excerpt":"","segments":[{"id":"same-id","text":"translated text"}]}.
+Preserve meaning, names, measurements, URLs, and technical terms. Do not add explanations or content. Return only valid JSON with this exact shape: {"title":"","excerpt":"","segments":[{"id":"same-id","text":"translated text"}]${ai ? ',"ai":{}' : ''}.
 The segment IDs must be returned exactly once each and in the same order. Translate every segment. Keep headings concise and natural for native readers.
 
 English title: ${title}
 English excerpt: ${excerpt || '(none)'}
 English article segments:
 ${JSON.stringify(segments)}`
+      + aiInstruction
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`,
@@ -95,6 +98,7 @@ ${JSON.stringify(segments)}`
       title: translated.title,
       excerpt: typeof translated.excerpt === 'string' ? translated.excerpt : excerpt,
       segments: translated.segments,
+      ...(translated.ai && typeof translated.ai === 'object' ? {ai: translated.ai} : {}),
     }, 200, origin)
   } catch (error) {
     console.error('Gemini translation route error:', error)

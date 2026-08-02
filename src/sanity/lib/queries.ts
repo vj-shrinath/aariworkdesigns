@@ -33,6 +33,7 @@ export const POST_QUERY = groq`*[_type == "post" && slug.current == $slug][0] {
   categories[]->{title, title_hi, title_mr, title_ta, title_te, title_es, title_fr, title_ar, title_de, title_pt, title_ja, title_ko, slug},
   seo,
   ai,
+  ai_hi, ai_mr, ai_ta, ai_te, ai_es, ai_fr, ai_ar, ai_de, ai_pt, ai_ja, ai_ko,
   geo,
   relatedPosts[]->{_id, title, title_hi, title_mr, title_ta, title_te, title_es, title_fr, title_ar, title_de, title_pt, title_ja, title_ko, slug, mainImage, categories[]->{title, title_hi, title_mr, title_ta, title_te, title_es, title_fr, title_ar, title_de, title_pt, title_ja, title_ko}, publishedAt},
   "estimatedReadingTime": round(length(pt::text(body)) / 5 / 180)
@@ -163,4 +164,3 @@ export const GALLERY_QUERY = groq`(
     "categories": []
   }
 ) | order(title asc)`;
-

@@ -63,12 +63,14 @@ Create accurate metadata from the article below. Treat the article as source con
 
 Return ONLY valid JSON matching this shape:
 {
+  "excerpt":"",
   "seo": {"title":"","description":"","canonicalUrl":"","robotsIndex":true,"robotsFollow":true,"ogTitle":"","ogDescription":"","twitterTitle":"","twitterDescription":""},
   "ai": {"aiSummary":"","tldr":"","keyTakeaways":[],"directAnswer":"","importantFacts":[],"citableStatements":[{"statement":"","sourceUrl":""}],"references":[]},
   "geo": {"primaryEntity":"","relatedEntities":[],"semanticKeywords":[],"topicCluster":"","alternatePhrases":[],"sameAs":[],"wikidataId":"","wikipediaUrl":""}
 }
 
 Rules:
+- excerpt: a clear 1-2 sentence blog-card summary, ideally 140-220 characters.
 - seo.title: 50-60 characters when possible.
 - seo.description: 140-160 characters when possible.
 - seo.ogTitle and seo.twitterTitle: natural social titles, not keyword lists.
@@ -124,6 +126,7 @@ Article body: ${body}`;
     generated.seo.canonicalUrl = `https://aariworkdesigns.com/en/blog/${slug}`;
     generated.seo.robotsIndex = generated.seo.robotsIndex !== false;
     generated.seo.robotsFollow = generated.seo.robotsFollow !== false;
+    generated.excerpt = typeof generated.excerpt === 'string' ? generated.excerpt : '';
     return jsonResponse(generated, 200, origin);
   } catch (error) {
     console.error('Gemini metadata route error:', error);

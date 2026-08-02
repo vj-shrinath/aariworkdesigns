@@ -33,14 +33,14 @@ export function AuthorBox({ author }: { author: any }) {
   );
 }
 
-export function KeyTakeaways({ items }: { items: string[] }) {
+export function KeyTakeaways({ items, title = 'Key Takeaways' }: { items: string[]; title?: string }) {
   if (!items || items.length === 0) return null;
 
   return (
     <div className={styles.takeaways}>
       <div className={styles.takeawaysHeader}>
         <span className={styles.takeawaysIcon}>✨</span>
-        <h3 className={styles.takeawaysTitle}>Key Takeaways</h3>
+        <h3 className={styles.takeawaysTitle}>{title}</h3>
       </div>
       <ul className={styles.takeawaysList}>
         {items.map((item, index) => (

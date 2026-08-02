@@ -237,7 +237,7 @@ export default async function PostPage({ params }: { params: PageParams }) {
 
           <div className={styles.articleBody}>
             {post.ai?.keyTakeaways && (
-              <KeyTakeaways items={post.ai.keyTakeaways} />
+              <KeyTakeaways items={post.ai.keyTakeaways} title={dict.blog?.keyTakeaways || 'Key Takeaways'} />
             )}
             
             <div className={styles.richText}>
