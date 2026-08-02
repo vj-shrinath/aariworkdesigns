@@ -2,25 +2,26 @@ import { groq } from 'next-sanity';
 
 export const POSTS_QUERY = groq`*[_type == "post" && defined(slug.current)] | order(coalesce(publishedAt, _createdAt) desc) {
   _id,
-  title,
+  title, title_hi, title_mr, title_ta, title_te, title_es, title_fr, title_ar, title_de, title_pt, title_ja, title_ko,
   slug,
   mainImage,
   publishedAt,
-  excerpt,
+  excerpt, excerpt_hi, excerpt_mr, excerpt_ta, excerpt_te, excerpt_es, excerpt_fr, excerpt_ar, excerpt_de, excerpt_pt, excerpt_ja, excerpt_ko,
   author->{name, image, bio},
-  categories[]->{title, slug},
+  categories[]->{title, title_hi, title_mr, title_ta, title_te, title_es, title_fr, title_ar, title_de, title_pt, title_ja, title_ko, slug},
   "estimatedReadingTime": round(length(pt::text(body)) / 5 / 180)
 }`;
 
 
 export const POST_QUERY = groq`*[_type == "post" && slug.current == $slug][0] {
   _id,
-  title,
+  title, title_hi, title_mr, title_ta, title_te, title_es, title_fr, title_ar, title_de, title_pt, title_ja, title_ko,
   slug,
   mainImage,
   publishedAt,
   _createdAt,
   _updatedAt,
+  body_hi, body_mr, body_ta, body_te, body_es, body_fr, body_ar, body_de, body_pt, body_ja, body_ko,
   body[]{
     ...,
     _type == "image" => {
@@ -29,11 +30,11 @@ export const POST_QUERY = groq`*[_type == "post" && slug.current == $slug][0] {
     }
   },
   author->{name, image, bio},
-  categories[]->{title, slug},
+  categories[]->{title, title_hi, title_mr, title_ta, title_te, title_es, title_fr, title_ar, title_de, title_pt, title_ja, title_ko, slug},
   seo,
   ai,
   geo,
-  relatedPosts[]->{_id, title, slug, mainImage, categories[]->{title}, publishedAt},
+  relatedPosts[]->{_id, title, title_hi, title_mr, title_ta, title_te, title_es, title_fr, title_ar, title_de, title_pt, title_ja, title_ko, slug, mainImage, categories[]->{title, title_hi, title_mr, title_ta, title_te, title_es, title_fr, title_ar, title_de, title_pt, title_ja, title_ko}, publishedAt},
   "estimatedReadingTime": round(length(pt::text(body)) / 5 / 180)
 }`;
 
@@ -162,6 +163,4 @@ export const GALLERY_QUERY = groq`(
     "categories": []
   }
 ) | order(title asc)`;
-
-
 
