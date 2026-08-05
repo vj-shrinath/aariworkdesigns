@@ -2,7 +2,7 @@ import {NextResponse} from 'next/server'
 
 export const runtime = 'edge'
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite'
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 const allowedOrigins = new Set([
   'https://aariworkbackend.vercel.app',
   'https://aariworkdesigns.sanity.studio',

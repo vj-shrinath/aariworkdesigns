@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite';
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const MAX_INPUT_CHARS = 10000;
 
 const allowedOrigins = new Set([
@@ -210,7 +210,7 @@ JSON Rules:
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Gemini article generation failed:', response.status, errorText.slice(0, 500));
-      return jsonResponse({ error: `Gemini API error (${response.status}): ${errorText.slice(0, 200)}` }, 502, origin);
+      return jsonResponse({ error: 'Gemini could not generate the article right now.' }, 502, origin);
     }
 
     const result = await response.json();
@@ -253,7 +253,6 @@ JSON Rules:
     return jsonResponse(parsedJson, 200, origin);
   } catch (error) {
     console.error('Gemini generate-post-body route error:', error);
-    const msg = error instanceof Error ? error.message : String(error);
-    return jsonResponse({ error: `Server error: ${msg}` }, 500, origin);
+    return jsonResponse({ error: 'Invalid request or Gemini response parse error.' }, 500, origin);
   }
 }
