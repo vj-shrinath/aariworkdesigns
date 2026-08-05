@@ -2,20 +2,37 @@ import {NextResponse} from 'next/server'
 
 export const runtime = 'edge'
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
+const MODEL = process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite'
 const allowedOrigins = new Set([
   'https://aariworkbackend.vercel.app',
   'https://aariworkdesigns.sanity.studio',
   'http://localhost:3333',
   'http://127.0.0.1:3333',
+  'http://localhost:3000',
   process.env.SANITY_STUDIO_ORIGIN || '',
 ])
 
+function isOriginAllowed(origin: string | null): boolean {
+  if (!origin) return false
+  if (allowedOrigins.has(origin)) return true
+  try {
+    const url = new URL(origin)
+    return (
+      url.hostname.endsWith('.vercel.app') ||
+      url.hostname.endsWith('.sanity.studio') ||
+      url.hostname === 'localhost' ||
+      url.hostname === '127.0.0.1'
+    )
+  } catch {
+    return false
+  }
+}
+
 function corsHeaders(origin: string | null): HeadersInit {
   return {
-    'Access-Control-Allow-Origin': origin && allowedOrigins.has(origin) ? origin : 'https://aariworkbackend.vercel.app',
+    'Access-Control-Allow-Origin': origin && isOriginAllowed(origin) ? origin : 'https://aariworkbackend.vercel.app',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     Vary: 'Origin',
   }
 }
@@ -30,7 +47,7 @@ export async function OPTIONS(req: Request) {
 
 export async function POST(req: Request) {
   const origin = req.headers.get('origin')
-  if (!origin || !allowedOrigins.has(origin)) {
+  if (origin && !isOriginAllowed(origin)) {
     return jsonResponse({error: 'Origin is not allowed.'}, 403, origin)
   }
 
