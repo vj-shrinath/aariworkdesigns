@@ -1,7 +1,5 @@
 import ResetPasswordClient from './ResetPasswordClient';
 
-export const runtime = 'edge';
-
 export default function ResetPasswordPage() {
   return <ResetPasswordClient />;
 }

@@ -69,8 +69,6 @@ export async function generateMetadata({
   };
 }
 
-export const runtime = 'edge';
-
 export default async function TracePage({ params }: { params: PageParams }) {
   let images: any[] = [];
   try {

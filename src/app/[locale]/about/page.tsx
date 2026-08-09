@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import Header from '@/components/Header'; import Footer from '@/components/Footer'; import CompliancePage, { styles } from '@/components/CompliancePage'; import type { Locale } from '@/lib/i18n'; import { complianceMetadata, organizationJsonLd, SUPPORT_EMAIL } from '@/lib/compliance';
 
-export const runtime = 'edge';
-
 interface PageParams {
   locale: Locale;
 }

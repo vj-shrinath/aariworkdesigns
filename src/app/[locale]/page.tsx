@@ -4,12 +4,10 @@ import BlogList from '@/components/BlogList';
 import Footer from '@/components/Footer';
 import { client } from '@/sanity/client';
 import { POSTS_QUERY } from '@/sanity/lib/queries';
-import { getDictionary } from '@/lib/i18n';
+import { getDictionary, locales } from '@/lib/i18n';
 import { translateDocuments } from '@/lib/translate';
 import type { Locale } from '@/lib/i18n';
 import type { Metadata } from 'next';
-
-export const runtime = 'edge';
 
 export const revalidate = 60; // Enable ISR (cache for 60s)
 
@@ -20,9 +18,19 @@ interface PageParams {
 export async function generateMetadata({ params }: { params: PageParams }): Promise<Metadata> {
   const { locale } = params;
   const dict = await getDictionary(locale);
+  const alternateLanguages: Record<string, string> = {};
+  locales.forEach((loc) => {
+    alternateLanguages[loc] = `https://aariworkdesigns.com/${loc}`;
+  });
+  alternateLanguages['x-default'] = 'https://aariworkdesigns.com/en';
+
   return {
     title: dict.meta?.homeTitle,
     description: dict.meta?.homeDescription,
+    alternates: {
+      canonical: `https://aariworkdesigns.com/${locale}`,
+      languages: alternateLanguages,
+    },
   };
 }
 

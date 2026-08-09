@@ -59,22 +59,6 @@ export async function generateMetadata({ params }: { params: LayoutParams }): Pr
       images: ['/logo.png'],
     },
     alternates: {
-      canonical: `https://aariworkdesigns.com/${locale}`,
-      languages: {
-        'x-default': 'https://aariworkdesigns.com/en',
-        en: 'https://aariworkdesigns.com/en',
-        hi: 'https://aariworkdesigns.com/hi',
-        mr: 'https://aariworkdesigns.com/mr',
-        ta: 'https://aariworkdesigns.com/ta',
-        te: 'https://aariworkdesigns.com/te',
-        es: 'https://aariworkdesigns.com/es',
-        fr: 'https://aariworkdesigns.com/fr',
-        ar: 'https://aariworkdesigns.com/ar',
-        de: 'https://aariworkdesigns.com/de',
-        pt: 'https://aariworkdesigns.com/pt',
-        ja: 'https://aariworkdesigns.com/ja',
-        ko: 'https://aariworkdesigns.com/ko',
-      },
       types: {
         'application/rss+xml': 'https://aariworkdesigns.com/feed.xml',
       },

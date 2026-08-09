@@ -29,8 +29,6 @@ export async function generateMetadata({ params }: { params: PageParams }): Prom
   };
 }
 
-export const runtime = 'edge'
-
 export const revalidate = 60; // Enable ISR (cache for 60s)
 
 export default async function GalleryPage({ params }: { params: PageParams }) {
