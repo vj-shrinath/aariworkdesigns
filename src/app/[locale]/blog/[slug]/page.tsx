@@ -18,6 +18,7 @@ import styles from './PostPage.module.css';
 import { getDictionary, translateField } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 
+export const runtime = 'edge'
 export const revalidate = 3600; // Revalidate every hour
 
 interface PageParams {
@@ -71,7 +72,7 @@ export async function generateMetadata({ params }: { params: PageParams }): Prom
       images: [image],
     },
     alternates: {
-      canonical: (locale === 'en' && post.seo?.canonicalUrl) ? post.seo.canonicalUrl : `https://aariworkdesigns.com/${locale}/blog/${slug}`,
+      canonical: post.seo?.canonicalUrl || `https://aariworkdesigns.com/${locale}/blog/${slug}`,
       languages: {
         'x-default': `https://aariworkdesigns.com/en/blog/${slug}`,
         en: `https://aariworkdesigns.com/en/blog/${slug}`,

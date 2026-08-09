@@ -5,6 +5,8 @@ import CompliancePage, { type ComplianceSection } from '@/components/ComplianceP
 import type { Locale } from '@/lib/i18n';
 import { complianceMetadata, SUPPORT_EMAIL } from '@/lib/compliance';
 
+export const runtime = 'edge';
+
 export function generateMetadata({ params }: { params: { locale: Locale } }): Metadata {
   return complianceMetadata('Privacy Policy', 'How AARI Work Designs collects, uses, and protects personal information.', `/${params.locale}/privacy-policy`);
 }

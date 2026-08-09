@@ -71,6 +71,8 @@ export async function generateMetadata({ params }: { params: PageParams }): Prom
   };
 }
 
+export const runtime = 'edge';
+
 export default async function PdfMakerPage({ params }: { params: PageParams }) {
   const { locale } = params;
   const dict = await getDictionary(locale);

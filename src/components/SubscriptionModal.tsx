@@ -390,7 +390,7 @@ export default function SubscriptionModal() {
               <div className={styles.planPrice}>
                 <span className={styles.currency}>₹</span>
                 <span className={styles.amount}>99</span>
-                <span className={styles.period}>/{t('subscription.monthlyPricePeriod', 'month')}</span>
+                <span className={styles.period}>{t('subscription.monthlyPricePeriod', '/month')}</span>
               </div>
               <ul className={styles.planFeatures}>
                 <li>{t('subscription.featureNoWatermarks', 'No watermarks')}</li>
@@ -409,7 +409,7 @@ export default function SubscriptionModal() {
               <div className={styles.planPrice}>
                 <span className={styles.currency}>₹</span>
                 <span className={styles.amount}>499</span>
-                <span className={styles.period}>/{t('subscription.yearlyPricePeriod', 'year')}</span>
+                <span className={styles.period}>{t('subscription.yearlyPricePeriod', '/year')}</span>
               </div>
               <ul className={styles.planFeatures}>
                 <li>{t('subscription.featureNoWatermarks', 'No watermarks')}</li>

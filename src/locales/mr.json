@@ -175,11 +175,13 @@
     "aariPremium": "आरी प्रीमियम",
     "unlockUnlimited": "असीमित क्षमता आणि व्यावसायिक डिझाइन अनलॉक करा",
     "monthlyBasic": "मासिक बेसिक",
+    "month": "/महिना",
     "noWatermarks": "वॉटरमार्क नाहीत",
     "limit100": "मर्यादा: 100 इमेज/PDF",
     "cancelAnytime": "कधीही रद्द करा",
     "save60": "60% वाचवा",
     "annualVIP": "वार्षिक VIP",
+    "year": "/वर्ष",
     "unlimitedCatalogs": "असीमित कॅटलॉग",
     "prioritySupport": "प्राधान्य सपोर्ट",
     "contactDetails": "संपर्क तपशील",
@@ -191,9 +193,7 @@
     "encryptionNote": "Cashfree एंड-टू-एंड 256-बिट SSL एन्क्रिप्शनद्वारे संरक्षित.",
     "fillAllDetails": "कृपया सर्व ग्राहक तपशील भरा",
     "validPhone": "कृपया वैध 10-अंकी फोन नंबर प्रविष्ट करा",
-    "orderFailed": "ऑर्डर तयार करण्यात अयशस्वी",
-    "monthlyPricePeriod": "महिना",
-    "yearlyPricePeriod": "वर्ष"
+    "orderFailed": "ऑर्डर तयार करण्यात अयशस्वी"
   },
   "paymentStatus": {
     "verifying": "पेमेंट सत्यापित होत आहे...",
