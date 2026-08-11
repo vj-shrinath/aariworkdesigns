@@ -91,13 +91,15 @@ export function middleware(request: NextRequest) {
   // Path is missing a valid locale prefix. Determine correct locale.
   const locale = getPreferredLocale(request);
 
-  // Safely redirect to /locale/remaining-path
-  // If pathname is `/`, we redirect to `/${locale}`
-  // If pathname is `/about`, we redirect to `/${locale}/about`
-  const redirectPath = pathname === '/' ? `/${locale}` : `/${locale}${pathname}`;
-  const redirectUrl = new URL(`${redirectPath}${search}`, request.url);
+  // Safely handle routing for root path vs other paths
+  // If pathname is `/`, we REWRITE to `/${locale}` so AdSense bots get a 200 OK on the root domain
+  // If pathname is `/about`, we REDIRECT to `/${locale}/about`
+  const targetPath = pathname === '/' ? `/${locale}` : `/${locale}${pathname}`;
+  const targetUrl = new URL(`${targetPath}${search}`, request.url);
 
-  const response = NextResponse.redirect(redirectUrl);
+  const response = pathname === '/'
+    ? NextResponse.rewrite(targetUrl)
+    : NextResponse.redirect(targetUrl);
   // Set the preference cookie on redirection
   response.cookies.set('NEXT_LOCALE', locale, {
     path: '/',
