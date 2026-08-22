@@ -156,6 +156,7 @@ export default function Header() {
                     </div>
                   </div>
                   <div className={styles.userDropdownDivider} />
+                  {/* Temporarily hidden 
                   {!isSubscribed && (
                     <button
                       className={styles.userDropdownItem}
@@ -166,6 +167,7 @@ export default function Header() {
                       <span>{t('header.upgradePremium', 'Upgrade to Premium')}</span>
                     </button>
                   )}
+                  */}
                   <button
                     className={`${styles.userDropdownItem} ${styles.userDropdownItemDanger}`}
                     onClick={async () => { await logout(); setIsUserMenuOpen(false); }}
@@ -180,11 +182,7 @@ export default function Header() {
             <span className={styles.cta} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'default', opacity: 0.9 }}>
               <Crown size={14} /> {t('header.premium', 'Premium')}
             </span>
-          ) : (
-            <button className={styles.cta} onClick={() => { if (!SUBSCRIPTIONS_COMING_SOON) { setIsMenuOpen(false); openModal(); } }} disabled={SUBSCRIPTIONS_COMING_SOON}>
-              {t('header.subscribe', 'Subscribe')}
-            </button>
-          )}
+          ) : null}
         </nav>
       </div>
     </header>
