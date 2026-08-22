@@ -12,6 +12,17 @@ export const portableTextComponents = {
       const headers = rows[0]?.cells || [];
       const bodyRows = rows.slice(1);
       
+      const formatCellText = (text: string) => {
+        if (!text) return null;
+        // Handle links, bold, and italics.
+        const html = String(text)
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">$1</a>')
+          .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+          
+        return <span dangerouslySetInnerHTML={{ __html: html }} />;
+      };
+      
       return (
         <div style={{ overflowX: 'auto', margin: '3.5rem 0', borderRadius: '16px', boxShadow: 'var(--shadow-md)', border: '1px solid var(--border)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--bg-tertiary)', textAlign: 'left' }}>
@@ -19,7 +30,7 @@ export const portableTextComponents = {
               <tr>
                 {headers.map((head: string, i: number) => (
                   <th key={i} style={{ padding: '1.2rem 1.5rem', background: 'var(--bg-secondary)', color: 'var(--accent)', fontWeight: 'bold', borderBottom: '2px solid var(--border)', fontFamily: 'var(--font-heading)', fontSize: '1.1rem' }}>
-                    {head}
+                    {formatCellText(head)}
                   </th>
                 ))}
               </tr>
@@ -29,7 +40,7 @@ export const portableTextComponents = {
                 <tr key={row._key || i} style={{ borderBottom: i !== bodyRows.length - 1 ? '1px solid var(--border)' : 'none' }}>
                   {row.cells?.map((cell: string, j: number) => (
                     <td key={j} style={{ padding: '1rem 1.5rem', color: 'var(--text-primary)', fontSize: '1rem', lineHeight: '1.6' }}>
-                      {cell}
+                      {formatCellText(cell)}
                     </td>
                   ))}
                 </tr>
