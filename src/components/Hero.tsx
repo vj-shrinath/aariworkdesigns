@@ -41,9 +41,6 @@ export default function Hero() {
             <Link href={`/${locale}/trace`} className={styles.primaryBtn}>
               {t('hero.primaryBtn', 'Start Tracing Now')}
             </Link>
-            <button className={styles.secondaryBtn}>
-              {t('hero.secondaryBtn', 'App Waitlist')}
-            </button>
           </div>
         </div>
         <div className={`${styles.mockupWrapper} animate-fade-in`}>

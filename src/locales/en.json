@@ -1,9 +1,9 @@
 {
   "meta": {
-    "siteTitle": "AARI Work Designs | Embroidery Patterns & App",
-    "siteDescription": "Premium Aari work traces and embroidery designs. Download our Android app to trace designs directly onto fabric.",
+    "siteTitle": "AARI Work Designs | Embroidery Patterns & Tracing Studio",
+    "siteDescription": "Premium Aari work traces and embroidery designs. Use our Online Tracing Studio to trace designs directly onto fabric.",
     "homeTitle": "Home | AARI Work Designs - Trace Your Imagination",
-    "homeDescription": "Download the Aari Android App to trace intricate embroidery designs directly onto fabric. Explore our latest traces and patterns."
+    "homeDescription": "Use our free Aari Tracing Studio to trace intricate embroidery designs directly onto fabric. Explore our latest traces and patterns."
   },
   "header": {
     "home": "Home",
@@ -156,11 +156,11 @@
   "about": {
     "title": "About ",
     "titleBrand": "AARI Work Designs",
-    "p1": "The primary aim of this website is to provide all types of **Aari work traces** which can be effortlessly drawn through the **Aari Android App**.",
+    "p1": "The primary aim of this website is to provide all types of **Aari work traces** which can be effortlessly drawn through our **Online Tracing Studio**.",
     "p2": "We specialize in providing high-quality digital patterns specifically optimized for mobile-to-cloth tracing. Whether you are looking for intricate bridal necklines or simple floral borders, our traces are designed to be used with our unique app interface.",
-    "appExperience": "The App Experience",
-    "p3": "Our upcoming Android app introduces a revolutionary way to embroider. By selecting a design from our blog and using the app's **Lock Interface** feature, you can place your phone directly under your cloth and trace with pinpoint accuracy.",
-    "p4": "You can even write custom names or text on the app's canvas and project them onto your fabric, making personalization easier than ever before."
+    "appExperience": "The Tracing Experience",
+    "p3": "Our Tracing Studio introduces a revolutionary way to embroider. By selecting a design from our gallery and using the **Lock Interface** feature on your device, you can place your mobile directly under your cloth and trace with pinpoint accuracy.",
+    "p4": "You can even write custom names or text on the canvas and project them onto your fabric, making personalization easier than ever before."
   },
   "footer": {
     "explore": "Explore",

@@ -14,6 +14,9 @@ import ReadingProgressBar from '@/components/ReadingProgressBar';
 import TableOfContents from '@/components/TableOfContents';
 import { AuthorBox, KeyTakeaways, FaqSection } from '@/components/PostComponents';
 import Footer from '@/components/Footer';
+import React, { Suspense } from 'react';
+import LiveAmazonAffiliateCard from '@/components/LiveAmazonAffiliateCard';
+import AmazonAffiliateCard from '@/components/AmazonAffiliateCard'; // Keep as fallback reference
 import styles from './PostPage.module.css';
 import { getDictionary, translateField } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
@@ -247,7 +250,28 @@ export default async function PostPage({ params }: { params: PageParams }) {
             )}
             
             <div className={styles.richText}>
-              <PortableText value={post.body} components={portableTextComponents} />
+              {post.body && Array.isArray(post.body) && post.body.length > 4 ? (
+                <>
+                  <PortableText value={post.body.slice(0, Math.floor(post.body.length / 2))} components={portableTextComponents} />
+                  <Suspense fallback={<AmazonAffiliateCard semanticKeywords={post.geo?.semanticKeywords} categories={post.categories?.map((c: any) => c.title || c)} />}>
+                    <LiveAmazonAffiliateCard 
+                      semanticKeywords={post.geo?.semanticKeywords} 
+                      categories={post.categories?.map((c: any) => c.title || c)} 
+                    />
+                  </Suspense>
+                  <PortableText value={post.body.slice(Math.floor(post.body.length / 2))} components={portableTextComponents} />
+                </>
+              ) : (
+                <>
+                  <PortableText value={post.body} components={portableTextComponents} />
+                  <Suspense fallback={<AmazonAffiliateCard semanticKeywords={post.geo?.semanticKeywords} categories={post.categories?.map((c: any) => c.title || c)} />}>
+                    <LiveAmazonAffiliateCard 
+                      semanticKeywords={post.geo?.semanticKeywords} 
+                      categories={post.categories?.map((c: any) => c.title || c)} 
+                    />
+                  </Suspense>
+                </>
+              )}
             </div>
 
             {post.ai?.faq && (

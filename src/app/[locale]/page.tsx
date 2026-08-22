@@ -1,6 +1,7 @@
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import BlogList from '@/components/BlogList';
+import HomeSEOContent from '@/components/HomeSEOContent';
 import Footer from '@/components/Footer';
 import { client } from '@/sanity/client';
 import { POSTS_QUERY } from '@/sanity/lib/queries';
@@ -55,6 +56,7 @@ export default async function HomePage({ params }: { params: PageParams }) {
       <Header />
       <Hero />
       <BlogList posts={posts} />
+      <HomeSEOContent />
       <Footer subtext={dict.footer?.defaultSubtext || "Crafted for the curious."} />
     </>
   );

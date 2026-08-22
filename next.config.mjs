@@ -21,7 +21,7 @@ const nextConfig = {
       { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
       { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
       { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-      { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sdk.cashfree.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://cdn.sanity.io; connect-src 'self' https://api.cashfree.com https://sandbox.cashfree.com https://*.supabase.co https://*.sanity.io; frame-src 'self' https://sdk.cashfree.com https://payments.cashfree.com; object-src 'none'; base-uri 'self'; form-action 'self' mailto:; upgrade-insecure-requests" },
+      { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sdk.cashfree.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://cdn.sanity.io https://m.media-amazon.com https://images.unsplash.com https://image.pollinations.ai; connect-src 'self' https://api.cashfree.com https://sandbox.cashfree.com https://*.supabase.co https://*.sanity.io; frame-src 'self' https://sdk.cashfree.com https://payments.cashfree.com; object-src 'none'; base-uri 'self'; form-action 'self' mailto:; upgrade-insecure-requests" },
     ]}];
   },
   images: {
@@ -30,6 +30,18 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'cdn.sanity.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'm.media-amazon.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'image.pollinations.ai',
       },
     ],
   },
