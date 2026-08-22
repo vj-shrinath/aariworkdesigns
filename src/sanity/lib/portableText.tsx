@@ -2,6 +2,48 @@ import Image from 'next/image';
 import { urlFor } from './image';
 import GallerySlider from '@/components/GallerySlider';
 
+const parseMarkdownText = (text: string) => {
+  if (!text) return text;
+  let html = String(text);
+  
+  // 1. Markdown Links
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">$1</a>');
+  
+  // 2. Bare URLs not already in an a-tag
+  html = html.replace(/(<a[^>]*>.*?<\/a>)|(https?:\/\/[^\s<)]+)/g, (match, tag, url) => {
+    if (tag) return tag;
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">${url}</a>`;
+  });
+  
+  // 3. Bold
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  
+  // 4. Italic
+  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  
+  return html;
+};
+
+const processChildren = (children: any) => {
+  const processStr = (str: string) => {
+    if (!/\[.*?\]\(.*?\)|\*\*.*?\*\*|\*.*?\*|https?:\/\/[^\s]+/.test(str)) {
+      return str;
+    }
+    return <span dangerouslySetInnerHTML={{ __html: parseMarkdownText(str) }} />;
+  };
+
+  if (typeof children === 'string') return processStr(children);
+  if (Array.isArray(children)) {
+    return children.map((c: any, i: number) => {
+      if (typeof c === 'string') {
+        const res = processStr(c);
+        return typeof res === 'string' ? res : <span key={i}>{res}</span>;
+      }
+      return c;
+    });
+  }
+  return children;
+};
 
 export const portableTextComponents = {
   types: {
@@ -14,12 +56,7 @@ export const portableTextComponents = {
       
       const formatCellText = (text: string) => {
         if (!text) return null;
-        // Handle links, bold, and italics.
-        const html = String(text)
-          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline;">$1</a>')
-          .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-          .replace(/\*([^*]+)\*/g, '<em>$1</em>');
-          
+        const html = parseMarkdownText(text);
         return <span dangerouslySetInnerHTML={{ __html: html }} />;
       };
       
@@ -279,7 +316,7 @@ export const portableTextComponents = {
           letterSpacing: '-0.02em',
           lineHeight: '1.3'
         }}>
-          {children}
+          {processChildren(children)}
         </h2>
       );
     },
@@ -293,7 +330,7 @@ export const portableTextComponents = {
           letterSpacing: '-0.01em',
           lineHeight: '1.4'
         }}>
-          {children}
+          {processChildren(children)}
         </h3>
       );
     },
@@ -305,7 +342,7 @@ export const portableTextComponents = {
         opacity: 0.9,
         fontWeight: '400'
       }}>
-        {children}
+        {processChildren(children)}
       </p>
     ),
     blockquote: ({ children }: any) => (
@@ -320,7 +357,7 @@ export const portableTextComponents = {
         fontStyle: 'italic',
         fontSize: '1.4rem'
       }}>
-        {children}
+        {processChildren(children)}
       </blockquote>
     ),
   },
@@ -329,8 +366,8 @@ export const portableTextComponents = {
     number: ({ children }: any) => <ol className="ml-8 mb-16 list-decimal space-y-8" style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginTop: '2rem' }}>{children}</ol>,
   },
   listItem: {
-    bullet: ({ children }: any) => <li className="pl-6 leading-relaxed">{children}</li>,
-    number: ({ children }: any) => <li className="pl-6 leading-relaxed">{children}</li>,
+    bullet: ({ children }: any) => <li className="pl-6 leading-relaxed">{processChildren(children)}</li>,
+    number: ({ children }: any) => <li className="pl-6 leading-relaxed">{processChildren(children)}</li>,
   },
   marks: {
     link: ({ value, children }: any) => {
