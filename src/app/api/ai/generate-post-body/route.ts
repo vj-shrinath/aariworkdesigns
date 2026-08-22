@@ -83,18 +83,18 @@ export async function POST(req: Request) {
       wordCountGuideline = `
 - STRICT word count: between ${minWords} and ${maxWords} words. Do NOT write fewer or more.
 - Write 8-12 sections (H2/H3). Each section MUST contain 3-4 fully developed, rich paragraphs (each 100-130 words).
-- Provide exhaustive, actionable tutorials, full materials checklists, step-by-step numbered guides, and long FAQ/troubleshooting answers.
-- Under-writing or submitting a short skeleton structure is a direct failure.`;
+- Provide exhaustive, actionable tutorials, specific design breakdowns, step-by-step guides, and detailed FAQ answers.
+- STICK 100% TO THE USER'S SPECIFIC BRIEF. Do NOT add generic history or needle basics unless requested.`;
     } else if (wordCount >= 1800) {
       wordCountGuideline = `
 - STRICT word count: between ${minWords} and ${maxWords} words. Do NOT write fewer or more.
 - Write 7-9 sections (H2/H3). Each section MUST contain 3-4 detailed paragraphs (each 90-120 words).
-- Map broad explanations of history, techniques, checklists, and tips. Do not summarize or be brief.`;
+- Deep-dive strictly into the topic and specific angles requested in the BRIEF.`;
     } else if (wordCount >= 1200) {
       wordCountGuideline = `
 - STRICT word count: between ${minWords} and ${maxWords} words. Do NOT write fewer or more.
 - Write 6-8 sections (H2/H3). Each section MUST contain 3 detailed paragraphs (each 80-110 words).
-- Explore options, practical application details, and common pitfalls. Ensure the total text actually reaches this target.`;
+- Explore specific practical details, pattern breakdowns, and step-by-step methods matching the BRIEF.`;
     } else if (wordCount >= 700) {
       wordCountGuideline = `
 - STRICT word count: between ${minWords} and ${maxWords} words. Do NOT write fewer or more.
@@ -106,9 +106,9 @@ export async function POST(req: Request) {
     }
 
     // ── Pro-writer prompt ──
-    const prompt = `You are an award-winning SEO content strategist and domain expert. You write at a 10/10 editorial standard — the kind of content that ranks #1 on Google, earns backlinks, and gets shared organically. Your writing voice is warm, first-person, deeply knowledgeable, and conversational — never robotic, never generic.
+    const prompt = `You are an award-winning SEO content strategist and domain expert in Aari, Zardosi, and Indian bridal embroidery. You write at a 10/10 editorial standard — unique, highly specific, and tailored precisely to the client's brief.
 
-TASK: Write a complete, publication-ready article based on the brief below.
+TASK: Write a complete, publication-ready article based STRICTLY on the brief below.
 
 ──────────────────────────────
 BRIEF
@@ -121,31 +121,32 @@ Target Word Count: ${wordCount} words
 ${wordCountGuideline}
 
 ──────────────────────────────
-WRITING RULES (10/10 STANDARD)
+STRICT CONTENT & ANTI-DUPLICATION RULES
 ──────────────────────────────
-1. **Keyword Discipline**: Use the exact primary keyword phrase a maximum of 5-7 times across the entire article. Beyond that, ALWAYS use LSI (Latent Semantic Indexing) variations, synonyms, and related phrases. Example LSI terms for embroidery: "tambour needle technique", "hand-stitched sleeve patterns", "Indian bridal blouse needlework", "zardosi sleeve embroidery". Spread keywords across headings and body naturally.
+1. **STRICT BRIEF ADHERENCE (NO GENERIC BOILERPLATE)**:
+   - Your primary mandate is to write about the EXACT topic described in the Topic/Outline Brief and Title.
+   - DO NOT write generic introductory filler, history of Aari work, or basic needle/material overviews UNLESS the brief explicitly asks for it.
+   - If the brief mentions "tracing designs", "tracing patterns", or "paper transfers", focus 100% on tracing methods (carbon paper, kerosene-powder stencil, yellow tracing sheets), pattern alignment on blouse necklines/sleeves, and detailed descriptions of tracing motifs.
+   - If image uploads or design patterns are referenced in the brief, include explicit image callouts/placeholders (e.g. "[Image: Description of Tracing Pattern]") in the body copy.
 
-2. **Unique Voice**: Write as a real craftsperson sharing hard-won knowledge. Use personal anecdotes ("In my workshop, I always..."), sensory language ("the satisfying click of the needle through silk"), and opinionated recommendations ("I personally prefer X over Y because..."). Never start 2 consecutive paragraphs with the same word or phrase pattern.
+2. **ANTI-DUPLICATE CONTENT GUARD**:
+   - Treat this article as part of an established blog. Avoid repeating standard "What is Aari Work?" intro paragraphs that exist on other posts.
+   - Start directly with a captivating, topic-specific hook related to the specific title/brief.
 
-3. **Sentence Variety**: Mix short punchy sentences (5-10 words) with medium descriptive ones (15-25 words). Never write 3 consecutive sentences of similar length. Use rhetorical questions, lists within paragraphs, and occasional one-line impact sentences.
+3. **Keyword Discipline**: Use the exact primary keyword phrase 4-6 times across the article. Beyond that, ALWAYS use LSI (Latent Semantic Indexing) variations, synonyms, and related domain terms naturally.
 
-4. **Paragraph Length**: Keep EVERY paragraph under 100 words. Mobile readers scan — respect that.
+4. **Unique Expert Voice**: Write as an expert artisan sharing practical, hands-on workshop advice. Use specific craft terminology (e.g., "yellow carbon sheet", "kerosene-tracing powder ratio", "sleeve neck outline", "pinning tracing paper to silk fabric").
 
-5. **Structural Requirements** — the article MUST contain ALL of the following:
-   a) An engaging hook paragraph (NO heading above it — this is the opening)
-   b) Multiple H2 and H3 subheadings that are descriptive and keyword-aware
-   c) At least ONE numbered step-by-step how-to section (use listItem: "number")
-   d) At least ONE bullet list of tips, materials, or recommendations
-   e) A "Frequently Asked Questions" H2 section at the end with 3-5 Q&A pairs. Format each question as an H3, followed by a normal paragraph answer.
-   f) A closing paragraph with a warm, motivating call-to-action encouraging readers to explore more content, try techniques, or share their work. Place this paragraph at the very end of the article, right after the Frequently Asked Questions section.
+5. **Structural Requirements**:
+   a) Hook paragraph (NO heading above it — this is the opening)
+   b) Multiple descriptive H2 and H3 subheadings matching the specific brief
+   c) At least ONE numbered step-by-step how-to section
+   d) At least ONE bullet list of practical tips, pattern elements, or steps
+   e) A "Frequently Asked Questions" H2 section at the end with 3-5 specific Q&A pairs related to the brief topic
+   f) A closing paragraph with a warm call-to-action encouraging readers to try the designs or download patterns
 
-6. **Anti-Repetition**: Track your keyword usage mentally. If you have already used the exact primary keyword 5 times, STOP using it and switch to synonyms for the remainder.
-
-7. **Meta Description**: Generate a compelling 150-155 character meta description summarizing the article for search engines. Include the primary keyword once.
-
-8. **Fulfill Word Count**: You MUST satisfy the length target of ${wordCount} words (minimum ${minWords} words). Do not cut sections short or use sparse templates. Write fully fledged concepts, deep details, historical context, step breakdowns, tip lists, and long FAQ answers. Under-writing is a direct failure.
-
-9. **Keyword Coverage**: You must include each of the target keywords listed in the BRIEF (including secondary variations like simple blouse motifs or designs list) at least once in your article body blocks naturally.
+6. **Meta Description**: Generate a compelling 150-155 character meta description summarizing the specific topic of the article.
+7. **Keyword Coverage**: Include target keywords listed in the BRIEF naturally in article body blocks.
 
 ──────────────────────────────
 OUTPUT FORMAT (Sanity Portable Text JSON)

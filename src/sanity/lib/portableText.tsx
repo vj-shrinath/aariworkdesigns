@@ -5,6 +5,40 @@ import GallerySlider from '@/components/GallerySlider';
 
 export const portableTextComponents = {
   types: {
+    table: ({ value }: any) => {
+      if (!value || !value.rows || value.rows.length === 0) return null;
+      
+      const { rows } = value;
+      const headers = rows[0]?.cells || [];
+      const bodyRows = rows.slice(1);
+      
+      return (
+        <div style={{ overflowX: 'auto', margin: '3.5rem 0', borderRadius: '16px', boxShadow: 'var(--shadow-md)', border: '1px solid var(--border)' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--bg-tertiary)', textAlign: 'left' }}>
+            <thead>
+              <tr>
+                {headers.map((head: string, i: number) => (
+                  <th key={i} style={{ padding: '1.2rem 1.5rem', background: 'var(--bg-secondary)', color: 'var(--accent)', fontWeight: 'bold', borderBottom: '2px solid var(--border)', fontFamily: 'var(--font-heading)', fontSize: '1.1rem' }}>
+                    {head}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {bodyRows.map((row: any, i: number) => (
+                <tr key={row._key || i} style={{ borderBottom: i !== bodyRows.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                  {row.cells?.map((cell: string, j: number) => (
+                    <td key={j} style={{ padding: '1rem 1.5rem', color: 'var(--text-primary)', fontSize: '1rem', lineHeight: '1.6' }}>
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    },
     image: ({ value }: any) => {
       const asset = value?.asset;
       if (!asset) return null;

@@ -23,7 +23,7 @@ export default function Hero() {
           <p 
             className={`${styles.description} animate-fade-in`}
             dangerouslySetInnerHTML={{ 
-              __html: t('hero.description', 'Our full Android app is coming soon, but we couldn\'t wait to see you create. Our <strong>Web Tracing Studio</strong> is now live—pick any design, lock your screen, and start tracing today.') 
+              __html: t('hero.description', 'Our <strong>Web Tracing Studio</strong> is now live—pick any design, lock your screen, and start tracing today.') 
             }}
           />
           <ul className={`${styles.features} animate-fade-in`}>
