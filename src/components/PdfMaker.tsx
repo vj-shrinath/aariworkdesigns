@@ -409,7 +409,7 @@ export default function PdfMaker({ initialImages }: PdfMakerProps) {
           }}
         >
           <Crown size={14} style={{ color: 'var(--accent)' }} />
-          <span>{SUBSCRIPTIONS_COMING_SOON ? t('header.comingSoon', 'Subscriptions Coming Soon') : t('pdfMaker.removeWatermarksNudge', 'Subscribe to remove watermarks & select up to 100')}</span>
+          <span>{t('pdfMaker.removeWatermarksNudge', 'Subscribe to remove watermarks & select up to 100')}</span>
         </div>
       )}
 

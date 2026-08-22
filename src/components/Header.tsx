@@ -163,7 +163,7 @@ export default function Header() {
                       disabled={SUBSCRIPTIONS_COMING_SOON}
                     >
                       <Crown size={16} className={styles.userDropdownItemIcon} />
-                      <span>{SUBSCRIPTIONS_COMING_SOON ? t('header.comingSoon', 'Coming Soon') : t('header.upgradePremium', 'Upgrade to Premium')}</span>
+                      <span>{t('header.upgradePremium', 'Upgrade to Premium')}</span>
                     </button>
                   )}
                   <button
@@ -182,7 +182,7 @@ export default function Header() {
             </span>
           ) : (
             <button className={styles.cta} onClick={() => { if (!SUBSCRIPTIONS_COMING_SOON) { setIsMenuOpen(false); openModal(); } }} disabled={SUBSCRIPTIONS_COMING_SOON}>
-              {SUBSCRIPTIONS_COMING_SOON ? t('header.comingSoon', 'Coming Soon') : t('header.subscribe', 'Subscribe')}
+              {t('header.subscribe', 'Subscribe')}
             </button>
           )}
         </nav>
