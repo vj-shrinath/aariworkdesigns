@@ -10,6 +10,7 @@ const BYPASS_PATHS = [
   '/images',
   '/robots.txt',
   '/sitemap.xml',
+  '/ads.txt',
   '/feed.xml',
   '/favicon.ico',
   '/logo.png',
