@@ -4,7 +4,6 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { FileDown, Check, Search, X, ImageIcon, Trash2, Crown } from 'lucide-react';
 import { urlFor } from '@/sanity/lib/image';
-import { jsPDF } from 'jspdf';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { SUBSCRIPTIONS_COMING_SOON } from '@/lib/subscriptionConfig';
 import styles from './PdfMaker.module.css';
@@ -15,10 +14,10 @@ const FREE_MAX_SELECTION = 20;
 const PREMIUM_MAX_SELECTION = 100;
 
 interface PdfMakerProps {
-  initialImages: any[];
+  initialImages?: any[];
 }
 
-export default function PdfMaker({ initialImages }: PdfMakerProps) {
+export default function PdfMaker({ initialImages = [] }: PdfMakerProps) {
   const { t, locale } = useTranslation();
   
   // ── Subscription ────────────────────────────────────────
@@ -33,6 +32,8 @@ export default function PdfMaker({ initialImages }: PdfMakerProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const safeImages = useMemo(() => Array.isArray(initialImages) ? initialImages : [], [initialImages]);
 
   // Lock body scroll when preview is active
   useEffect(() => {
@@ -55,7 +56,15 @@ export default function PdfMaker({ initialImages }: PdfMakerProps) {
 
   const getImageUrl = useCallback((image: any, size = 600) => {
     try {
-      return urlFor(image.mainImage).width(size).height(size).url();
+      if (!image) return '';
+      if (typeof image.mainImage === 'string') return image.mainImage;
+      if (image.mainImage?.asset) {
+        return urlFor(image.mainImage).width(size).height(size).url();
+      }
+      if (image.mainImageAsset) {
+        return urlFor(image.mainImageAsset).width(size).height(size).url();
+      }
+      return '';
     } catch {
       return '';
     }
@@ -63,7 +72,15 @@ export default function PdfMaker({ initialImages }: PdfMakerProps) {
 
   const getFullImageUrl = useCallback((image: any) => {
     try {
-      return urlFor(image.mainImage).url();
+      if (!image) return '';
+      if (typeof image.mainImage === 'string') return image.mainImage;
+      if (image.mainImage?.asset) {
+        return urlFor(image.mainImage).url();
+      }
+      if (image.mainImageAsset) {
+        return urlFor(image.mainImageAsset).url();
+      }
+      return '';
     } catch {
       return '';
     }
@@ -73,8 +90,8 @@ export default function PdfMaker({ initialImages }: PdfMakerProps) {
   const categories = useMemo(() => {
     const cats = new Set<string>();
     cats.add('All');
-    initialImages.forEach((img) => {
-      if (img.categories) {
+    safeImages.forEach((img) => {
+      if (img?.categories && Array.isArray(img.categories)) {
         img.categories.forEach((c: any) => {
           const catTitle = translateField(c, 'title', locale);
           if (catTitle) cats.add(catTitle);
@@ -82,14 +99,14 @@ export default function PdfMaker({ initialImages }: PdfMakerProps) {
       }
     });
     return Array.from(cats);
-  }, [initialImages, locale]);
+  }, [safeImages, locale]);
 
   // ── Filtered images ─────────────────────────────────────
   const filteredImages = useMemo(() => {
-    let imgs = initialImages;
+    let imgs = safeImages;
     if (activeCategory !== 'All') {
       imgs = imgs.filter((img) =>
-        img.categories?.some((c: any) => translateField(c, 'title', locale) === activeCategory)
+        img?.categories?.some((c: any) => translateField(c, 'title', locale) === activeCategory)
       );
     }
     if (searchQuery.trim()) {
@@ -100,7 +117,7 @@ export default function PdfMaker({ initialImages }: PdfMakerProps) {
       });
     }
     return imgs;
-  }, [initialImages, activeCategory, searchQuery, locale]);
+  }, [safeImages, activeCategory, searchQuery, locale]);
 
   // ── Selection logic ─────────────────────────────────────
   const toggleImage = useCallback(
@@ -132,12 +149,14 @@ export default function PdfMaker({ initialImages }: PdfMakerProps) {
     }
   }, [filteredImages, getFullImageUrl, MAX_SELECTION, showToast, t]);
 
-  // ── PDF generation ──────────────────────────────────────
+  // ── PDF generation (dynamic jsPDF import to prevent SSR exceptions) ──
   const generateAndDownloadPdf = useCallback(async () => {
     if (selectedUrls.length === 0) return;
     setIsGenerating(true);
 
     try {
+      const { jsPDF } = await import('jspdf');
+
       // Load all images as HTMLImageElement
       const loadImage = (url: string): Promise<HTMLImageElement> =>
         new Promise((resolve, reject) => {
@@ -148,7 +167,7 @@ export default function PdfMaker({ initialImages }: PdfMakerProps) {
           img.src = url;
         });
 
-      const images = await Promise.all(selectedUrls.map(loadImage));
+      const loadedImages = await Promise.all(selectedUrls.map(loadImage));
 
       // Create PDF (A4 portrait)
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -158,7 +177,7 @@ export default function PdfMaker({ initialImages }: PdfMakerProps) {
       const usableW = pageW - margin * 2;
       const usableH = pageH - margin * 2 - 10; // reserve 10mm bottom for watermark
 
-      images.forEach((img, i) => {
+      loadedImages.forEach((img, i) => {
         if (i > 0) pdf.addPage();
 
         // Scale image to fit
@@ -207,7 +226,7 @@ export default function PdfMaker({ initialImages }: PdfMakerProps) {
         // Page number
         pdf.setFontSize(7);
         pdf.setTextColor(160, 160, 160);
-        pdf.text(`${i + 1} / ${images.length}`, pageW - margin, margin, {
+        pdf.text(`${i + 1} / ${loadedImages.length}`, pageW - margin, margin, {
           align: 'right',
         });
       });
@@ -288,6 +307,7 @@ export default function PdfMaker({ initialImages }: PdfMakerProps) {
               const isSelected = selectedUrls.includes(fullUrl);
               const orderNum = isSelected ? selectedUrls.indexOf(fullUrl) + 1 : 0;
               const imageTitle = translateField(image, 'title', locale);
+              const displayThumbUrl = getImageUrl(image, 400);
 
               return (
                 <div
@@ -296,14 +316,18 @@ export default function PdfMaker({ initialImages }: PdfMakerProps) {
                   onClick={() => toggleImage(fullUrl)}
                   data-interactive="true"
                 >
-                  <Image
-                    src={getImageUrl(image, 400)}
-                    alt={imageTitle || 'Design'}
-                    fill
-                    sizes="(max-width: 600px) 33vw, (max-width: 900px) 25vw, 200px"
-                    style={{ objectFit: 'cover' }}
-                    loading="lazy"
-                  />
+                  {displayThumbUrl ? (
+                    <Image
+                      src={displayThumbUrl}
+                      alt={imageTitle || 'Design'}
+                      fill
+                      sizes="(max-width: 600px) 33vw, (max-width: 900px) 25vw, 200px"
+                      style={{ objectFit: 'cover' }}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', background: 'var(--bg-tertiary)' }} />
+                  )}
 
                   {/* Selection checkbox */}
                   <div className={`${styles.checkOverlay} ${isSelected ? styles.checkOverlayChecked : ''}`}>
