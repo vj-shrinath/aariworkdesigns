@@ -7,27 +7,6 @@ import styles from './SubscriptionModal.module.css';
 import { useTranslation } from '@/context/LanguageContext';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
-// Programmatically load Cashfree SDK from CDN
-const loadCashfree = (): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    if ((window as any).Cashfree) {
-      resolve((window as any).Cashfree);
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
-    script.async = true;
-    script.onload = () => {
-      if ((window as any).Cashfree) {
-        resolve((window as any).Cashfree);
-      } else {
-        reject(new Error('Cashfree SDK loaded, but window.Cashfree wrapper not found'));
-      }
-    };
-    script.onerror = () => reject(new Error('Failed to load Cashfree script'));
-    document.body.appendChild(script);
-  });
-};
 
 export default function SubscriptionModal() {
   const { t, locale } = useTranslation();
@@ -162,8 +141,8 @@ export default function SubscriptionModal() {
     setErrorMsg('');
 
     try {
-      // 1. Create order on Cashfree via our backend API
-      const res = await fetch('/api/cashfree/create-order', {
+      // 1. Create order for PayU via our backend API
+      const res = await fetch('/api/payu/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -180,30 +159,35 @@ export default function SubscriptionModal() {
         throw new Error(errorData.error || 'Failed to create order');
       }
 
-      const { paymentSessionId, orderId, mockRedirectUrl } = await res.json();
+      const payuData = await res.json();
 
       // Save buyer info to prefill in case they retry
       localStorage.setItem('aari_saved_name', name);
       localStorage.setItem('aari_saved_email', email);
       localStorage.setItem('aari_saved_phone', phone);
 
-      if (mockRedirectUrl) {
-        window.location.href = mockRedirectUrl;
+      if (payuData.mockRedirectUrl) {
+        window.location.href = payuData.mockRedirectUrl;
         return;
       }
 
-      // 2. Load Cashfree client SDK
-      const CashfreeSDK = await loadCashfree();
-
-      // 3. Initialize Cashfree on front-end
-      const cfEnv = process.env.NEXT_PUBLIC_CASHFREE_ENV === 'production' ? 'production' : 'sandbox';
-      const cashfree = new CashfreeSDK({ mode: cfEnv });
-
-      // 4. Trigger Checkout
-      await cashfree.checkout({
-        paymentSessionId: paymentSessionId,
-        redirectTarget: '_self', 
-      });
+      // 2. Submit form to PayU securely
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = payuData.action;
+      form.target = '_top'; // Force navigation at top level
+      form.style.display = 'none';
+      for (const key in payuData) {
+        if (key !== 'action' && payuData[key] !== undefined && payuData[key] !== null) {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = String(payuData[key]);
+          form.appendChild(input);
+        }
+      }
+      document.body.appendChild(form);
+      form.submit();
 
     } catch (err: any) {
       console.error('Payment checkout exception:', err);
@@ -353,7 +337,7 @@ export default function SubscriptionModal() {
           )}
 
           <p className={styles.footerNotes}>
-            {t('subscription.secureFootnote', 'Protected by Cashfree end-to-end 256-bit SSL encryption. All transactions are securely processed in INR.')}
+            {t('subscription.secureFootnotePayU', 'Protected by PayU end-to-end 256-bit SSL encryption. All transactions are securely processed in INR.')}
           </p>
         </div>
       </div>
@@ -466,7 +450,7 @@ export default function SubscriptionModal() {
             ) : (
               <>
                 <ShieldCheck size={18} />
-                <span>{t('subscription.payViaCashfree', 'Pay ₹{amount} via Cashfree').replace('{amount}', selectedPlan === 'monthly' ? '99' : '499')}</span>
+                <span>{t('subscription.payViaPayU', 'Pay ₹{amount} via Secure Checkout').replace('{amount}', selectedPlan === 'monthly' ? '99' : '499')}</span>
               </>
             )}
           </button>
@@ -477,7 +461,7 @@ export default function SubscriptionModal() {
         </form>
 
         <p className={styles.footerNotes}>
-          {t('subscription.secureFootnote', 'Protected by Cashfree end-to-end 256-bit SSL encryption. All transactions are securely processed in INR.')}
+          {t('subscription.secureFootnotePayU', 'Protected by PayU end-to-end 256-bit SSL encryption. All transactions are securely processed in INR.')}
         </p>
       </div>
     </div>

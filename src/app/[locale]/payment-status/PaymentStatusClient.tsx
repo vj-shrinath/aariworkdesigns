@@ -31,38 +31,26 @@ function PaymentStatusContent({ locale }: { locale: Locale }) {
       return;
     }
 
-    // Mock mode: verify via API to persist subscription to database
-    if (mockStatus === 'PAID' && orderId.startsWith('mock_')) {
-      (async () => {
-        try {
-          const verifyUrl = `/api/cashfree/verify-payment?order_id=${orderId}${userId ? `&user_id=${userId}` : ''}`;
-          const res = await fetch(verifyUrl);
-          const data = await res.json();
-
-          if (data.success) {
-            setSubscriptionStatus(true, data.customerEmail || email || '');
-            if (userId && (data.customerEmail || email)) {
-              await checkSubscription(userId, data.customerEmail || email || '');
-            }
-            setStatus('success');
-            setMessage(t('paymentStatus.premiumActivated', 'Premium activated successfully!'));
-          } else {
-            setStatus('failed');
-            setMessage(data.error || t('paymentStatus.mockFailed', 'Mock payment verification failed.'));
-          }
-        } catch (err) {
-          console.error('Mock verification failed:', err);
-          setStatus('failed');
-          setMessage(t('paymentStatus.connectionError', 'Could not verify payment. Please check your internet connection.'));
-        }
-      })();
+    if (mockStatus === 'PAID') {
+      setSubscriptionStatus(true, email || '');
+      if (userId && email) {
+        checkSubscription(userId, email);
+      }
+      setStatus('success');
+      setMessage(t('paymentStatus.paymentVerified', 'Payment verified! Premium features are now unlocked.'));
       return;
     }
 
-    // Real verification via API
+    if (mockStatus === 'FAILED') {
+      setStatus('failed');
+      setMessage(t('paymentStatus.paymentFailed', 'Payment was not successful. Please try again.'));
+      return;
+    }
+
+    // Real PayU status verification via backend
     const verify = async () => {
       try {
-        const verifyUrl = `/api/cashfree/verify-payment?order_id=${orderId}${userId ? `&user_id=${userId}` : ''}`;
+        const verifyUrl = `/api/payu/check-status?order_id=${orderId}&status=${mockStatus || ''}${userId ? `&user_id=${userId}` : ''}${email ? `&email=${encodeURIComponent(email)}` : ''}`;
         const res = await fetch(verifyUrl);
         const data = await res.json();
 
@@ -75,7 +63,7 @@ function PaymentStatusContent({ locale }: { locale: Locale }) {
           setMessage(t('paymentStatus.paymentVerified', 'Payment verified! Premium features are now unlocked.'));
         } else {
           setStatus('failed');
-          setMessage(data.error || `Payment status: ${data.status || 'PENDING'}. Please try again or contact support.`);
+          setMessage(data.error || `Payment status: ${data.status || 'FAILED'}. Please try again or contact support.`);
         }
       } catch (err) {
         console.error('Verification fetch failed:', err);
