@@ -78,7 +78,7 @@ export default function SubscriptionModal() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${origin}/${locale}/pdf-maker`,
+          redirectTo: `${origin}/api/auth/callback?next=/${locale}/pdf-maker`,
         },
       });
       if (error) throw error;
