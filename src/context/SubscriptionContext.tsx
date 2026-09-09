@@ -28,10 +28,24 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const checkSubscription = async (userId: string, email: string) => {
     try {
+      const cleanEmail = email.trim().toLowerCase();
+      // Match by exact user_id OR user's email OR guest_email identifier
+      const filters = [];
+      if (userId) filters.push(`user_id.eq.${userId}`);
+      if (cleanEmail) {
+        filters.push(`email.eq.${cleanEmail}`);
+        filters.push(`user_id.eq.guest_${cleanEmail}`);
+      }
+
+      if (filters.length === 0) return;
+
       const { data, error } = await supabase
         .from('subscriptions')
-        .select('status, expires_at')
-        .eq('user_id', userId)
+        .select('status, expires_at, plan')
+        .or(filters.join(','))
+        .eq('status', 'active')
+        .order('expires_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (error) {
@@ -49,7 +63,9 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         }
         setIsSubscribed(true);
         localStorage.setItem('aari_premium_status', 'active');
-        localStorage.setItem('aari_sub_email', email);
+        if (cleanEmail) {
+          localStorage.setItem('aari_sub_email', cleanEmail);
+        }
       } else {
         setIsSubscribed(false);
       }
@@ -72,7 +88,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setSubscriberEmail(localEmail);
     }
 
-    // 2. Auth Context State Listener
+    // 2. Auth Context State Listener (Google, Email/Password, Sessions)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       const authUser = session?.user || null;
       setUser(authUser);
@@ -80,7 +96,6 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         setSubscriberEmail(authUser.email || '');
         await checkSubscription(authUser.id, authUser.email || '');
       } else {
-        // If logged out, reset user to guest and keep only local storage if they paid as guest
         const activeLocalStatus = localStorage.getItem('aari_premium_status');
         const activeLocalEmail = localStorage.getItem('aari_sub_email') || '';
         if (activeLocalStatus === 'active') {
