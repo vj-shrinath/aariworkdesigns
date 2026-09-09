@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Crown, Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { X, ShieldCheck, Crown, Mail, Lock, User, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
 import { useSubscription } from '@/context/SubscriptionContext';
 import styles from './SubscriptionModal.module.css';
 import { useTranslation } from '@/context/LanguageContext';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
-
 
 export default function SubscriptionModal() {
   const { t, locale } = useTranslation();
@@ -29,17 +28,24 @@ export default function SubscriptionModal() {
   const [authLoading, setAuthLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Default to guest checkout if Supabase isn't configured, so users are never blocked
+  const [showGuestCheckout, setShowGuestCheckout] = useState(!isSupabaseConfigured);
+
   // Lock body scroll when modal is open
   useEffect(() => {
     if (isModalOpen) {
       document.body.style.overflow = 'hidden';
+      // If user is logged in, show checkout form automatically
+      if (user) {
+        setShowGuestCheckout(true);
+      }
     } else {
       document.body.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isModalOpen]);
+  }, [isModalOpen, user]);
 
   // Pre-fill local storage items if buyer bought before or filled info
   useEffect(() => {
@@ -62,7 +68,8 @@ export default function SubscriptionModal() {
     e.preventDefault();
     if (!isSupabaseConfigured) {
       setAuthMessageType('error');
-      setAuthMessage(t('subscription.authUnavailable', 'Account services are temporarily unavailable. Please try again later.'));
+      setAuthMessage(t('subscription.authUnavailable', 'Account sign-in is currently unavailable. You can continue directly as Guest below.'));
+      setShowGuestCheckout(true);
       return;
     }
     if (!authEmail || (authMode !== 'reset' && !authPassword)) {
@@ -104,14 +111,14 @@ export default function SubscriptionModal() {
           password: authPassword,
         });
         if (error) throw error;
-        // onAuthStateChange in SubscriptionContext will handle the rest
+        setShowGuestCheckout(true);
       }
     } catch (err: any) {
       const rawMessage = String(err?.message || '');
       const message = /email.*rate limit|rate limit.*email|too many requests/i.test(rawMessage)
         ? t(
             'subscription.emailRateLimit',
-            'Confirmation emails are temporarily rate-limited by Supabase. Please wait before trying again, then use Sign In after confirming your email.'
+            'Confirmation emails are temporarily rate-limited by Supabase. Please wait before trying again, or pay directly as Guest below.'
           )
         : rawMessage || t('subscription.authFailed', 'Authentication failed');
       setAuthMessageType('error');
@@ -198,8 +205,8 @@ export default function SubscriptionModal() {
 
   if (!isModalOpen || isSubscribed) return null;
 
-  // If user is not logged in, show auth form
-  if (!user) {
+  // If user is NOT logged in and guest checkout mode is NOT active, show Auth form
+  if (!user && !showGuestCheckout) {
     return (
       <div className={styles.backdrop} onClick={closeModal}>
         <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -261,26 +268,28 @@ export default function SubscriptionModal() {
                     disabled={authLoading}
                   />
                 </div>
-                {authMode !== 'reset' && <div className={styles.inputWithIcon}>
-                  <Lock size={18} className={styles.inputIcon} />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder={t('subscription.password', 'Password')}
-                    value={authPassword}
-                    onChange={(e) => setAuthPassword(e.target.value)}
-                    className={styles.inputField}
-                    required
-                    disabled={authLoading}
-                  />
-                  <button
-                    type="button"
-                    className={styles.passwordToggle}
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? t('subscription.hidePassword', 'Hide password') : t('subscription.showPassword', 'Show password')}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>}
+                {authMode !== 'reset' && (
+                  <div className={styles.inputWithIcon}>
+                    <Lock size={18} className={styles.inputIcon} />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder={t('subscription.password', 'Password')}
+                      value={authPassword}
+                      onChange={(e) => setAuthPassword(e.target.value)}
+                      className={styles.inputField}
+                      required
+                      disabled={authLoading}
+                    />
+                    <button
+                      type="button"
+                      className={styles.passwordToggle}
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? t('subscription.hidePassword', 'Hide password') : t('subscription.showPassword', 'Show password')}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                )}
                 {authMode === 'signup' && (
                   <div className={styles.inputWithIcon}>
                     <Lock size={18} className={styles.inputIcon} />
@@ -336,6 +345,22 @@ export default function SubscriptionModal() {
             </button>
           )}
 
+          {/* Option to bypass Auth & checkout directly as Guest */}
+          <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(212, 175, 55, 0.12)', textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setShowGuestCheckout(true)}
+              style={{
+                background: 'transparent', border: '1px dashed rgba(212, 175, 55, 0.35)', borderRadius: '8px',
+                color: 'var(--accent)', padding: '0.6rem 1rem', fontSize: '0.85rem', fontWeight: 600,
+                cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem'
+              }}
+            >
+              <span>{t('subscription.continueAsGuest', 'Continue as Guest to Checkout')}</span>
+              <ArrowRight size={14} />
+            </button>
+          </div>
+
           <p className={styles.footerNotes}>
             {t('subscription.secureFootnotePayU', 'Protected by PayU end-to-end 256-bit SSL encryption. All transactions are securely processed in INR.')}
           </p>
@@ -344,7 +369,7 @@ export default function SubscriptionModal() {
     );
   }
 
-  // User is logged in - show payment form
+  // Show Payment Form (Logged in OR Guest Checkout mode)
   return (
     <div className={styles.backdrop} onClick={closeModal}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -358,6 +383,21 @@ export default function SubscriptionModal() {
           <p className={styles.subtitle}>{t('subscription.premiumSubtitle', 'Unlock unlimited capabilities and professional designs')}</p>
         </div>
 
+        {!user && isSupabaseConfigured && (
+          <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setShowGuestCheckout(false)}
+              style={{
+                background: 'transparent', border: 'none', color: 'var(--text-secondary)',
+                fontSize: '0.82rem', textDecoration: 'underline', cursor: 'pointer'
+              }}
+            >
+              {t('subscription.alreadyHaveAccount', 'Already have an account? Sign In')}
+            </button>
+          </div>
+        )}
+
         {errorMsg && (
           <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#f87171', borderRadius: '8px', padding: '0.75rem', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>
             {errorMsg}
@@ -365,6 +405,7 @@ export default function SubscriptionModal() {
         )}
 
         <form onSubmit={handleCheckout}>
+          <div className={styles.plansGrid}>
             {/* Monthly Plan */}
             <div 
               className={`${styles.planCard} ${selectedPlan === 'monthly' ? styles.planCardActive : ''}`}
@@ -401,9 +442,10 @@ export default function SubscriptionModal() {
                 <li>{t('subscription.featureUnlimitedCatalogs', 'Unlimited catalogs')}</li>
                 <li>{t('subscription.featurePrioritySupport', 'First-tier priority support')}</li>
               </ul>
-</div>
+            </div>
+          </div>
 
-            {/* Customer Details Form */}
+          {/* Customer Details Form */}
           <div className={styles.formSection}>
             <h3 className={styles.formTitle}>{t('subscription.contactDetails', 'Contact Details')}</h3>
             <div className={styles.inputGroup}>
