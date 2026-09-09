@@ -1,10 +1,11 @@
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import BlogList from '@/components/BlogList';
+import AdSenseUnit from '@/components/AdSenseUnit';
 import HomeSEOContent from '@/components/HomeSEOContent';
 import Footer from '@/components/Footer';
 import { client } from '@/sanity/client';
-import { POSTS_QUERY } from '@/sanity/lib/queries';
+import { POSTS_QUERY, GALLERY_QUERY } from '@/sanity/lib/queries';
 import { getDictionary } from '@/lib/i18n';
 import { translateDocuments } from '@/lib/translate';
 import type { Locale } from '@/lib/i18n';
@@ -39,12 +40,16 @@ export default async function HomePage({ params }: { params: PageParams }) {
   };
 
   let posts = [];
+  let galleryItems = [];
   try {
-    const rawPosts = await client.fetch(POSTS_QUERY, {}, { next: { revalidate: 60 } });
+    const [rawPosts, rawGallery] = await Promise.all([
+      client.fetch(POSTS_QUERY, {}, { next: { revalidate: 60 } }),
+      client.fetch(GALLERY_QUERY, {}, { next: { revalidate: 60 } }),
+    ]);
     posts = await translateDocuments(rawPosts, locale);
+    galleryItems = await translateDocuments(rawGallery, locale);
   } catch (error) {
     console.error('Sanity fetch error:', error);
-    posts = [];
   }
 
   return (
@@ -54,7 +59,8 @@ export default async function HomePage({ params }: { params: PageParams }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Header />
-      <Hero />
+      <Hero posts={posts} galleryItems={galleryItems} />
+      <AdSenseUnit slotId="home_top" />
       <BlogList posts={posts} />
       <HomeSEOContent />
       <Footer subtext={dict.footer?.defaultSubtext || "Crafted for the curious."} />

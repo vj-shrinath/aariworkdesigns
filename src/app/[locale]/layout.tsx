@@ -6,6 +6,7 @@ import PWARegistration from '@/components/PWARegistration';
 import ImageProtection from '@/components/ImageProtection';
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import SubscriptionModal from '@/components/SubscriptionModal';
+import TelegramPopup from '@/components/TelegramPopup';
 import { locales, isRtl, getDictionary } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 import { LanguageProvider } from '@/context/LanguageContext';
@@ -145,6 +146,7 @@ gtag('config', ${JSON.stringify(gaMeasurementId)});`}
               <main style={{ overflowX: 'hidden', width: '100%' }}>{children}</main>
             </div>
             <SubscriptionModal />
+            <TelegramPopup />
           </SubscriptionProvider>
         </LanguageProvider>
       </body>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Header from '@/components/Header';
 import Gallery from '@/components/Gallery';
 import Footer from '@/components/Footer';
+import AdSenseUnit from '@/components/AdSenseUnit';
 import { client } from '@/sanity/client';
 import { GALLERY_QUERY } from '@/sanity/lib/queries';
 import { getDictionary } from '@/lib/i18n';
@@ -120,6 +121,8 @@ export default async function GalleryPage({ params }: { params: PageParams }) {
           </p>
         </header>
         
+        <AdSenseUnit slotId="gallery_top" />
+
         <Gallery items={items} />
       </main>
       
