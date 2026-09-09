@@ -29,7 +29,6 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const checkSubscription = async (userId: string, email: string) => {
     try {
       const cleanEmail = email.trim().toLowerCase();
-      // Match by exact user_id OR user's email OR guest_email identifier
       const filters = [];
       if (userId) filters.push(`user_id.eq.${userId}`);
       if (cleanEmail) {
@@ -88,7 +87,24 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setSubscriberEmail(localEmail);
     }
 
-    // 2. Auth Context State Listener (Google, Email/Password, Sessions)
+    // 2. Fetch active session immediately
+    const initSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser(session.user);
+          setSubscriberEmail(session.user.email || '');
+          await checkSubscription(session.user.id, session.user.email || '');
+        }
+      } catch (err) {
+        console.error('Error fetching initial session:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    initSession();
+
+    // 3. Auth Context State Listener (Google, Email/Password, Sessions)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       const authUser = session?.user || null;
       setUser(authUser);
@@ -131,6 +147,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const logout = async () => {
     await supabase.auth.signOut();
+    setUser(null);
     setSubscriptionStatus(false, '');
   };
 

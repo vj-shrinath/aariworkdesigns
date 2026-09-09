@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Crown, Mail, Lock, User, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
+import { X, ShieldCheck, Crown, Mail, Lock, User, Eye, EyeOff, Loader2, ArrowRight, LogOut } from 'lucide-react';
 import { useSubscription } from '@/context/SubscriptionContext';
 import styles from './SubscriptionModal.module.css';
 import { useTranslation } from '@/context/LanguageContext';
@@ -9,7 +9,7 @@ import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 export default function SubscriptionModal() {
   const { t, locale } = useTranslation();
-  const { isModalOpen, closeModal, isSubscribed, user } = useSubscription();
+  const { isModalOpen, closeModal, isSubscribed, user, subscriberEmail, logout } = useSubscription();
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -35,7 +35,7 @@ export default function SubscriptionModal() {
   useEffect(() => {
     if (isModalOpen) {
       document.body.style.overflow = 'hidden';
-      if (user) {
+      if (user || subscriberEmail) {
         setShowGuestCheckout(true);
       } else {
         setShowGuestCheckout(false);
@@ -46,16 +46,16 @@ export default function SubscriptionModal() {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isModalOpen, user]);
+  }, [isModalOpen, user, subscriberEmail]);
 
   // Pre-fill local storage items if buyer bought before or filled info
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setName(localStorage.getItem('aari_saved_name') || '');
-      setEmail(localStorage.getItem('aari_saved_email') || '');
+      setEmail(localStorage.getItem('aari_saved_email') || user?.email || '');
       setPhone(localStorage.getItem('aari_saved_phone') || '');
     }
-  }, [isModalOpen]);
+  }, [isModalOpen, user]);
 
   // Pre-fill email from logged-in user or auth email
   useEffect(() => {
@@ -162,7 +162,7 @@ export default function SubscriptionModal() {
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalEmail = email || authEmail;
+    const finalEmail = email || authEmail || user?.email;
     if (!name || !finalEmail || !phone) {
       setErrorMsg(t('subscription.fillAllDetails', 'Please fill in all customer details'));
       return;
@@ -434,7 +434,25 @@ export default function SubscriptionModal() {
           <p className={styles.subtitle}>{t('subscription.premiumSubtitle', 'Select your plan and complete details to activate')}</p>
         </div>
 
-        {!user && (
+        {user ? (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+            background: 'rgba(212, 175, 55, 0.08)', border: '1px solid rgba(212, 175, 55, 0.25)',
+            borderRadius: '8px', padding: '0.5rem 1rem', marginBottom: '1.25rem', fontSize: '0.85rem', color: '#f3e8ff'
+          }}>
+            <User size={15} style={{ color: 'var(--accent)' }} />
+            <span>Signed in as <strong>{user.email}</strong></span>
+            <button
+              type="button"
+              onClick={logout}
+              style={{ background: 'transparent', border: 'none', color: '#f87171', fontSize: '0.8rem', cursor: 'pointer', marginLeft: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}
+              title="Sign Out"
+            >
+              <LogOut size={13} />
+              <span>(Sign Out)</span>
+            </button>
+          </div>
+        ) : (
           <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
             <button
               type="button"
@@ -512,7 +530,7 @@ export default function SubscriptionModal() {
               <input
                 type="email"
                 placeholder={t('subscription.emailAddress', 'Email Address')}
-                value={email || authEmail}
+                value={email || authEmail || user?.email || ''}
                 onChange={(e) => setEmail(e.target.value)}
                 className={styles.inputField}
                 required
