@@ -87,7 +87,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setSubscriberEmail(localEmail);
     }
 
-    // 2. Fetch active session immediately & check auto-open intent
+    // 2. Fetch active session immediately
     const initSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -100,13 +100,6 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         console.error('Error fetching initial session:', err);
       } finally {
         setLoading(false);
-        if (typeof window !== 'undefined') {
-          const autoOpen = localStorage.getItem('aari_auto_open_sub_modal');
-          if (autoOpen === 'true') {
-            localStorage.removeItem('aari_auto_open_sub_modal');
-            setIsModalOpen(true);
-          }
-        }
       }
     };
     initSession();
@@ -129,14 +122,6 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
           setSubscriberEmail('');
         }
       }
-      
-      if (typeof window !== 'undefined') {
-        const autoOpen = localStorage.getItem('aari_auto_open_sub_modal');
-        if (autoOpen === 'true') {
-          localStorage.removeItem('aari_auto_open_sub_modal');
-          setIsModalOpen(true);
-        }
-      }
       setLoading(false);
     });
 
@@ -144,6 +129,23 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       subscription.unsubscribe();
     };
   }, []);
+
+  // 4. Auto-open modal after Google/OAuth redirect if openSubModal=true
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !loading) {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('openSubModal') === 'true') {
+        if (!isSubscribed) {
+          setIsModalOpen(true);
+        }
+        // Clean up URL parameter cleanly without reloading page
+        urlParams.delete('openSubModal');
+        const newSearch = urlParams.toString();
+        const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, [loading, isSubscribed]);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
