@@ -74,6 +74,9 @@ export default function SubscriptionModal() {
     setAuthLoading(true);
     setAuthMessage('');
     try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('aari_auto_open_sub_modal', 'true');
+      }
       const origin = typeof window !== 'undefined' ? window.location.origin : 'https://aariworkdesigns.com';
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -83,6 +86,9 @@ export default function SubscriptionModal() {
       });
       if (error) throw error;
     } catch (err: any) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('aari_auto_open_sub_modal');
+      }
       setAuthMessageType('error');
       setAuthMessage(err?.message || t('subscription.googleAuthFailed', 'Google Sign-In failed'));
       setAuthLoading(false);

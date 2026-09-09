@@ -87,7 +87,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setSubscriberEmail(localEmail);
     }
 
-    // 2. Fetch active session immediately
+    // 2. Fetch active session immediately & check auto-open intent
     const initSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -100,6 +100,13 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         console.error('Error fetching initial session:', err);
       } finally {
         setLoading(false);
+        if (typeof window !== 'undefined') {
+          const autoOpen = localStorage.getItem('aari_auto_open_sub_modal');
+          if (autoOpen === 'true') {
+            localStorage.removeItem('aari_auto_open_sub_modal');
+            setIsModalOpen(true);
+          }
+        }
       }
     };
     initSession();
@@ -120,6 +127,14 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         } else {
           setIsSubscribed(false);
           setSubscriberEmail('');
+        }
+      }
+      
+      if (typeof window !== 'undefined') {
+        const autoOpen = localStorage.getItem('aari_auto_open_sub_modal');
+        if (autoOpen === 'true') {
+          localStorage.removeItem('aari_auto_open_sub_modal');
+          setIsModalOpen(true);
         }
       }
       setLoading(false);
