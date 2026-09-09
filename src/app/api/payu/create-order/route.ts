@@ -15,17 +15,18 @@ export async function POST(req: Request) {
     const txnid = `txn_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     const productinfo = plan === 'monthly' ? 'Monthly Premium Subscription' : 'Yearly Premium Subscription';
 
-    const requestOrigin = req.headers.get('origin') || 'https://aariworkdesigns.com/';
+    const requestOrigin = req.headers.get('origin') || 'https://aariworkdesigns.com';
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL || requestOrigin).replace(/\/$/, '');
     
     const surl = `${appUrl}/api/payu/verify`;
     const furl = `${appUrl}/api/payu/verify`;
+    const curl = `${appUrl}/api/payu/verify`;
 
     if (!merchantKey || !salt) {
       console.warn('PAYU KEYS MISSING: Running in Mock Payment Mode.');
       if (userId) {
         try {
-          const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+          const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
           const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, adminKey!);
           const expiresAt = new Date();
           expiresAt.setMonth(expiresAt.getMonth() + (plan === 'yearly' ? 12 : 1));
@@ -61,6 +62,7 @@ export async function POST(req: Request) {
       phone: customerPhone,
       surl,
       furl,
+      curl,
       hash,
       udf1,
       service_provider: 'payu_paisa',

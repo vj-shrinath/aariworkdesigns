@@ -3,12 +3,12 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle, XCircle, Loader2, Crown, ArrowRight } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Loader2, Crown, ArrowRight } from 'lucide-react';
 import { useSubscription } from '@/context/SubscriptionContext';
 import { useTranslation } from '@/context/LanguageContext';
 import type { Locale } from '@/lib/i18n';
 
-type Status = 'loading' | 'success' | 'failed';
+type Status = 'loading' | 'success' | 'failed' | 'cancelled';
 
 function PaymentStatusContent({ locale }: { locale: Locale }) {
   const searchParams = useSearchParams();
@@ -19,15 +19,15 @@ function PaymentStatusContent({ locale }: { locale: Locale }) {
   const [orderId, setOrderId] = useState('');
 
   useEffect(() => {
-    const orderId = searchParams ? searchParams.get('order_id') : null;
+    const orderIdParam = searchParams ? searchParams.get('order_id') : null;
     const mockStatus = searchParams ? searchParams.get('status') : null;
     const email = searchParams ? searchParams.get('email') : null;
     const userId = searchParams ? searchParams.get('user_id') : null;
-    setOrderId(orderId || '');
+    setOrderId(orderIdParam || '');
 
-    if (!orderId) {
-      setStatus('failed');
-      setMessage(t('paymentStatus.noOrder', 'No order information found.'));
+    if (mockStatus === 'CANCELLED' || mockStatus === 'cancel' || mockStatus === 'userCancelled' || mockStatus === 'USER_CANCELLED') {
+      setStatus('cancelled');
+      setMessage(t('paymentStatus.paymentCancelled', 'Payment was cancelled. You have not been charged.'));
       return;
     }
 
@@ -47,10 +47,16 @@ function PaymentStatusContent({ locale }: { locale: Locale }) {
       return;
     }
 
+    if (!orderIdParam) {
+      setStatus('failed');
+      setMessage(t('paymentStatus.noOrder', 'No order information found.'));
+      return;
+    }
+
     // Real PayU status verification via backend
     const verify = async () => {
       try {
-        const verifyUrl = `/api/payu/check-status?order_id=${orderId}&status=${mockStatus || ''}${userId ? `&user_id=${userId}` : ''}${email ? `&email=${encodeURIComponent(email)}` : ''}`;
+        const verifyUrl = `/api/payu/check-status?order_id=${orderIdParam}&status=${mockStatus || ''}${userId ? `&user_id=${userId}` : ''}${email ? `&email=${encodeURIComponent(email)}` : ''}`;
         const res = await fetch(verifyUrl);
         const data = await res.json();
 
@@ -61,6 +67,9 @@ function PaymentStatusContent({ locale }: { locale: Locale }) {
           }
           setStatus('success');
           setMessage(t('paymentStatus.paymentVerified', 'Payment verified! Premium features are now unlocked.'));
+        } else if (data.status === 'CANCELLED' || data.status === 'cancel') {
+          setStatus('cancelled');
+          setMessage(t('paymentStatus.paymentCancelled', 'Payment was cancelled. You have not been charged.'));
         } else {
           setStatus('failed');
           setMessage(data.error || `Payment status: ${data.status || 'FAILED'}. Please try again or contact support.`);
@@ -139,6 +148,46 @@ function PaymentStatusContent({ locale }: { locale: Locale }) {
             }}>
               {t('paymentStatus.startCreating', 'Start Creating')} <ArrowRight size={16} />
             </Link>
+          </>
+        )}
+
+        {status === 'cancelled' && (
+          <>
+            <div style={{
+              width: '80px', height: '80px', borderRadius: '50%',
+              background: 'rgba(234, 179, 8, 0.1)', border: '2px solid rgba(234, 179, 8, 0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 1.5rem',
+            }}>
+              <AlertCircle size={40} style={{ color: '#eab308' }} />
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
+              {t('paymentStatus.cancelledTitle', 'Payment Cancelled')}
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>
+              {message}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={openModal}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                  padding: '0.9rem 2rem',
+                  background: 'var(--accent-gradient)',
+                  color: 'var(--bg-primary)',
+                  borderRadius: '10px',
+                  fontWeight: 800, fontSize: '1rem',
+                  border: 'none', cursor: 'pointer',
+                  boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)',
+                }}
+              >
+                {t('paymentStatus.retryCheckout', 'Try Checkout Again')}
+              </button>
+              <Link href={`/${locale}`} style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textDecoration: 'underline', marginTop: '0.5rem' }}>
+                {t('paymentStatus.returnHome', 'Return Home')}
+              </Link>
+            </div>
           </>
         )}
 

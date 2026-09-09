@@ -3,11 +3,33 @@ import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'edge';
 
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const txnid = searchParams.get('txnid') || searchParams.get('order_id') || searchParams.get('mihpayid') || '';
+    const statusParam = (searchParams.get('status') || 'CANCELLED').toUpperCase();
+    const email = searchParams.get('email') || '';
+    const userId = searchParams.get('udf1') || searchParams.get('user_id') || '';
+
+    const requestOrigin = req.headers.get('origin') || 'https://aariworkdesigns.com';
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || requestOrigin).replace(/\/$/, '');
+
+    const redirectUrl = `${appUrl}/payment-status?order_id=${txnid}&status=${statusParam}&email=${encodeURIComponent(email)}${userId ? `&user_id=${encodeURIComponent(userId)}` : ''}`;
+
+    return NextResponse.redirect(redirectUrl, 303);
+  } catch (err: any) {
+    console.error('API exception in GET PayU verify:', err);
+    const requestOrigin = req.headers.get('origin') || 'https://aariworkdesigns.com';
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || requestOrigin).replace(/\/$/, '');
+    return NextResponse.redirect(`${appUrl}/payment-status?status=CANCELLED`, 303);
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
 
-    const status = formData.get('status') as string || '';
+    const rawStatus = (formData.get('status') as string || '').toLowerCase();
     const firstname = formData.get('firstname') as string || '';
     const amount = formData.get('amount') as string || '';
     const txnid = formData.get('txnid') as string || '';
@@ -25,8 +47,7 @@ export async function POST(req: Request) {
 
     const additionalCharges = formData.get('additionalCharges') as string || '';
     // Reverse Hash formula: [additionalCharges|]SALT|status||||||udf5|udf4|udf3|udf2|udf1|email|firstname|productinfo|amount|txnid|key
-    // There must be 10 pipes between status and udf1 if udf10-udf2 are empty
-    let hashString = `${salt}|${status}||||||||||${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${merchantKey}`;
+    let hashString = `${salt}|${formData.get('status') as string || ''}||||||||||${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${merchantKey}`;
     if (additionalCharges) {
       hashString = `${additionalCharges}|${hashString}`;
     }
@@ -37,20 +58,17 @@ export async function POST(req: Request) {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const calculatedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-    // Very important: Redirect back to the frontend status page.
-    // Whether they paid or not, we send them back.
     const userId = udf1;
-    
-    let redirectUrl = `${appUrl}/payment-status?order_id=${txnid}&status=${status === 'success' ? 'PAID' : 'FAILED'}&email=${encodeURIComponent(email)}${userId ? `&user_id=${encodeURIComponent(userId)}` : ''}`;
+    let finalStatus = 'FAILED';
 
-    if (status === 'success' && calculatedHash === postedHash) {
+    if (rawStatus === 'success' && calculatedHash === postedHash) {
+      finalStatus = 'PAID';
       const targetUserId = userId || (email ? `guest_${email}` : '');
       if (targetUserId) {
         try {
           const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-          const supabaseAdminKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
+          const supabaseAdminKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-          // For security, use Service Role Key if available. Fallback to anon. 
           const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAdminKey;
           const supabaseAdmin = createClient(supabaseUrl, adminKey);
 
@@ -72,18 +90,21 @@ export async function POST(req: Request) {
           console.error('Database upsert error for PayU webhook:', dbErr);
         }
       }
+    } else if (rawStatus === 'cancel' || rawStatus === 'cancelled' || rawStatus === 'usercancelled') {
+      finalStatus = 'CANCELLED';
     } else {
-        if (calculatedHash !== postedHash) {
-            console.warn(`PayU Hash mismatch for txn ${txnid}`);
-        }
+      if (calculatedHash !== postedHash) {
+        console.warn(`PayU Hash mismatch for txn ${txnid}`);
+      }
     }
+
+    const redirectUrl = `${appUrl}/payment-status?order_id=${txnid}&status=${finalStatus}&email=${encodeURIComponent(email)}${userId ? `&user_id=${encodeURIComponent(userId)}` : ''}`;
 
     return NextResponse.redirect(redirectUrl, 303);
   } catch (err: any) {
     console.error('API exception checking PayU order status:', err);
-    return NextResponse.json(
-      { error: err.message || 'Server error during verification' },
-      { status: 500 }
-    );
+    const requestOrigin = req.headers.get('origin') || 'https://aariworkdesigns.com';
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || requestOrigin).replace(/\/$/, '');
+    return NextResponse.redirect(`${appUrl}/payment-status?status=CANCELLED`, 303);
   }
 }
