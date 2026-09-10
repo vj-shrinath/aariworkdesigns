@@ -19,8 +19,8 @@ interface PageParams {
   locale: Locale;
 }
 
-export async function generateMetadata({ params }: { params: PageParams }): Promise<Metadata> {
-  const { locale } = params;
+export async function generateMetadata({ params }: { params: PageParams | Promise<PageParams> }): Promise<Metadata> {
+  const { locale } = await params;
   const dict = await getDictionary(locale);
   return {
     title: dict.meta?.homeTitle,
@@ -28,8 +28,8 @@ export async function generateMetadata({ params }: { params: PageParams }): Prom
   };
 }
 
-export default async function HomePage({ params }: { params: PageParams }) {
-  const { locale } = params;
+export default async function HomePage({ params }: { params: PageParams | Promise<PageParams> }) {
+  const { locale } = await params;
   const dict = await getDictionary(locale);
   
   const jsonLd = {

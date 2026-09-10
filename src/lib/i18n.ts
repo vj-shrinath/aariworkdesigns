@@ -87,9 +87,35 @@ export function t(dict: Dictionary, key: string, fallback?: string): string {
  */
 export function translateField(obj: any, field: string, locale: Locale): string {
   if (!obj) return '';
+  let val: any = undefined;
   if (locale !== defaultLocale) {
     const localisedKey = `${field}_${locale}`;
-    if (obj[localisedKey]) return obj[localisedKey];
+    if (obj[localisedKey] !== undefined) val = obj[localisedKey];
   }
-  return obj[field] ?? '';
+  if (val === undefined) {
+    val = obj[field];
+  }
+
+  if (!val) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'number') return String(val);
+
+  if (Array.isArray(val)) {
+    return val
+      .map((block: any) => {
+        if (typeof block === 'string') return block;
+        if (block && Array.isArray(block.children)) {
+          return block.children.map((c: any) => c?.text || '').join('');
+        }
+        return '';
+      })
+      .join(' ')
+      .trim();
+  }
+
+  if (typeof val === 'object' && Array.isArray(val.children)) {
+    return val.children.map((c: any) => c?.text || '').join('');
+  }
+
+  return '';
 }

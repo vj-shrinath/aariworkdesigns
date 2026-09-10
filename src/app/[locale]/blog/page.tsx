@@ -13,8 +13,8 @@ interface PageParams {
   locale: Locale;
 }
 
-export async function generateMetadata({ params }: { params: PageParams }): Promise<Metadata> {
-  const { locale } = params;
+export async function generateMetadata({ params }: { params: PageParams | Promise<PageParams> }): Promise<Metadata> {
+  const { locale } = await params;
   const dict = await getDictionary(locale);
   return {
     title: `${dict.header?.articles || 'Blog'} | Aari Work Designs & Tutorials`,
@@ -22,8 +22,8 @@ export async function generateMetadata({ params }: { params: PageParams }): Prom
   };
 }
 
-export default async function BlogPage({ params }: { params: PageParams }) {
-  const { locale } = params;
+export default async function BlogPage({ params }: { params: PageParams | Promise<PageParams> }) {
+  const { locale } = await params;
   let posts = [];
   try {
     const rawPosts = await client.fetch(POSTS_QUERY, {}, { next: { revalidate: 60 } });
@@ -33,5 +33,5 @@ export default async function BlogPage({ params }: { params: PageParams }) {
     posts = []; 
   }
 
-  return <BlogListingClient initialPosts={posts} />;
+  return <BlogListingClient initialPosts={posts || []} />;
 }

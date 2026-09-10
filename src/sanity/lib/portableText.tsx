@@ -32,6 +32,22 @@ const processChildren = (children: any) => {
     return <span dangerouslySetInnerHTML={{ __html: parseMarkdownText(str) }} />;
   };
 
+  const extractString = (val: any): string => {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    if (typeof val === 'number') return String(val);
+    if (Array.isArray(val)) {
+      return val.map(extractString).join('');
+    }
+    if (typeof val === 'object') {
+      if (Array.isArray(val.children)) {
+        return val.children.map((c: any) => c?.text || extractString(c)).join('');
+      }
+      if (val.text) return val.text;
+    }
+    return '';
+  };
+
   if (typeof children === 'string') return processStr(children);
   if (Array.isArray(children)) {
     return children.map((c: any, i: number) => {
@@ -39,8 +55,19 @@ const processChildren = (children: any) => {
         const res = processStr(c);
         return typeof res === 'string' ? res : <span key={i}>{res}</span>;
       }
+      if (c && typeof c === 'object') {
+        // If it's a raw Sanity block object (not a valid React node)
+        if (c._type || c.children || c.markDefs) {
+          const str = extractString(c);
+          return str ? processStr(str) : null;
+        }
+      }
       return c;
     });
+  }
+  if (children && typeof children === 'object' && (children._type || children.children || children.markDefs)) {
+    const str = extractString(children);
+    return str ? processStr(str) : null;
   }
   return children;
 };

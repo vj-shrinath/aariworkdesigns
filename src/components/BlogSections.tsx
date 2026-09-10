@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { urlFor } from '@/sanity/lib/image';
 import styles from './Newsletter.module.css';
+import { useTranslation } from '@/context/LanguageContext';
 
 export function Newsletter() {
   const [email, setEmail] = useState('');
@@ -53,6 +54,7 @@ export function Newsletter() {
 }
 
 export function TrendingPosts({ posts }: { posts: any[] }) {
+  const { locale } = useTranslation();
   if (!posts || posts.length === 0) return null;
 
   return (
@@ -62,30 +64,34 @@ export function TrendingPosts({ posts }: { posts: any[] }) {
         <h3 className={styles.trendingTitle}>Trending Designs</h3>
       </div>
       <div className={styles.trendingList}>
-        {posts.slice(0, 4).map((post, index) => (
-          <Link key={post._id} href={`/blog/${post.slug.current}`} className={styles.trendingItem}>
-            <span className={styles.index}>{index + 1}</span>
-            <div className={styles.trendingThumb}>
-              {post.mainImage && (
-                <Image
-                  src={urlFor(post.mainImage).width(80).height(80).url()}
-                  alt={post.title}
-                  width={60}
-                  height={60}
-                  className={styles.thumbImage}
-                />
-              )}
-            </div>
-            <div className={styles.trendingInfo}>
-              <h4 className={styles.itemTitle}>{post.title}</h4>
-              <div className={styles.itemMeta}>
-                <span>{post.estimatedReadingTime || 5} min read</span>
-                <span className={styles.dot}>•</span>
-                <span>{Math.floor(Math.random() * 500) + 100} views</span>
+        {posts.slice(0, 4).map((post, index) => {
+          const postSlug = post.slug?.current || (typeof post.slug === 'string' ? post.slug : '');
+          if (!postSlug) return null;
+          const imgUrl = post.mainImage?.asset ? urlFor(post.mainImage).width(80).height(80).url() : null;
+
+          return (
+            <Link key={post._id || index} href={`/${locale}/blog/${postSlug}`} className={styles.trendingItem}>
+              <span className={styles.index}>{index + 1}</span>
+              <div className={styles.trendingThumb}>
+                {imgUrl && (
+                  <Image
+                    src={imgUrl}
+                    alt={post.title || 'Aari Design'}
+                    width={60}
+                    height={60}
+                    className={styles.thumbImage}
+                  />
+                )}
               </div>
-            </div>
-          </Link>
-        ))}
+              <div className={styles.trendingInfo}>
+                <h4 className={styles.itemTitle}>{post.title}</h4>
+                <div className={styles.itemMeta}>
+                  <span>{post.estimatedReadingTime || 5} min read</span>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

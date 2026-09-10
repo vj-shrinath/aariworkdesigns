@@ -16,11 +16,23 @@ export default function BlogHero({ post }: BlogHeroProps) {
 
   if (!post) return null;
 
-  const title = translateField(post, 'title', locale);
+  const title = translateField(post, 'title', locale) || 'Featured Aari Article';
   const excerpt = translateField(post, 'excerpt', locale);
   const categoryTitle = post.categories?.[0]
     ? translateField(post.categories[0], 'title', locale)
     : 'Insight';
+
+  const slug = post.slug?.current || (typeof post.slug === 'string' ? post.slug : '');
+  const postLink = slug ? `/${locale}/blog/${slug}` : `/${locale}/blog`;
+
+  const imageUrl = post.mainImage?.asset
+    ? urlFor(post.mainImage).width(800).height(500).url()
+    : null;
+
+  const rawDate = post.publishedAt || post._createdAt;
+  const dateFormatted = rawDate && !isNaN(new Date(rawDate).getTime())
+    ? new Date(rawDate).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })
+    : '';
 
   return (
     <section className={styles.hero}>
@@ -31,20 +43,18 @@ export default function BlogHero({ post }: BlogHeroProps) {
           <p className={styles.excerpt}>{excerpt}</p>
           <div className={styles.meta}>
             <span className={styles.category}>{categoryTitle}</span>
-            <span className={styles.dot}>•</span>
-            <time className={styles.date}>
-              {new Date(post.publishedAt).toLocaleDateString(locale, {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-              })}
-            </time>
+            {dateFormatted && <span className={styles.dot}>•</span>}
+            {dateFormatted && (
+              <time className={styles.date}>
+                {dateFormatted}
+              </time>
+            )}
             <span className={styles.dot}>•</span>
             <span className={styles.readingTime}>
               {post.estimatedReadingTime || 5} {t('blog.minRead', 'min read')}
             </span>
           </div>
-          <Link href={`/${locale}/blog/${post.slug.current}`} className={styles.button}>
+          <Link href={postLink} className={styles.button}>
             {t('blog.readArticle', 'Read Article')}
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -52,9 +62,9 @@ export default function BlogHero({ post }: BlogHeroProps) {
           </Link>
         </div>
         <div className={styles.imageWrapper}>
-          {post.mainImage && (
+          {imageUrl && (
             <Image
-              src={urlFor(post.mainImage).width(800).height(500).url()}
+              src={imageUrl}
               alt={title}
               width={800}
               height={500}

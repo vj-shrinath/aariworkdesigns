@@ -14,19 +14,33 @@ interface PostCardProps {
 export default function PostCard({ post }: PostCardProps) {
   const { t, locale } = useTranslation();
 
-  const title = translateField(post, 'title', locale);
+  if (!post) return null;
+
+  const title = translateField(post, 'title', locale) || 'Aari Design Story';
   const excerpt = translateField(post, 'excerpt', locale);
   const categoryTitle = post.categories?.[0] 
     ? translateField(post.categories[0], 'title', locale) 
     : 'Insight';
 
+  const slug = post.slug?.current || (typeof post.slug === 'string' ? post.slug : '');
+  const postLink = slug ? `/${locale}/blog/${slug}` : `/${locale}/blog`;
+
   const imageUrl = post.mainImage?.asset 
     ? urlFor(post.mainImage).width(600).height(400).auto('format').url() 
     : null;
 
+  const authorImageUrl = post.author?.image?.asset
+    ? urlFor(post.author.image).width(40).height(40).url()
+    : null;
+
+  const rawDate = post.publishedAt || post._createdAt;
+  const dateFormatted = rawDate && !isNaN(new Date(rawDate).getTime())
+    ? new Date(rawDate).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })
+    : '';
+
   return (
     <article className={styles.card}>
-      <Link href={`/${locale}/blog/${post.slug.current}`} className={styles.imageWrapper}>
+      <Link href={postLink} className={styles.imageWrapper}>
         {imageUrl ? (
           <Image
             src={imageUrl}
@@ -47,28 +61,26 @@ export default function PostCard({ post }: PostCardProps) {
 
       <div className={styles.content}>
         <div className={styles.meta}>
-          <time className={styles.date}>
-            {new Date(post.publishedAt).toLocaleDateString(locale, {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            })}
-          </time>
-          <span className={styles.dot}>•</span>
+          {dateFormatted && (
+            <time className={styles.date}>
+              {dateFormatted}
+            </time>
+          )}
+          {dateFormatted && <span className={styles.dot}>•</span>}
           <span className={styles.readingTime}>
             {post.estimatedReadingTime || 5} {t('blog.minRead', 'min read')}
           </span>
         </div>
-        <Link href={`/${locale}/blog/${post.slug.current}`}>
+        <Link href={postLink}>
           <h3 className={styles.title}>{title}</h3>
         </Link>
         <p className={styles.excerpt}>{excerpt}</p>
         <div className={styles.footer}>
           <div className={styles.author}>
-            {post.author?.image && (
+            {authorImageUrl && (
               <Image
-                src={urlFor(post.author.image).width(40).height(40).url()}
-                alt={post.author.name}
+                src={authorImageUrl}
+                alt={post.author?.name || 'Author'}
                 width={28}
                 height={28}
                 className={styles.authorImage}
@@ -76,7 +88,7 @@ export default function PostCard({ post }: PostCardProps) {
             )}
             <span className={styles.authorName}>{post.author?.name}</span>
           </div>
-          <Link href={`/${locale}/blog/${post.slug.current}`} className={styles.readMore}>
+          <Link href={postLink} className={styles.readMore}>
             {t('blog.readStory', 'Read Story')}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M12 5l7 7-7 7"/>

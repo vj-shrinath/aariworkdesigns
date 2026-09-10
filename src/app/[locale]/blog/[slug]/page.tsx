@@ -35,8 +35,8 @@ const keyTakeawaysTitles: Record<string, string> = {
   pt: 'Principais conclusões', ja: '重要なポイント', ko: '핵심 요점',
 }
 
-export async function generateMetadata({ params }: { params: PageParams }): Promise<Metadata> {
-  const { locale, slug } = params;
+export async function generateMetadata({ params }: { params: PageParams | Promise<PageParams> }): Promise<Metadata> {
+  const { locale, slug } = await params;
   let post = await client.fetch(POST_QUERY, { slug });
   if (!post) return { title: 'Post Not Found' };
 
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: { params: PageParams }): Prom
   const ogImageSource = getSeoImage(post);
   const image = ogImageSource ? urlFor(ogImageSource).width(1200).height(630).url() : '';
   
-  const title = translateField(post.seo, 'title', locale) || translateField(post, 'title', locale);
+  const title = translateField(post.seo, 'title', locale) || translateField(post, 'title', locale) || 'Aari Work Design';
   const description = translateField(post.seo, 'description', locale) || post.ai?.aiSummary || translateField(post, 'excerpt', locale) || `Read about ${title} on AARI Work Designs.`;
 
   return {
@@ -62,17 +62,17 @@ export async function generateMetadata({ params }: { params: PageParams }): Prom
       title: translateField(post.seo, 'ogTitle', locale) || title,
       description: translateField(post.seo, 'ogDescription', locale) || description,
       url: post.seo?.canonicalUrl || `https://aariworkdesigns.com/${locale}/blog/${slug}`,
-      images: [{ url: image }],
+      images: image ? [{ url: image }] : [],
       type: 'article',
       publishedTime: post.publishedAt,
       modifiedTime: post._updatedAt,
-      authors: [post.author?.name],
+      authors: post.author?.name ? [post.author.name] : [],
     },
     twitter: {
       card: 'summary_large_image',
       title: translateField(post.seo, 'twitterTitle', locale) || title,
       description: translateField(post.seo, 'twitterDescription', locale) || description,
-      images: [image],
+      images: image ? [image] : [],
     },
     alternates: {
       canonical: post.seo?.canonicalUrl || `https://aariworkdesigns.com/${locale}/blog/${slug}`,
@@ -100,8 +100,8 @@ export async function generateMetadata({ params }: { params: PageParams }): Prom
   };
 }
 
-export default async function PostPage({ params }: { params: PageParams }) {
-  const { locale, slug } = params;
+export default async function PostPage({ params }: { params: PageParams | Promise<PageParams> }) {
+  const { locale, slug } = await params;
   const dict = await getDictionary(locale);
   let post: any = null;
   
@@ -127,51 +127,66 @@ export default async function PostPage({ params }: { params: PageParams }) {
     );
   }
 
-  const translatedTitle = translateField(post, 'title', locale);
+  const translatedTitle = translateField(post, 'title', locale) || 'Aari Embroidery Design';
   const translatedExcerpt = translateField(post, 'excerpt', locale);
   const translatedCategory = post.categories?.[0] ? translateField(post.categories[0], 'title', locale) : 'Tutorial';
 
-  // Extract headings for TOC
-  const headings = post.body
-    ?.filter((block: any) => block._type === 'block' && ['h2', 'h3'].includes(block.style))
-    .map((block: any) => ({
-      id: block._key,
-      text: block.children.map((c: any) => c.text).join(''),
-      level: parseInt(block.style.replace('h', ''))
-    })) || [];
+  // Extract headings safely for TOC
+  const headings = Array.isArray(post.body)
+    ? post.body
+        .filter((block: any) => block && block._type === 'block' && block.style && ['h2', 'h3'].includes(block.style))
+        .map((block: any) => ({
+          id: block._key || `heading-${Math.random().toString(36).substring(2, 9)}`,
+          text: Array.isArray(block.children) ? block.children.map((c: any) => c?.text || '').join('') : '',
+          level: parseInt(String(block.style).replace('h', '')) || 2
+        }))
+    : [];
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: translateField(post.seo, 'title', locale) || translatedTitle,
-    image: post.mainImage ? urlFor(post.mainImage).url() : '',
-    datePublished: post.publishedAt,
-    dateModified: post._updatedAt,
+    image: post.mainImage?.asset ? urlFor(post.mainImage).url() : '',
+    datePublished: post.publishedAt || post._createdAt,
+    dateModified: post._updatedAt || post.publishedAt || post._createdAt,
     author: {
       '@type': 'Person',
-      name: post.author?.name,
+      name: post.author?.name || 'Aari Work Designs',
     },
-    description: translateField(post.seo, 'description', locale) || post.ai?.aiSummary || translatedExcerpt,
-    keywords: post.geo?.semanticKeywords?.join(', '),
+    description: translateField(post.seo, 'description', locale) || post.ai?.aiSummary || translatedExcerpt || '',
+    keywords: Array.isArray(post.geo?.semanticKeywords) ? post.geo.semanticKeywords.join(', ') : '',
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': post.seo?.canonicalUrl || `https://aariworkdesigns.com/${locale}/blog/${slug}`,
     },
-    ...(post.ai?.keyTakeaways && { abstract: post.ai.keyTakeaways.join('. ') }),
+    ...(Array.isArray(post.ai?.keyTakeaways) && post.ai.keyTakeaways.length > 0 && { abstract: post.ai.keyTakeaways.join('. ') }),
   };
 
-  const faqJsonLd = post.ai?.faq?.length ? {
+  const faqJsonLd = Array.isArray(post.ai?.faq) && post.ai.faq.length > 0 ? {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
     mainEntity: post.ai.faq.map((item: any) => ({
       '@type': 'Question',
-      name: item.question,
+      name: item?.question || '',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: item.answer,
+        text: item?.answer || '',
       },
     })),
   } : null;
+
+  const rawPubDate = post.publishedAt || post._createdAt;
+  const pubDateFormatted = rawPubDate && !isNaN(new Date(rawPubDate).getTime())
+    ? new Date(rawPubDate).toLocaleDateString(locale, { month: 'long', day: 'numeric', year: 'numeric' })
+    : '';
+
+  const rawUpdDate = post._updatedAt || post.publishedAt || post._createdAt;
+  const updDateFormatted = rawUpdDate && !isNaN(new Date(rawUpdDate).getTime())
+    ? new Date(rawUpdDate).toLocaleDateString(locale)
+    : '';
+
+  const authorImageUrl = post.author?.image?.asset ? urlFor(post.author.image).width(100).height(100).url() : null;
+  const mainImageUrl = post.mainImage?.asset ? urlFor(post.mainImage).width(1600).url() : null;
 
   return (
     <>
@@ -194,41 +209,41 @@ export default async function PostPage({ params }: { params: PageParams }) {
             <div className={styles.meta}>
               <span className={styles.categoryBadge}>{translatedCategory}</span>
               <div className={styles.metaInfo}>
-                <time className={styles.date}>
-                  {new Date(post.publishedAt).toLocaleDateString(locale, {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })}
-                </time>
-                <span className={styles.dot}>•</span>
+                {pubDateFormatted && (
+                  <time className={styles.date}>
+                    {pubDateFormatted}
+                  </time>
+                )}
+                {pubDateFormatted && <span className={styles.dot}>•</span>}
                 <span className={styles.readingTime}>{post.estimatedReadingTime || 5} {dict.blog?.minRead || 'min read'}</span>
               </div>
             </div>
             <h1 className={styles.title}>{translatedTitle}</h1>
             
             <div className={styles.heroAuthor}>
-              {post.author?.image && (
+              {authorImageUrl && (
                 <Image
-                  src={urlFor(post.author.image).width(100).height(100).url()}
-                  alt={post.author.name}
+                  src={authorImageUrl}
+                  alt={post.author?.name || 'Author'}
                   width={56}
                   height={56}
                   className={styles.heroAuthorImage}
                 />
               )}
               <div className={styles.heroAuthorInfo}>
-                <span className={styles.heroAuthorName}>{post.author?.name}</span>
-                <span className={styles.updatedAt}>{dict.blog?.lastUpdated || 'Last updated:'} {new Date(post._updatedAt).toLocaleDateString(locale)}</span>
+                {post.author?.name && <span className={styles.heroAuthorName}>{post.author.name}</span>}
+                {updDateFormatted && (
+                  <span className={styles.updatedAt}>{dict.blog?.lastUpdated || 'Last updated:'} {updDateFormatted}</span>
+                )}
               </div>
             </div>
           </div>
         </header>
 
-        {post.mainImage?.asset && (
+        {mainImageUrl && (
           <div className={styles.mainImageWrapper}>
             <Image
-              src={urlFor(post.mainImage).width(1600).url()}
+              src={mainImageUrl}
               alt={translatedTitle}
               width={1600}
               height={900}
@@ -245,7 +260,7 @@ export default async function PostPage({ params }: { params: PageParams }) {
           </aside>
 
           <div className={styles.articleBody}>
-            {post.ai?.keyTakeaways && (
+            {post.ai?.keyTakeaways && Array.isArray(post.ai.keyTakeaways) && (
               <KeyTakeaways items={post.ai.keyTakeaways} title={dict.blog?.keyTakeaways || keyTakeawaysTitles[locale] || 'Key Takeaways'} />
             )}
             
@@ -255,30 +270,30 @@ export default async function PostPage({ params }: { params: PageParams }) {
                   <PortableText value={post.body.slice(0, Math.floor(post.body.length / 2))} components={portableTextComponents} />
                   <Suspense fallback={<AmazonAffiliateCard semanticKeywords={post.geo?.semanticKeywords} categories={post.categories?.map((c: any) => c.title || c)} />}>
                     <LiveAmazonAffiliateCard 
-                      semanticKeywords={post.geo?.semanticKeywords} 
-                      categories={post.categories?.map((c: any) => c.title || c)} 
+                      semanticKeywords={post.geo?.semanticKeywords || []} 
+                      categories={post.categories?.map((c: any) => c?.title || c) || []} 
                     />
                   </Suspense>
                   <PortableText value={post.body.slice(Math.floor(post.body.length / 2))} components={portableTextComponents} />
                 </>
               ) : (
                 <>
-                  <PortableText value={post.body} components={portableTextComponents} />
+                  <PortableText value={post.body || []} components={portableTextComponents} />
                   <Suspense fallback={<AmazonAffiliateCard semanticKeywords={post.geo?.semanticKeywords} categories={post.categories?.map((c: any) => c.title || c)} />}>
                     <LiveAmazonAffiliateCard 
-                      semanticKeywords={post.geo?.semanticKeywords} 
-                      categories={post.categories?.map((c: any) => c.title || c)} 
+                      semanticKeywords={post.geo?.semanticKeywords || []} 
+                      categories={post.categories?.map((c: any) => c?.title || c) || []} 
                     />
                   </Suspense>
                 </>
               )}
             </div>
 
-            {post.ai?.faq && (
+            {post.ai?.faq && Array.isArray(post.ai.faq) && (
               <FaqSection faqs={post.ai.faq} />
             )}
 
-            <AuthorBox author={post.author} />
+            {post.author && <AuthorBox author={post.author} />}
 
             <div className={styles.endShare}>
               <h4 className={styles.shareCallout}>{dict.blog?.enjoyedArticle || 'Enjoyed this article? Share it with others!'}</h4>
@@ -291,15 +306,20 @@ export default async function PostPage({ params }: { params: PageParams }) {
             <div className={styles.postFooter}>
               <h3 className={styles.relatedTitle}>{dict.blog?.continueLearning || 'Continue Learning'}</h3>
               <div className={styles.relatedGrid}>
-                {post.relatedPosts?.slice(0, 6).map((related: any) => {
+                {Array.isArray(post.relatedPosts) && post.relatedPosts.slice(0, 6).map((related: any) => {
+                  if (!related) return null;
                   const relTitle = translateField(related, 'title', locale);
                   const relCategory = related.categories?.[0] ? translateField(related.categories[0], 'title', locale) : '';
+                  const relSlug = related.slug?.current || (typeof related.slug === 'string' ? related.slug : '');
+                  if (!relSlug) return null;
+                  const relImgUrl = related.mainImage?.asset ? urlFor(related.mainImage).width(400).height(250).url() : null;
+
                   return (
-                    <Link key={related._id} href={`/${locale}/blog/${related.slug.current}`} className={styles.relatedCard}>
+                    <Link key={related._id || relSlug} href={`/${locale}/blog/${relSlug}`} className={styles.relatedCard}>
                       <div className={styles.relatedThumb}>
-                        {related.mainImage && (
+                        {relImgUrl && (
                           <Image 
-                            src={urlFor(related.mainImage).width(400).height(250).url()} 
+                            src={relImgUrl} 
                             alt={relTitle}
                             width={300}
                             height={180}
