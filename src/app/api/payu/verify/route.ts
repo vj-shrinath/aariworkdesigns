@@ -31,7 +31,8 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
 
-    const rawStatus = (formData.get('status') as string || '').toLowerCase();
+    const status = formData.get('status') as string || '';
+    const rawStatus = status.toLowerCase();
     const firstname = formData.get('firstname') as string || '';
     const amount = formData.get('amount') as string || '';
     const txnid = formData.get('txnid') as string || '';
@@ -39,19 +40,28 @@ export async function POST(req: Request) {
     const key = formData.get('key') as string || '';
     const productinfo = formData.get('productinfo') as string || '';
     const email = formData.get('email') as string || '';
-    const udf1 = formData.get('udf1') as string || '';
-    const udf2 = formData.get('udf2') as string || ''; // pdf_id
-    const udf3 = formData.get('udf3') as string || 'subscription'; // itemType
+    
+    const u1 = formData.get('udf1') as string || '';
+    const u2 = formData.get('udf2') as string || '';
+    const u3 = formData.get('udf3') as string || 'subscription';
+    const u4 = formData.get('udf4') as string || '';
+    const u5 = formData.get('udf5') as string || '';
+    const u6 = formData.get('udf6') as string || '';
+    const u7 = formData.get('udf7') as string || '';
+    const u8 = formData.get('udf8') as string || '';
+    const u9 = formData.get('udf9') as string || '';
+    const u10 = formData.get('udf10') as string || '';
 
-    const merchantKey = process.env.PAYU_MERCHANT_KEY;
-    const salt = process.env.PAYU_MERCHANT_SALT;
+    const merchantKey = (process.env.PAYU_MERCHANT_KEY || key).trim();
+    const salt = (process.env.PAYU_MERCHANT_SALT || '8eDpVmUaBzMMExBpYUVZqgU8DL4pbUls').trim();
     
     const requestOrigin = req.headers.get('origin') || 'https://aariworkdesigns.com';
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL || requestOrigin).replace(/\/$/, '');
 
     const additionalCharges = formData.get('additionalCharges') as string || '';
-    // Reverse Hash formula: [additionalCharges|]SALT|status||||||udf5|udf4|udf3|udf2|udf1|email|firstname|productinfo|amount|txnid|key
-    let hashString = `${salt}|${formData.get('status') as string || ''}||||||||${udf3}|${udf2}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${merchantKey}`;
+
+    // PayU Official Reverse Hash Sequence: [additionalCharges|]SALT|status|udf10|udf9|udf8|udf7|udf6|udf5|udf4|udf3|udf2|udf1|email|firstname|productinfo|amount|txnid|key
+    let hashString = `${salt}|${status}|${u10}|${u9}|${u8}|${u7}|${u6}|${u5}|${u4}|${u3}|${u2}|${u1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${merchantKey}`;
     if (additionalCharges) {
       hashString = `${additionalCharges}|${hashString}`;
     }
@@ -62,7 +72,7 @@ export async function POST(req: Request) {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const calculatedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-    const userId = udf1;
+    const userId = u1;
     let finalStatus = 'FAILED';
 
     if (rawStatus === 'success' && calculatedHash === postedHash) {
@@ -75,14 +85,14 @@ export async function POST(req: Request) {
           const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAdminKey;
           const supabaseAdmin = createClient(supabaseUrl, adminKey);
 
-          if (udf3 === 'pdf_single' && udf2) {
+          if (u3 === 'pdf_single' && u2) {
             // Log PDF Purchase
             await supabaseAdmin
               .from('pdf_purchases')
               .insert({
                 user_id: targetUserId,
                 email: email,
-                pdf_id: udf2,
+                pdf_id: u2,
                 txnid: txnid,
                 amount_paid: parseFloat(amount || '0'),
                 payment_status: 'PAID',
@@ -105,18 +115,18 @@ export async function POST(req: Request) {
               }, { onConflict: 'user_id' });
           }
         } catch (dbErr) {
-          console.error('Database upsert error for PayU webhook:', dbErr);
+          console.error('Database error in PayU verify callback:', dbErr);
         }
       }
     } else if (rawStatus === 'cancel' || rawStatus === 'cancelled' || rawStatus === 'usercancelled') {
       finalStatus = 'CANCELLED';
     } else {
       if (calculatedHash !== postedHash) {
-        console.warn(`PayU Hash mismatch for txn ${txnid}`);
+        console.warn(`PayU Hash mismatch for txn ${txnid}: calculated ${calculatedHash} vs posted ${postedHash}`);
       }
     }
 
-    const redirectUrl = `${appUrl}/payment-status?order_id=${txnid}&status=${finalStatus}&email=${encodeURIComponent(email)}${userId ? `&user_id=${encodeURIComponent(userId)}` : ''}&item_type=${udf3}${udf2 ? `&pdf_id=${udf2}` : ''}`;
+    const redirectUrl = `${appUrl}/payment-status?order_id=${txnid}&status=${finalStatus}&email=${encodeURIComponent(email)}${userId ? `&user_id=${encodeURIComponent(userId)}` : ''}&item_type=${u3}${u2 ? `&pdf_id=${u2}` : ''}`;
 
     return NextResponse.redirect(redirectUrl, 303);
   } catch (err: any) {
