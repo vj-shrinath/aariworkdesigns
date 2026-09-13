@@ -103,21 +103,14 @@ a {
 /* Prevent drag-to-desktop, right-click-save, and long-press download on all   */
 /* gallery / content images. Downloads only work via the watermarked button.   */
 img {
+  -webkit-touch-callout: none;
   -webkit-user-drag: none;
   -khtml-user-drag: none;
   -moz-user-drag: none;
   -o-user-drag: none;
   -webkit-user-select: none;
   user-select: none;
-  pointer-events: none; /* blocks right-click and drag natively */
-}
-
-/* Re-enable pointer events for images that are wrapped in interactive elements */
-a img,
-button img,
-[role='button'] img,
-[data-interactive] img {
-  pointer-events: auto;
+  touch-action: pan-x pan-y;
 }
 /* ─────────────────────────────────────────────────────────────────────────── */
 

@@ -12,6 +12,7 @@ export default function AdminPdfMarketplace() {
   // Upload Form State
   const [file, setFile] = useState<File | null>(null);
   const [previewImageFile, setPreviewImageFile] = useState<File | null>(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<string>('Bridal Neck');
@@ -19,6 +20,17 @@ export default function AdminPdfMarketplace() {
   const [isFreeForVip, setIsFreeForVip] = useState(true);
   const [tags, setTags] = useState('bridal, tracing, modern');
   const [formKey, setFormKey] = useState(0);
+
+  // Edit Item State
+  const [editingItem, setEditingItem] = useState<PdfMarketplaceItem | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+  const [editPrice, setEditPrice] = useState(49);
+  const [editIsFreeForVip, setEditIsFreeForVip] = useState(true);
+  const [editPreviewImageUrl, setEditPreviewImageUrl] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editMsg, setEditMsg] = useState('');
 
   // Statuses
   const [isUploading, setIsUploading] = useState(false);
@@ -109,6 +121,9 @@ export default function AdminPdfMarketplace() {
       if (previewImageFile) {
         formData.append('preview_image', previewImageFile);
       }
+      if (previewImageUrl) {
+        formData.append('preview_image_url', previewImageUrl);
+      }
       formData.append('title', title);
       formData.append('description', description);
       formData.append('category', category);
@@ -138,6 +153,7 @@ export default function AdminPdfMarketplace() {
       // Reset form fields completely
       setFile(null);
       setPreviewImageFile(null);
+      setPreviewImageUrl('');
       setTitle('');
       setDescription('');
       setFormKey((prev) => prev + 1);
@@ -149,6 +165,54 @@ export default function AdminPdfMarketplace() {
     } finally {
       setIsUploading(false);
       setUploadProgressMsg('');
+    }
+  };
+
+  const handleStartEdit = (item: PdfMarketplaceItem) => {
+    setEditingItem(item);
+    setEditTitle(item.title);
+    setEditCategory(item.category);
+    setEditPrice(item.price_inr);
+    setEditIsFreeForVip(item.is_free_for_vip);
+    setEditDescription(item.description || '');
+    setEditPreviewImageUrl(item.preview_images && item.preview_images[0] ? item.preview_images[0] : '');
+    setEditMsg('');
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    setIsSavingEdit(true);
+    setEditMsg('');
+
+    try {
+      const res = await fetch('/api/admin/pdf/manage', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-secret': adminSecret,
+        },
+        body: JSON.stringify({
+          id: editingItem.id,
+          title: editTitle,
+          category: editCategory,
+          price_inr: editPrice,
+          is_free_for_vip: editIsFreeForVip,
+          description: editDescription,
+          preview_images: editPreviewImageUrl ? [editPreviewImageUrl] : [],
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update item');
+
+      setEditingItem(null);
+      await verifySecret(adminSecret);
+    } catch (err: any) {
+      setEditMsg(err.message || 'Failed to update listing');
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
@@ -333,7 +397,7 @@ export default function AdminPdfMarketplace() {
             {/* Optional Cover/Preview Image */}
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#D1D5DB', marginBottom: '0.4rem' }}>
-                Preview Thumbnail Image <span style={{ fontSize: '0.75rem', color: '#9CA3AF', fontWeight: 400 }}>(Optional Cover Image PNG/JPG)</span>
+                Preview Thumbnail Image <span style={{ fontSize: '0.75rem', color: '#9CA3AF', fontWeight: 400 }}>(File Upload or URL)</span>
               </label>
               <input
                 key={`preview-file-${formKey}`}
@@ -347,12 +411,23 @@ export default function AdminPdfMarketplace() {
                 disabled={isUploading}
                 style={{
                   width: '100%', padding: '0.55rem', borderRadius: '8px', background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.12)', color: '#FFF', fontSize: '0.8rem', cursor: 'pointer'
+                  border: '1px solid rgba(255,255,255,0.12)', color: '#FFF', fontSize: '0.8rem', cursor: 'pointer', marginBottom: '0.5rem'
+                }}
+              />
+              <input
+                type="text"
+                placeholder="Or paste image URL (e.g. Sanity image URL)..."
+                value={previewImageUrl}
+                onChange={(e) => setPreviewImageUrl(e.target.value)}
+                disabled={isUploading}
+                style={{
+                  width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.12)', color: '#FFF', fontSize: '0.8rem'
                 }}
               />
               {previewImageFile && (
                 <div style={{ marginTop: '0.3rem', fontSize: '0.78rem', color: '#FCD34D' }}>
-                  ✓ Cover Image Selected: {previewImageFile.name}
+                  ✓ Cover Image File Selected: {previewImageFile.name}
                 </div>
               )}
             </div>
@@ -531,6 +606,13 @@ export default function AdminPdfMarketplace() {
                       <td style={{ padding: '0.75rem 0.5rem' }}>
                         <div style={{ display: 'flex', gap: '0.4rem' }}>
                           <button
+                            onClick={() => handleStartEdit(item)}
+                            title="Edit Listing"
+                            style={{ background: 'rgba(212, 175, 55, 0.2)', border: 'none', color: '#D4AF37', padding: '0.3rem 0.5rem', borderRadius: '4px', cursor: 'pointer' }}
+                          >
+                            <Edit3 size={14} />
+                          </button>
+                          <button
                             onClick={() => handleTogglePublished(item)}
                             title={item.is_published ? 'Unpublish' : 'Publish'}
                             style={{
@@ -559,6 +641,134 @@ export default function AdminPdfMarketplace() {
         </div>
 
       </div>
+
+      {/* Edit Listing Modal */}
+      {editingItem && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.75)',
+          backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
+        }} onClick={() => setEditingItem(null)}>
+          <div style={{
+            maxWidth: '520px', width: '100%', background: '#141020', border: '1px solid rgba(212, 175, 55, 0.4)',
+            borderRadius: '16px', padding: '1.75rem', boxShadow: '0 20px 50px rgba(0,0,0,0.8)'
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: '#D4AF37' }}>
+                Edit Listing: {editingItem.title}
+              </h3>
+              <button onClick={() => setEditingItem(null)} style={{ background: 'transparent', border: 'none', color: '#9CA3AF', cursor: 'pointer' }}>
+                ✕
+              </button>
+            </div>
+
+            {editMsg && (
+              <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '0.75rem', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                {editMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveEdit}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#D1D5DB', marginBottom: '0.4rem' }}>
+                  Title
+                </label>
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  required
+                  style={{ width: '100%', padding: '0.65rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#FFF' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#D1D5DB', marginBottom: '0.4rem' }}>
+                  Thumbnail Image URL
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://..."
+                  value={editPreviewImageUrl}
+                  onChange={(e) => setEditPreviewImageUrl(e.target.value)}
+                  style={{ width: '100%', padding: '0.65rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#FFF' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#D1D5DB', marginBottom: '0.4rem' }}>
+                    Category
+                  </label>
+                  <select
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                    style={{ width: '100%', padding: '0.65rem', borderRadius: '8px', background: '#1A1625', border: '1px solid rgba(255,255,255,0.15)', color: '#FFF' }}
+                  >
+                    {CATEGORIES.filter(c => c !== 'All Designs').map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#D1D5DB', marginBottom: '0.4rem' }}>
+                    Price (₹ INR)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(Number(e.target.value))}
+                    style={{ width: '100%', padding: '0.65rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#FFF' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#D1D5DB', marginBottom: '0.4rem' }}>
+                  Description
+                </label>
+                <textarea
+                  rows={3}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  style={{ width: '100%', padding: '0.65rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: '#FFF', resize: 'vertical' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontSize: '0.85rem', color: '#F3E8FF' }}>
+                  <input
+                    type="checkbox"
+                    checked={editIsFreeForVip}
+                    onChange={(e) => setEditIsFreeForVip(e.target.checked)}
+                    style={{ accentColor: '#D4AF37', width: '16px', height: '16px' }}
+                  />
+                  <span>Include Free for Active VIP Subscribers</span>
+                </label>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setEditingItem(null)}
+                  style={{ padding: '0.6rem 1.25rem', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#FFF', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingEdit}
+                  style={{ padding: '0.6rem 1.25rem', borderRadius: '8px', background: 'linear-gradient(135deg, #D4AF37, #AA771C)', border: 'none', color: '#000', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  {isSavingEdit ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

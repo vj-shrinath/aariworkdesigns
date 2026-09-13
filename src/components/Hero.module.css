@@ -343,8 +343,9 @@
 /* ── MOBILE RESPONSIVENESS & SLIDER POSITIONING ── */
 @media (max-width: 900px) {
   .hero {
+    min-height: auto;
     padding-top: 100px;
-    padding-bottom: 40px;
+    padding-bottom: 1.5rem;
     overflow-x: hidden;
   }
 

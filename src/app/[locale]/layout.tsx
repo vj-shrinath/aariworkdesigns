@@ -109,12 +109,6 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={dir} className={devanagariFont.variable} style={{ overflowX: 'clip' }}>
       <head>
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6627399718408055"
-          crossOrigin="anonymous"
-          strategy="lazyOnload"
-        />
         {gaMeasurementId ? (
           <>
             <Script

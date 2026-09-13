@@ -2,7 +2,6 @@ import React from 'react';
 import MarketplaceClient from '@/components/marketplace/MarketplaceClient';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -16,12 +15,15 @@ export const metadata = {
 async function getInitialPdfs() {
   try {
     const { supabase } = await import('@/lib/supabase');
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('pdf_marketplace')
       .select('id, title, slug, description, category, tags, price_inr, is_free_for_vip, preview_images, page_count, download_count, is_published, created_at, updated_at')
-      .eq('is_published', true)
       .order('created_at', { ascending: false });
 
+    if (error) {
+      console.error('Error fetching initial PDFs from Supabase:', error);
+      return [];
+    }
     return data || [];
   } catch (err) {
     console.error('Error fetching initial PDFs:', err);

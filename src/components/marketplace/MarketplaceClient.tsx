@@ -22,10 +22,9 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
   // Active Tab: 'catalog' | 'my-purchases'
   const [activeTab, setActiveTab] = useState<'catalog' | 'my-purchases'>('catalog');
 
-
   // Track loading and broken image URLs
   const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
-  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+  const [failedImages, setFailedImages] = useState<Record<string, number>>({});
 
   // Single Item Checkout & Product Detail State
   const [selectedProduct, setSelectedProduct] = useState<PdfMarketplaceItem | null>(null);
@@ -41,7 +40,6 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      // We already have initialItems from SSR for "All Designs" and empty search
       if (selectedCategory === 'All Designs' && !searchQuery && initialItems.length > 0) return; 
     }
 
@@ -202,7 +200,11 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
             <div className={styles.grid}>
               {items.map((item) => {
                 const canDownloadClean = isSubscribed && item.is_free_for_vip;
-                const hasValidPreviewImg = item.preview_images && item.preview_images.length > 0 && !failedImages[item.id];
+                const failCount = failedImages[item.id] || 0;
+                const hasValidPreviewImg = failCount < 2;
+                
+                const directUrl = item.preview_images && Array.isArray(item.preview_images) && item.preview_images[0] ? item.preview_images[0] : null;
+                const imageSrc = (directUrl && failCount === 0) ? directUrl : `/api/pdf/preview?id=${item.id}`;
 
                 return (
                   <div key={item.id} className={styles.card}>
@@ -217,31 +219,13 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
                         <span>PDF</span>
                       </div>
                       {hasValidPreviewImg ? (
-                        <>
-                          {!loadedImages[item.id] && (
-                            <div className={`${styles.thumbGraphic} ${styles.imageLoadingSkeleton}`}>
-                              <div className={styles.pdfIconWrapper}>
-                                <div className={styles.pdfRipple} />
-                                <div className={styles.pdfRipple2} />
-                                <svg className={styles.pdfSvgIcon} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <rect x="10" y="4" width="36" height="48" rx="4" fill="rgba(212,175,55,0.08)" stroke="rgba(212,175,55,0.4)" strokeWidth="1.5"/>
-                                  <path d="M38 4v12h10" stroke="rgba(212,175,55,0.4)" strokeWidth="1.5" strokeLinejoin="round"/>
-                                  <path d="M38 4l10 12" stroke="rgba(212,175,55,0.4)" strokeWidth="1.5" strokeLinejoin="round"/>
-                                  <rect x="6" y="28" width="32" height="18" rx="3" fill="rgba(212,175,55,0.5)"/>
-                                  <text x="22" y="41" textAnchor="middle" fill="#0F0C1B" fontSize="8" fontWeight="800" fontFamily="Arial">PDF</text>
-                                </svg>
-                              </div>
-                            </div>
-                          )}
-                          <img
-                            src={`/api/pdf/preview?id=${item.id}`}
-                            alt={item.title}
-                            className={styles.cardPreviewImg}
-                            style={{ opacity: loadedImages[item.id] ? 1 : 0, position: loadedImages[item.id] ? 'relative' : 'absolute', width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.4s ease-in' }}
-                            onLoad={() => setLoadedImages((prev) => ({ ...prev, [item.id]: true }))}
-                            onError={() => setFailedImages((prev) => ({ ...prev, [item.id]: true }))}
-                          />
-                        </>
+                        <img
+                          src={imageSrc}
+                          alt={item.title}
+                          className={styles.cardPreviewImg}
+                          style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', background: '#FFFFFF' }}
+                          onError={() => setFailedImages((prev) => ({ ...prev, [item.id]: (prev[item.id] || 0) + 1 }))}
+                        />
                       ) : (
                         <div className={styles.thumbGraphic}>
                           <div className={styles.pdfIconWrapper}>
@@ -264,8 +248,6 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
                     {/* Card Content */}
                     <div className={styles.cardContent}>
                       <h3 className={styles.cardTitle} title={item.title}>{item.title}</h3>
-
-
 
                       <div className={styles.actionRow}>
                         <div className={styles.priceContainer}>
@@ -341,7 +323,6 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
         </div>
       )}
 
-
       {/* Product Detail Modal */}
       {selectedProduct && (
         <div className={styles.modalBackdrop} onClick={() => setSelectedProduct(null)}>
@@ -355,18 +336,24 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
               {/* Left Column: Image */}
               <div className={styles.productModalImageCol}>
                 <div className={styles.productModalImageFrame}>
-                  {selectedProduct.preview_images && selectedProduct.preview_images.length > 0 && !failedImages[selectedProduct.id] ? (
-                    <img
-                      src={`/api/pdf/preview?id=${selectedProduct.id}`}
-                      alt={selectedProduct.title}
-                      className={styles.productModalImg}
-                      onError={() => setFailedImages((prev) => ({ ...prev, [selectedProduct.id]: true }))}
-                    />
-                  ) : (
-                    <div className={styles.productModalFallbackImg}>
-                      <div className={styles.graphicPattern} />
-                    </div>
-                  )}
+                  {(() => {
+                    const failCount = failedImages[selectedProduct.id] || 0;
+                    const directUrl = selectedProduct.preview_images && Array.isArray(selectedProduct.preview_images) && selectedProduct.preview_images[0] ? selectedProduct.preview_images[0] : null;
+                    const modalImgSrc = (directUrl && failCount === 0) ? directUrl : `/api/pdf/preview?id=${selectedProduct.id}`;
+                    
+                    return failCount < 2 ? (
+                      <img
+                        src={modalImgSrc}
+                        alt={selectedProduct.title}
+                        className={styles.productModalImg}
+                        onError={() => setFailedImages((prev) => ({ ...prev, [selectedProduct.id]: (prev[selectedProduct.id] || 0) + 1 }))}
+                      />
+                    ) : (
+                      <div className={styles.productModalFallbackImg}>
+                        <div className={styles.graphicPattern} />
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -416,7 +403,7 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
                       <div className={styles.vipPromoBox}>
                         <div className={styles.vipPromoText}>
                           <strong>Get this pattern for FREE!</strong>
-                          <span>Subscribe to Aari Work Designs VIP for ₹199/mo to unlock this and all other designs automatically.</span>
+                          <span>Subscribe to Aari Work Designs VIP for ₹499/yr to unlock this and all other designs automatically.</span>
                         </div>
                         <button className={styles.vipPromoBtn} onClick={openSubModal}>
                           Join VIP

@@ -60,7 +60,6 @@ export default async function HomePage({ params }: { params: PageParams | Promis
       />
       <Header />
       <Hero posts={posts} galleryItems={galleryItems} />
-      <AdSenseUnit slotId="home_top" />
       <BlogList posts={posts} />
       <HomeSEOContent />
       <Footer subtext={dict.footer?.defaultSubtext || "Crafted for the curious."} />

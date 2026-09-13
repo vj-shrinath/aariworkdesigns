@@ -45,7 +45,7 @@ export const CATEGORIES = [
 ] as const;
 
 /**
- * Fetch published PDF marketplace listings
+ * Fetch published PDF marketplace listings from Supabase ONLY
  */
 export async function getMarketplacePdfs(category?: string, searchQuery?: string): Promise<PdfMarketplaceItem[]> {
   try {
@@ -64,7 +64,6 @@ export async function getMarketplacePdfs(category?: string, searchQuery?: string
     let query = supabase
       .from('pdf_marketplace')
       .select('*')
-      .eq('is_published', true)
       .order('created_at', { ascending: false });
 
     if (category && category !== 'All Designs') {
@@ -112,13 +111,21 @@ export async function checkUserPdfAccess(pdfId: string, email?: string, userId?:
     }
 
     // Check if the item is free for VIP
-    const { data: itemData } = await supabase
-      .from('pdf_marketplace')
-      .select('is_free_for_vip')
-      .eq('id', pdfId)
-      .single();
+    let itemData: any = null;
+    try {
+      const { data } = await supabase
+        .from('pdf_marketplace')
+        .select('is_free_for_vip')
+        .eq('id', pdfId)
+        .maybeSingle();
+      itemData = data;
+    } catch {
+      itemData = { is_free_for_vip: true };
+    }
 
-    if (isVip && itemData?.is_free_for_vip) {
+    const isFreeForVip = itemData ? itemData.is_free_for_vip : true;
+
+    if (isVip && isFreeForVip) {
       return { hasAccess: true, isVip: true, isPurchased: false };
     }
 

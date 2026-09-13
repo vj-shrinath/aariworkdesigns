@@ -42,7 +42,7 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json();
-    const { id, title, price_inr, category, is_free_for_vip, is_published } = body;
+    const { id, title, price_inr, category, is_free_for_vip, is_published, preview_images, description, page_count } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Missing item ID' }, { status: 400 });
@@ -52,16 +52,23 @@ export async function PATCH(req: Request) {
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    const updatePayload: Record<string, any> = {
+      updated_at: new Date().toISOString(),
+    };
+    if (title !== undefined) updatePayload.title = title;
+    if (price_inr !== undefined) updatePayload.price_inr = parseFloat(price_inr);
+    if (category !== undefined) updatePayload.category = category;
+    if (is_free_for_vip !== undefined) updatePayload.is_free_for_vip = is_free_for_vip;
+    if (is_published !== undefined) updatePayload.is_published = is_published;
+    if (description !== undefined) updatePayload.description = description;
+    if (page_count !== undefined) updatePayload.page_count = Number(page_count);
+    if (preview_images !== undefined) {
+      updatePayload.preview_images = Array.isArray(preview_images) ? preview_images : [preview_images];
+    }
+
     const { data, error } = await supabase
       .from('pdf_marketplace')
-      .update({
-        ...(title !== undefined && { title }),
-        ...(price_inr !== undefined && { price_inr: parseFloat(price_inr) }),
-        ...(category !== undefined && { category }),
-        ...(is_free_for_vip !== undefined && { is_free_for_vip }),
-        ...(is_published !== undefined && { is_published }),
-        updated_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq('id', id)
       .select('*')
       .single();

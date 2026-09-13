@@ -17,7 +17,7 @@ export default function PostCard({ post }: PostCardProps) {
   if (!post) return null;
 
   const title = translateField(post, 'title', locale) || 'Aari Design Story';
-  const excerpt = translateField(post, 'excerpt', locale);
+  const excerpt = translateField(post, 'excerpt', locale) || post.bodySnippet || post.seo?.metaDescription || '';
   const categoryTitle = post.categories?.[0] 
     ? translateField(post.categories[0], 'title', locale) 
     : 'Insight';

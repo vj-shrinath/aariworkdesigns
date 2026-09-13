@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-export const runtime = 'edge';
+const DEFAULT_FALLBACK_THUMBNAIL = "https://cdn.sanity.io/images/lx1zrwct/production/df915f02c525f05df3f3177651c69e2544ad545b-600x800.png";
 
 export async function GET(req: Request) {
   try {
@@ -12,50 +12,48 @@ export async function GET(req: Request) {
       return new NextResponse('Missing id parameter', { status: 400 });
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mnrfwgtgrajbtwzqtxss.supabase.co';
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucmZ3Z3RncmFqYnR3enF0eHNzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODY2MDQ4MCwiZXhwIjoyMDk0MjM2NDgwfQ.j2Tcb8y7VU8uirJkChjhhvdBqNFD5CIA8QyHZ713iVI';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch PDF metadata
-    const { data: item, error: itemErr } = await supabase
-      .from('pdf_marketplace')
-      .select('*')
-      .or(`id.eq.${pdfId},slug.eq.${pdfId}`)
-      .single();
-
-    if (itemErr || !item) {
-      return new NextResponse('Listing not found', { status: 404 });
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pdfId);
+    let query = supabase.from('pdf_marketplace').select('*');
+    if (isUuid) {
+      query = query.eq('id', pdfId);
+    } else {
+      query = query.eq('slug', pdfId);
     }
+    const { data: item } = await query.maybeSingle();
 
-    // 1. If item has a stored preview image URL
-    if (item.preview_images && item.preview_images.length > 0 && item.preview_images[0]) {
+    if (item && item.preview_images && item.preview_images.length > 0 && item.preview_images[0]) {
       const imgUrl = item.preview_images[0];
-      const imgRes = await fetch(imgUrl);
-      if (imgRes.ok) {
-        const contentType = imgRes.headers.get('content-type') || 'image/png';
-        const imageBuffer = await imgRes.arrayBuffer();
-        return new NextResponse(imageBuffer, {
-          headers: {
-            'Content-Type': contentType,
-            'Cache-Control': 'public, max-age=86400, s-maxage=86400',
-          },
-        });
+      try {
+        const imgRes = await fetch(imgUrl);
+        if (imgRes.ok) {
+          const contentType = imgRes.headers.get('content-type') || 'image/png';
+          const imageBuffer = await imgRes.arrayBuffer();
+          return new NextResponse(imageBuffer, {
+            headers: {
+              'Content-Type': contentType,
+              'Cache-Control': 'public, max-age=86400, s-maxage=86400',
+            },
+          });
+        }
+      } catch (e) {
+        console.warn('Error fetching preview image from URL:', imgUrl, e);
       }
     }
 
-    // 2. Fallback: serve watermarked PDF stream for inline PDF viewer preview
-    if (item.watermarked_file_url) {
-      const pdfRes = await fetch(item.watermarked_file_url);
-      if (pdfRes.ok) {
-        const pdfBuffer = await pdfRes.arrayBuffer();
-        return new NextResponse(pdfBuffer, {
-          headers: {
-            'Content-Type': 'application/pdf',
-            'Content-Disposition': 'inline',
-            'Cache-Control': 'public, max-age=86400',
-          },
-        });
-      }
+    // Fallback: serve default design thumbnail image
+    const fbRes = await fetch(DEFAULT_FALLBACK_THUMBNAIL);
+    if (fbRes.ok) {
+      const imageBuffer = await fbRes.arrayBuffer();
+      return new NextResponse(imageBuffer, {
+        headers: {
+          'Content-Type': 'image/png',
+          'Cache-Control': 'public, max-age=86400',
+        },
+      });
     }
 
     return new NextResponse('No preview image available', { status: 404 });

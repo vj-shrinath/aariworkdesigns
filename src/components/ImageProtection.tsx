@@ -7,9 +7,8 @@ import { useEffect } from 'react';
  *  • right-click context menu on images
  *  • drag-to-save on images
  *  • Ctrl+S / Ctrl+Shift+S save shortcuts
- *  • long-press save on mobile (via touch events)
  *
- * Does NOT affect non-image elements or keyboard navigation.
+ * Uses CSS -webkit-touch-callout: none for long-press protection without blocking mobile scrolling.
  */
 export default function ImageProtection() {
   useEffect(() => {
@@ -25,7 +24,7 @@ export default function ImageProtection() {
     // ── Prevent drag-to-save on images ──
     const blockDragStart = (e: DragEvent) => {
       const target = e.target as HTMLElement;
-      if (target.tagName === 'IMG') {
+      if (target.tagName === 'IMG' || target.closest('[data-protected-image]')) {
         e.preventDefault();
         return false;
       }
@@ -40,24 +39,14 @@ export default function ImageProtection() {
       }
     };
 
-    // ── Prevent long-press save on iOS/Android ──
-    const blockTouchContextMenu = (e: TouchEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'IMG' || target.closest('[data-protected-image]')) {
-        e.preventDefault();
-      }
-    };
-
     document.addEventListener('contextmenu', blockContextMenu);
     document.addEventListener('dragstart', blockDragStart);
     document.addEventListener('keydown', blockSaveShortcut);
-    document.addEventListener('touchstart', blockTouchContextMenu, { passive: false });
 
     return () => {
       document.removeEventListener('contextmenu', blockContextMenu);
       document.removeEventListener('dragstart', blockDragStart);
       document.removeEventListener('keydown', blockSaveShortcut);
-      document.removeEventListener('touchstart', blockTouchContextMenu);
     };
   }, []);
 

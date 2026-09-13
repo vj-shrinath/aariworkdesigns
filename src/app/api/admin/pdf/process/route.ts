@@ -44,9 +44,14 @@ export async function POST(req: Request) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '') + '-' + Date.now().toString(36);
 
-    // 3. Process optional preview image
+    // 3. Process optional preview image file or URL
     const previewImageFile = formData.get('preview_image') as File | null;
+    const previewImageUrlInput = (formData.get('preview_image_url') as string || '').trim();
     let previewImages: string[] = [];
+
+    if (previewImageUrlInput) {
+      previewImages.push(previewImageUrlInput);
+    }
 
     // 4. Store Files in Supabase Storage or generate data URIs / secure references
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -60,7 +65,7 @@ export async function POST(req: Request) {
     let cleanFileUrl = '';
     let watermarkedFileUrl = '';
 
-    // Upload preview image if provided
+    // Upload preview image file if provided (overrides or adds to previewImages)
     if (previewImageFile) {
       try {
         const previewBuffer = Buffer.from(await previewImageFile.arrayBuffer());
@@ -70,7 +75,12 @@ export async function POST(req: Request) {
           .upload(previewPath, previewBuffer, { contentType: previewImageFile.type || 'image/png', upsert: true });
 
         if (!pErr) {
-          previewImages.push(`${supabaseUrl}/storage/v1/object/public/${bucketName}/${previewPath}`);
+          const uploadedUrl = `${supabaseUrl}/storage/v1/object/public/${bucketName}/${previewPath}`;
+          if (previewImages.length > 0) {
+            previewImages[0] = uploadedUrl;
+          } else {
+            previewImages.push(uploadedUrl);
+          }
         } else {
           console.warn('Preview upload error:', pErr.message);
         }

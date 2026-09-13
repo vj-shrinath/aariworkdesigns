@@ -9,7 +9,8 @@ export const POSTS_QUERY = groq`*[_type == "post" && defined(slug.current)] | or
   excerpt, excerpt_hi, excerpt_mr, excerpt_ta, excerpt_te, excerpt_es, excerpt_fr, excerpt_ar, excerpt_de, excerpt_pt, excerpt_ja, excerpt_ko,
   author->{name, image, bio},
   categories[]->{title, title_hi, title_mr, title_ta, title_te, title_es, title_fr, title_ar, title_de, title_pt, title_ja, title_ko, slug},
-  "estimatedReadingTime": round(length(pt::text(body)) / 5 / 180)
+  "estimatedReadingTime": round(length(pt::text(body)) / 5 / 180),
+  "bodySnippet": pt::text(body)[0..160]
 }`;
 
 

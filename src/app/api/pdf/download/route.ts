@@ -16,16 +16,19 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Missing pdfId parameter' }, { status: 400 });
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mnrfwgtgrajbtwzqtxss.supabase.co';
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ucmZ3Z3RncmFqYnR3enF0eHNzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODY2MDQ4MCwiZXhwIjoyMDk0MjM2NDgwfQ.j2Tcb8y7VU8uirJkChjhhvdBqNFD5CIA8QyHZ713iVI';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // 1. Fetch Item Metadata from DB
-    const { data: item, error: itemErr } = await supabase
-      .from('pdf_marketplace')
-      .select('*')
-      .or(`id.eq.${pdfId},slug.eq.${pdfId}`)
-      .single();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pdfId);
+    let query = supabase.from('pdf_marketplace').select('*');
+    if (isUuid) {
+      query = query.eq('id', pdfId);
+    } else {
+      query = query.eq('slug', pdfId);
+    }
+    const { data: item, error: itemErr } = await query.maybeSingle();
 
     if (itemErr || !item) {
       return NextResponse.json({ error: 'PDF design listing not found' }, { status: 404 });
@@ -58,12 +61,13 @@ export async function GET(req: Request) {
       const fileRes = await fetch(filePath);
       if (fileRes.ok) {
         const fileBuffer = await fileRes.arrayBuffer();
-        return new NextResponse(fileBuffer, {
-          headers: {
-            'Content-Type': 'application/pdf',
-            'Content-Disposition': `${allowCleanDelivery ? 'attachment' : 'inline'}; filename="${downloadFileName}"`,
-            'Cache-Control': 'no-cache',
-          },
+        return NextResponse.json({
+          success: true,
+          hasAccess: allowCleanDelivery,
+          isVip,
+          isPurchased,
+          downloadUrl: filePath,
+          fileName: downloadFileName
         });
       }
     }

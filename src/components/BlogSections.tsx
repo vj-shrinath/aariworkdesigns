@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { urlFor } from '@/sanity/lib/image';
 import styles from './Newsletter.module.css';
-import { useTranslation } from '@/context/LanguageContext';
+import { useTranslation } from '@/context/LanguageContext';import { translateField } from '@/lib/i18n';
 
 export function Newsletter() {
   const [email, setEmail] = useState('');
@@ -54,20 +54,21 @@ export function Newsletter() {
 }
 
 export function TrendingPosts({ posts }: { posts: any[] }) {
-  const { locale } = useTranslation();
+  const { t, locale } = useTranslation();
   if (!posts || posts.length === 0) return null;
 
   return (
     <div className={styles.trending}>
       <div className={styles.trendingHeader}>
         <span className={styles.trendingIcon}>🔥</span>
-        <h3 className={styles.trendingTitle}>Trending Designs</h3>
+        <h3 className={styles.trendingTitle}>{t('blog.trendingArticles', 'Trending Articles')}</h3>
       </div>
       <div className={styles.trendingList}>
         {posts.slice(0, 4).map((post, index) => {
           const postSlug = post.slug?.current || (typeof post.slug === 'string' ? post.slug : '');
           if (!postSlug) return null;
-          const imgUrl = post.mainImage?.asset ? urlFor(post.mainImage).width(80).height(80).url() : null;
+          const postTitle = translateField(post, 'title', locale) || post.title || 'Aari Article';
+          const imgUrl = post.mainImage?.asset ? urlFor(post.mainImage).width(120).height(120).auto('format').url() : null;
 
           return (
             <Link key={post._id || index} href={`/${locale}/blog/${postSlug}`} className={styles.trendingItem}>
@@ -76,15 +77,15 @@ export function TrendingPosts({ posts }: { posts: any[] }) {
                 {imgUrl && (
                   <Image
                     src={imgUrl}
-                    alt={post.title || 'Aari Design'}
-                    width={60}
-                    height={60}
+                    alt={postTitle}
+                    width={64}
+                    height={64}
                     className={styles.thumbImage}
                   />
                 )}
               </div>
               <div className={styles.trendingInfo}>
-                <h4 className={styles.itemTitle}>{post.title}</h4>
+                <h4 className={styles.itemTitle}>{postTitle}</h4>
                 <div className={styles.itemMeta}>
                   <span>{post.estimatedReadingTime || 5} min read</span>
                 </div>

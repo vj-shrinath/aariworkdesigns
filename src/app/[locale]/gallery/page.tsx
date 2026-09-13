@@ -121,8 +121,6 @@ export default async function GalleryPage({ params }: { params: PageParams }) {
           </p>
         </header>
         
-        <AdSenseUnit slotId="gallery_top" />
-
         <Gallery items={items} />
       </main>
       
