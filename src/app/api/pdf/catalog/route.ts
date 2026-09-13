@@ -9,14 +9,7 @@ export async function GET(req: Request) {
     const category = searchParams.get('category');
     const searchQuery = searchParams.get('search');
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-    
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json({ items: [] });
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { supabase } = await import('@/lib/supabase');
 
     let query = supabase
       .from('pdf_marketplace')

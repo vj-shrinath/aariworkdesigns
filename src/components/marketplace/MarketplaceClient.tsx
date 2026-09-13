@@ -42,7 +42,7 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
     if (isInitialMount.current) {
       isInitialMount.current = false;
       // We already have initialItems from SSR for "All Designs" and empty search
-      if (selectedCategory === 'All Designs' && !searchQuery) return; 
+      if (selectedCategory === 'All Designs' && !searchQuery && initialItems.length > 0) return; 
     }
 
     async function loadData() {

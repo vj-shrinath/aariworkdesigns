@@ -15,11 +15,7 @@ export const metadata = {
 
 async function getInitialPdfs() {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-    if (!supabaseUrl || !supabaseKey) return [];
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { supabase } = await import('@/lib/supabase');
     const { data } = await supabase
       .from('pdf_marketplace')
       .select('id, title, slug, description, category, tags, price_inr, is_free_for_vip, preview_images, page_count, download_count, is_published, created_at, updated_at')
