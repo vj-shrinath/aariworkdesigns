@@ -95,6 +95,7 @@ export async function GET(req: Request) {
       isVip,
       isPurchased,
       fileName: downloadFileName,
+      message: allowCleanDelivery
         ? 'Access verified! Clean high-res PDF is ready.'
         : 'Watermarked sample preview delivered. Subscribe to VIP or purchase to unlock clean PDF without watermark.',
     });
