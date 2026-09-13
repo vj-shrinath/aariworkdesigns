@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+export const runtime = 'edge';
+
 const DEFAULT_FALLBACK_THUMBNAIL = "https://cdn.sanity.io/images/lx1zrwct/production/df915f02c525f05df3f3177651c69e2544ad545b-600x800.png";
 
 export async function GET(req: Request) {
