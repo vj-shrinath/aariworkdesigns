@@ -3,6 +3,7 @@ import AdminPdfMarketplace from '@/components/admin/AdminPdfMarketplace';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
+export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {

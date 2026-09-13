@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { createClient } from '@supabase/supabase-js';
 
+export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
