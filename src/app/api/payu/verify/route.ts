@@ -10,11 +10,13 @@ export async function GET(req: Request) {
     const statusParam = (searchParams.get('status') || 'CANCELLED').toUpperCase();
     const email = searchParams.get('email') || '';
     const userId = searchParams.get('udf1') || searchParams.get('user_id') || '';
+    const itemType = searchParams.get('item_type') || searchParams.get('udf3') || 'subscription';
+    const pdfId = searchParams.get('pdf_id') || searchParams.get('udf2') || '';
 
     const requestOrigin = req.headers.get('origin') || 'https://aariworkdesigns.com';
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL || requestOrigin).replace(/\/$/, '');
 
-    const redirectUrl = `${appUrl}/payment-status?order_id=${txnid}&status=${statusParam}&email=${encodeURIComponent(email)}${userId ? `&user_id=${encodeURIComponent(userId)}` : ''}`;
+    const redirectUrl = `${appUrl}/payment-status?order_id=${txnid}&status=${statusParam}&email=${encodeURIComponent(email)}${userId ? `&user_id=${encodeURIComponent(userId)}` : ''}&item_type=${itemType}${pdfId ? `&pdf_id=${pdfId}` : ''}`;
 
     return NextResponse.redirect(redirectUrl, 303);
   } catch (err: any) {
@@ -38,6 +40,8 @@ export async function POST(req: Request) {
     const productinfo = formData.get('productinfo') as string || '';
     const email = formData.get('email') as string || '';
     const udf1 = formData.get('udf1') as string || '';
+    const udf2 = formData.get('udf2') as string || ''; // pdf_id
+    const udf3 = formData.get('udf3') as string || 'subscription'; // itemType
 
     const merchantKey = process.env.PAYU_MERCHANT_KEY;
     const salt = process.env.PAYU_MERCHANT_SALT;
@@ -47,7 +51,7 @@ export async function POST(req: Request) {
 
     const additionalCharges = formData.get('additionalCharges') as string || '';
     // Reverse Hash formula: [additionalCharges|]SALT|status||||||udf5|udf4|udf3|udf2|udf1|email|firstname|productinfo|amount|txnid|key
-    let hashString = `${salt}|${formData.get('status') as string || ''}||||||||||${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${merchantKey}`;
+    let hashString = `${salt}|${formData.get('status') as string || ''}||||||||${udf3}|${udf2}|${udf1}|${email}|${firstname}|${productinfo}|${amount}|${txnid}|${merchantKey}`;
     if (additionalCharges) {
       hashString = `${additionalCharges}|${hashString}`;
     }
@@ -68,24 +72,38 @@ export async function POST(req: Request) {
         try {
           const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
           const supabaseAdminKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
           const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAdminKey;
           const supabaseAdmin = createClient(supabaseUrl, adminKey);
 
-          const plan = Number(amount) >= 499 ? 'yearly' : 'monthly';
-          const expiresAt = new Date();
-          expiresAt.setMonth(expiresAt.getMonth() + (plan === 'yearly' ? 12 : 1));
+          if (udf3 === 'pdf_single' && udf2) {
+            // Log PDF Purchase
+            await supabaseAdmin
+              .from('pdf_purchases')
+              .insert({
+                user_id: targetUserId,
+                email: email,
+                pdf_id: udf2,
+                txnid: txnid,
+                amount_paid: parseFloat(amount || '0'),
+                payment_status: 'PAID',
+              });
+          } else {
+            // Log Subscription
+            const plan = Number(amount) >= 499 ? 'yearly' : 'monthly';
+            const expiresAt = new Date();
+            expiresAt.setMonth(expiresAt.getMonth() + (plan === 'yearly' ? 12 : 1));
 
-          await supabaseAdmin
-            .from('subscriptions')
-            .upsert({
-              user_id: targetUserId,
-              email: email,
-              plan,
-              status: 'active',
-              expires_at: expiresAt.toISOString(),
-              updated_at: new Date().toISOString(),
-            }, { onConflict: 'user_id' });
+            await supabaseAdmin
+              .from('subscriptions')
+              .upsert({
+                user_id: targetUserId,
+                email: email,
+                plan,
+                status: 'active',
+                expires_at: expiresAt.toISOString(),
+                updated_at: new Date().toISOString(),
+              }, { onConflict: 'user_id' });
+          }
         } catch (dbErr) {
           console.error('Database upsert error for PayU webhook:', dbErr);
         }
@@ -98,7 +116,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const redirectUrl = `${appUrl}/payment-status?order_id=${txnid}&status=${finalStatus}&email=${encodeURIComponent(email)}${userId ? `&user_id=${encodeURIComponent(userId)}` : ''}`;
+    const redirectUrl = `${appUrl}/payment-status?order_id=${txnid}&status=${finalStatus}&email=${encodeURIComponent(email)}${userId ? `&user_id=${encodeURIComponent(userId)}` : ''}&item_type=${udf3}${udf2 ? `&pdf_id=${udf2}` : ''}`;
 
     return NextResponse.redirect(redirectUrl, 303);
   } catch (err: any) {

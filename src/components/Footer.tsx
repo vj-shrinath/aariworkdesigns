@@ -115,9 +115,23 @@ export default function Footer({ subtext }: FooterProps) {
 
       <div className={styles.divider}></div>
 
-      {/* Copyright Info */}
+      {/* Copyright & Developer Credit */}
       <div className={`${styles.bottomSection} container`}>
         <p>{t('footer.copyright', '© {year} AARI Work Designs. All rights reserved.').replace('{year}', currentYear.toString())}</p>
+        
+        <p className={styles.developerCredit}>
+          Crafted with passion by{' '}
+          <a 
+            href="https://vjshrinath.vercel.app/" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className={styles.developerLink}
+            title="Portfolio - Vijay Shrinath"
+          >
+            Vijay Shrinath ⚡
+          </a>
+        </p>
+
         <p style={{ fontStyle: 'italic' }}>{t('footer.tagline', 'Trace Your Imagination.')}</p>
       </div>
     </footer>

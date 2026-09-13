@@ -12,6 +12,17 @@ const nextConfig = {
         destination: '/blog/simple-aari-work-blouse-designs-images-with-traces-50-easy-patterns-for-beginners',
         permanent: true,
       },
+      // PDF Market slug rename – redirect old /marketplace links permanently
+      {
+        source: '/:locale/marketplace',
+        destination: '/:locale/pdf-market',
+        permanent: true,
+      },
+      {
+        source: '/marketplace',
+        destination: '/en/pdf-market',
+        permanent: true,
+      },
     ];
   },
   async headers() {

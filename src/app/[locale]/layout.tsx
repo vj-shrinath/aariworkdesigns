@@ -113,7 +113,7 @@ export default async function RootLayout({
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6627399718408055"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
         {gaMeasurementId ? (
           <>
@@ -134,8 +134,25 @@ gtag('config', ${JSON.stringify(gaMeasurementId)});`}
       <body style={{ overflowX: 'clip', width: '100%', margin: 0, padding: 0 }}>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           '@context': 'https://schema.org', '@graph': [
-            { '@type': 'Organization', '@id': 'https://aariworkdesigns.com/#organization', name: 'AARI Work Designs', url: 'https://aariworkdesigns.com', logo: 'https://aariworkdesigns.com/logo.png', email: 'vjshrinath2@outlook.com' },
-            { '@type': 'WebSite', '@id': 'https://aariworkdesigns.com/#website', name: 'AARI Work Designs', url: 'https://aariworkdesigns.com', publisher: { '@id': 'https://aariworkdesigns.com/#organization' }, inLanguage: locale }
+            { 
+              '@type': 'Organization', 
+              '@id': 'https://aariworkdesigns.com/#organization', 
+              name: 'AARI Work Designs', 
+              url: 'https://aariworkdesigns.com', 
+              logo: { '@type': 'ImageObject', url: 'https://aariworkdesigns.com/logo.png' }, 
+              email: 'vjshrinath2@outlook.com',
+              sameAs: ['https://t.me/AariWorkDesigns'],
+              founder: { '@type': 'Person', name: 'VJ Shrinath' },
+              description: 'Premium Aari work traces and embroidery designs resource and web tool.'
+            },
+            { 
+              '@type': 'WebSite', 
+              '@id': 'https://aariworkdesigns.com/#website', 
+              name: 'AARI Work Designs', 
+              url: 'https://aariworkdesigns.com', 
+              publisher: { '@id': 'https://aariworkdesigns.com/#organization' }, 
+              inLanguage: locale 
+            }
           ]
         }) }} />
         <LanguageProvider locale={locale} dict={dict}>

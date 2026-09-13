@@ -128,6 +128,7 @@ export default function Header() {
           <Link href={`/${locale}/blog`} onClick={() => setIsMenuOpen(false)}>{t('header.articles', 'Articles')}</Link>
           <Link href={`/${locale}/trace`} onClick={() => setIsMenuOpen(false)}>{t('header.traceTool', 'Trace Tool')}</Link>
           <Link href={`/${locale}/pdf-maker`} onClick={() => setIsMenuOpen(false)}>{t('header.pdfMaker', 'PDF Maker')}</Link>
+          <Link href={`/${locale}/pdf-market`} onClick={() => setIsMenuOpen(false)}>{t('header.pdfMarket', 'PDF Market')}</Link>
           <Link href={`/${locale}/gallery`} onClick={() => setIsMenuOpen(false)}>{t('header.gallery', 'Gallery')}</Link>
           <Link href={`/${locale}/about`} onClick={() => setIsMenuOpen(false)}>{t('header.about', 'About')}</Link>
           {user ? (
