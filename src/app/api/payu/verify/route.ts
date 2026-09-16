@@ -13,16 +13,22 @@ export async function GET(req: Request) {
     const itemType = searchParams.get('item_type') || searchParams.get('udf3') || 'subscription';
     const pdfId = searchParams.get('pdf_id') || searchParams.get('udf2') || '';
 
-    const requestOrigin = req.headers.get('origin') || 'https://aariworkdesigns.com';
-    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || requestOrigin).replace(/\/$/, '');
+    const host = req.headers.get('host');
+    const protocol = req.headers.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
+    const requestOrigin = host ? `${protocol}://${host}` : 'https://aariworkdesigns.com';
+    const isLocal = host?.includes('localhost') || host?.includes('127.0.0.1');
+    const appUrl = (isLocal ? requestOrigin : (process.env.NEXT_PUBLIC_APP_URL || requestOrigin)).replace(/\/$/, '');
 
     const redirectUrl = `${appUrl}/payment-status?order_id=${txnid}&status=${statusParam}&email=${encodeURIComponent(email)}${userId ? `&user_id=${encodeURIComponent(userId)}` : ''}&item_type=${itemType}${pdfId ? `&pdf_id=${pdfId}` : ''}`;
 
     return NextResponse.redirect(redirectUrl, 303);
   } catch (err: any) {
     console.error('API exception in GET PayU verify:', err);
-    const requestOrigin = req.headers.get('origin') || 'https://aariworkdesigns.com';
-    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || requestOrigin).replace(/\/$/, '');
+    const host = req.headers.get('host');
+    const protocol = req.headers.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
+    const requestOrigin = host ? `${protocol}://${host}` : 'https://aariworkdesigns.com';
+    const isLocal = host?.includes('localhost') || host?.includes('127.0.0.1');
+    const appUrl = (isLocal ? requestOrigin : (process.env.NEXT_PUBLIC_APP_URL || requestOrigin)).replace(/\/$/, '');
     return NextResponse.redirect(`${appUrl}/payment-status?status=CANCELLED`, 303);
   }
 }
@@ -55,8 +61,11 @@ export async function POST(req: Request) {
     const merchantKey = (process.env.PAYU_MERCHANT_KEY || key).trim();
     const salt = (process.env.PAYU_MERCHANT_SALT || '8eDpVmUaBzMMExBpYUVZqgU8DL4pbUls').trim();
     
-    const requestOrigin = req.headers.get('origin') || 'https://aariworkdesigns.com';
-    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || requestOrigin).replace(/\/$/, '');
+    const host = req.headers.get('host');
+    const protocol = req.headers.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
+    const requestOrigin = host ? `${protocol}://${host}` : 'https://aariworkdesigns.com';
+    const isLocal = host?.includes('localhost') || host?.includes('127.0.0.1');
+    const appUrl = (isLocal ? requestOrigin : (process.env.NEXT_PUBLIC_APP_URL || requestOrigin)).replace(/\/$/, '');
 
     const additionalCharges = formData.get('additionalCharges') as string || '';
 
@@ -131,8 +140,11 @@ export async function POST(req: Request) {
     return NextResponse.redirect(redirectUrl, 303);
   } catch (err: any) {
     console.error('API exception checking PayU order status:', err);
-    const requestOrigin = req.headers.get('origin') || 'https://aariworkdesigns.com';
-    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || requestOrigin).replace(/\/$/, '');
+    const host = req.headers.get('host');
+    const protocol = req.headers.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
+    const requestOrigin = host ? `${protocol}://${host}` : 'https://aariworkdesigns.com';
+    const isLocal = host?.includes('localhost') || host?.includes('127.0.0.1');
+    const appUrl = (isLocal ? requestOrigin : (process.env.NEXT_PUBLIC_APP_URL || requestOrigin)).replace(/\/$/, '');
     return NextResponse.redirect(`${appUrl}/payment-status?status=CANCELLED`, 303);
   }
 }

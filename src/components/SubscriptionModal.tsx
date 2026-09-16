@@ -68,7 +68,7 @@ export default function SubscriptionModal() {
   const handleGoogleSignIn = async () => {
     if (!isSupabaseConfigured) {
       setAuthMessageType('error');
-      setAuthMessage(t('subscription.authUnavailable', 'Account services are temporarily unavailable. Click below to continue as Guest.'));
+      setAuthMessage(t('subscription.authUnavailable', 'Account services are temporarily unavailable. Please try again later.'));
       return;
     }
     setAuthLoading(true);
@@ -95,7 +95,7 @@ export default function SubscriptionModal() {
     e.preventDefault();
     if (!isSupabaseConfigured) {
       setAuthMessageType('error');
-      setAuthMessage(t('subscription.authUnavailable', 'Account services are temporarily unavailable. Click below to continue as Guest.'));
+      setAuthMessage(t('subscription.authUnavailable', 'Account services are temporarily unavailable. Please try again later.'));
       return;
     }
     if (!authEmail || (authMode !== 'reset' && !authPassword)) {
@@ -152,7 +152,7 @@ export default function SubscriptionModal() {
       const message = /email.*rate limit|rate limit.*email|too many requests/i.test(rawMessage)
         ? t(
             'subscription.emailRateLimit',
-            'Confirmation emails are temporarily rate-limited by Supabase. Please wait before trying again, or continue as Guest below.'
+            'Confirmation emails are temporarily rate-limited by our provider. Please wait before trying again.'
           )
         : rawMessage || t('subscription.authFailed', 'Authentication failed');
       setAuthMessageType('error');
@@ -395,24 +395,7 @@ export default function SubscriptionModal() {
             </button>
           )}
 
-          {/* Option to skip Auth & checkout directly as Guest */}
-          <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(212, 175, 55, 0.12)', textAlign: 'center' }}>
-            <button
-              type="button"
-              onClick={() => {
-                if (authEmail && !email) setEmail(authEmail);
-                setShowGuestCheckout(true);
-              }}
-              style={{
-                background: 'transparent', border: '1px dashed rgba(212, 175, 55, 0.35)', borderRadius: '8px',
-                color: 'var(--accent)', padding: '0.65rem 1.1rem', fontSize: '0.85rem', fontWeight: 600,
-                cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem'
-              }}
-            >
-              <span>{t('subscription.continueAsGuest', 'Or Continue as Guest to Checkout')}</span>
-              <ArrowRight size={14} />
-            </button>
-          </div>
+
 
           <p className={styles.footerNotes}>
             {t('subscription.secureFootnotePayU', 'Protected by PayU end-to-end 256-bit SSL encryption. All transactions are securely processed in INR.')}

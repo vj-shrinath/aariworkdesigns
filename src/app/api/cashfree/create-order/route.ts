@@ -16,7 +16,9 @@ export async function POST(req: Request) {
 
     // Cashfree requires an HTTPS return URL. Use NEXT_PUBLIC_APP_URL for local
     // testing through an HTTPS tunnel and for production deployments.
-    const requestOrigin = req.headers.get('origin') || 'https://aariworkdesigns.com';
+    const host = req.headers.get('host');
+    const protocol = req.headers.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
+    const requestOrigin = host ? `${protocol}://${host}` : 'https://aariworkdesigns.com';
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL || requestOrigin).replace(/\/$/, '');
     const isHttps = appUrl.startsWith('https://');
     const returnUrl = `${appUrl}/payment-status?order_id={order_id}${userId ? `&user_id=${encodeURIComponent(userId)}` : ''}`;

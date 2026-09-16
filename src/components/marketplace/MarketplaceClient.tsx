@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Sparkles, Crown, Download, Eye, ShieldCheck, CheckCircle2, Lock, ArrowRight, ShoppingBag, X, FileText, Star } from 'lucide-react';
+import { Search, Filter, Sparkles, Crown, Download, Eye, ShieldCheck, CheckCircle2, Lock, User, ArrowRight, ShoppingBag, X, FileText, Star } from 'lucide-react';
 import { CATEGORIES, PdfMarketplaceItem, getMarketplacePdfs } from '@/lib/pdfMarketplace';
 import { useSubscription } from '@/context/SubscriptionContext';
 import styles from './MarketplaceClient.module.css';
@@ -63,6 +63,10 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
 
   const handleSinglePurchaseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      setPayError('You must be securely signed in to complete this purchase.');
+      return;
+    }
     if (!checkoutItem || !buyerName || !buyerEmail || !buyerPhone) {
       setPayError('Please fill in all customer details');
       return;
@@ -438,6 +442,20 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
               <div className={styles.errorBox}>{payError}</div>
             )}
 
+            {!user ? (
+              <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+                <Lock size={48} style={{ color: 'var(--accent)', marginBottom: '1rem', marginLeft: 'auto', marginRight: 'auto' }} />
+                <h4 style={{ marginBottom: '1rem', fontSize: '1.2rem', color: 'var(--text-primary)' }}>Account Required</h4>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Please sign in or create a free account to securely purchase and store your PDFs.</p>
+                <button 
+                  type="button" 
+                  className={styles.submitPayBtn} 
+                  onClick={() => { setCheckoutItem(null); openSubModal(); }}
+                >
+                  <User size={18} /> Sign In / Create Account
+                </button>
+              </div>
+            ) : (
             <form onSubmit={handleSinglePurchaseSubmit}>
               <div className={styles.orderSummaryBox}>
                 <div className={styles.summaryRow}>
@@ -508,6 +526,7 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
                 )}
               </button>
             </form>
+            )}
           </div>
         </div>
       )}

@@ -27,8 +27,11 @@ export async function POST(req: Request) {
 
     const txnid = `txn_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
-    const requestOrigin = req.headers.get('origin') || 'https://aariworkdesigns.com';
-    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || requestOrigin).replace(/\/$/, '');
+    const host = req.headers.get('host');
+    const protocol = req.headers.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
+    const requestOrigin = host ? `${protocol}://${host}` : 'https://aariworkdesigns.com';
+    const isLocal = host?.includes('localhost') || host?.includes('127.0.0.1');
+    const appUrl = (isLocal ? requestOrigin : (process.env.NEXT_PUBLIC_APP_URL || requestOrigin)).replace(/\/$/, '');
     
     const surl = `${appUrl}/api/payu/verify`;
     const furl = `${appUrl}/api/payu/verify`;
