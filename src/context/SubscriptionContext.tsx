@@ -135,11 +135,12 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     if (typeof window !== 'undefined' && !loading) {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('openSubModal') === 'true') {
-        if (!isSubscribed) {
+        if (!isSubscribed && urlParams.get('auth_reason') !== 'pdf') {
           setIsModalOpen(true);
         }
-        // Clean up URL parameter cleanly without reloading page
+        // Clean up URL parameters cleanly without reloading page
         urlParams.delete('openSubModal');
+        urlParams.delete('auth_reason');
         const newSearch = urlParams.toString();
         const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
         window.history.replaceState({}, '', newUrl);

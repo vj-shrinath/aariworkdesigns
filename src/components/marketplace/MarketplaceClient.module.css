@@ -62,6 +62,15 @@
   line-height: 1;
 }
 
+.headerSubtitle {
+  font-size: 0.8rem;
+  color: #9CA3AF;
+  margin-top: 0.4rem;
+  margin-bottom: 0;
+  max-width: 320px;
+  line-height: 1.4;
+}
+
 .searchBox {
   position: relative;
   flex-grow: 1;
@@ -754,6 +763,72 @@
   margin: 0 auto;
   text-align: center;
   padding: 2rem 0;
+}
+
+.purchasesHeaderBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: linear-gradient(180deg, rgba(20, 16, 32, 0.8), rgba(20, 16, 32, 0.4));
+  border-radius: 16px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.purchasesHeaderBlock::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.8), transparent);
+}
+
+.purchasesIconWrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+}
+
+.purchasesIcon {
+  color: var(--accent, #D4AF37);
+}
+
+.purchasesTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #FFF;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.02em;
+  background: linear-gradient(to right, #FFF, #E5E7EB);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.purchasesSubtitle {
+  font-size: 1rem;
+  color: #9CA3AF;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.userEmailHighlight {
+  color: var(--accent, #D4AF37);
+  font-weight: 600;
 }
 
 .vipBanner {

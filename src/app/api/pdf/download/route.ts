@@ -61,13 +61,13 @@ export async function GET(req: Request) {
       const fileRes = await fetch(filePath);
       if (fileRes.ok) {
         const fileBuffer = await fileRes.arrayBuffer();
-        return NextResponse.json({
-          success: true,
-          hasAccess: allowCleanDelivery,
-          isVip,
-          isPurchased,
-          downloadUrl: filePath,
-          fileName: downloadFileName
+        return new NextResponse(fileBuffer, {
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="${downloadFileName}"`,
+            'Cache-Control': 'no-cache',
+            'X-Secure-Delivery': 'true'
+          },
         });
       }
     }

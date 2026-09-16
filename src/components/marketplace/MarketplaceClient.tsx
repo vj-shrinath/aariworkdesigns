@@ -35,6 +35,12 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
   const [isProcessingPay, setIsProcessingPay] = useState(false);
   const [payError, setPayError] = useState('');
 
+  // Purchases Tab State
+  const [purchasedItems, setPurchasedItems] = useState<PdfMarketplaceItem[]>([]);
+  const [isPurchasedLoading, setIsPurchasedLoading] = useState(false);
+  const [purchasesLoaded, setPurchasesLoaded] = useState(false);
+  const [isVipMode, setIsVipMode] = useState(false);
+
   // Fetch Items on Category or Search change
   const isInitialMount = React.useRef(true);
   useEffect(() => {
@@ -52,14 +58,83 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
     loadData();
   }, [selectedCategory, searchQuery]);
 
-  // Pre-fill saved user details
+  // Pre-fill saved user details and parse URL params
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setBuyerName(localStorage.getItem('aari_saved_name') || '');
       setBuyerEmail(user?.email || localStorage.getItem('aari_saved_email') || '');
       setBuyerPhone(localStorage.getItem('aari_saved_phone') || '');
+      
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      const openPdf = params.get('open_pdf');
+      
+      if (tabParam === 'my-purchases') {
+        setActiveTab('my-purchases');
+      }
+      if (openPdf) {
+         setActiveTab('my-purchases');
+         setSearchQuery(''); 
+         setTimeout(() => {
+           const targetBtn = document.getElementById(`btn-pdf-${openPdf}`);
+           if (targetBtn) {
+             targetBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+           }
+         }, 1500);
+      }
     }
   }, [user]);
+
+  const fetchPurchases = async () => {
+    const emailToUse = user?.email || buyerEmail;
+    if (!emailToUse && !user?.id) return;
+    setIsPurchasedLoading(true);
+    setPurchasesLoaded(false);
+    try {
+      const res = await fetch(`/api/pdf/purchases?email=${encodeURIComponent(emailToUse)}&userId=${user?.id || ''}`);
+      const data = await res.json();
+      setIsVipMode(data.isVip);
+      
+      let pItems = [];
+      if (data.isVip) {
+        pItems = items.filter(it => it.is_free_for_vip);
+      } else {
+        const ids = data.purchasedPdfIds || [];
+        pItems = items.filter(it => ids.includes(it.id));
+      }
+      setPurchasedItems(pItems);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsPurchasedLoading(false);
+      setPurchasesLoaded(true);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'my-purchases' && (user || buyerEmail)) {
+      if (items.length > 0) {
+        fetchPurchases();
+      }
+    }
+  }, [activeTab, user, items.length]);
+
+  useEffect(() => {
+    if (user && items.length > 0) {
+      const savedPdfId = localStorage.getItem('aari_checkout_pdf');
+      if (savedPdfId) {
+        localStorage.removeItem('aari_checkout_pdf');
+        const item = items.find(i => i.id === savedPdfId);
+        if (item) setCheckoutItem(item);
+      } else if (checkoutItem) {
+        // Sync checkoutItem with fresh items list in case of cache invalidation
+        const freshItem = items.find(i => i.id === checkoutItem.id);
+        if (freshItem && freshItem.price_inr !== checkoutItem.price_inr) {
+           setCheckoutItem(freshItem);
+        }
+      }
+    }
+  }, [user, items, checkoutItem]);
 
   const handleSinglePurchaseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,9 +200,45 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
     }
   };
 
-  const handleDownloadPdf = (item: PdfMarketplaceItem, isClean: boolean = false) => {
-    const downloadUrl = `/api/pdf/download?pdfId=${item.id}&email=${encodeURIComponent(buyerEmail || user?.email || '')}&userId=${user?.id || ''}${isClean ? '&type=clean' : '&type=watermarked'}`;
-    window.open(downloadUrl, '_blank');
+  const [downloadingPdf, setDownloadingPdf] = useState<string | null>(null);
+
+  const handleDownloadPdf = async (item: PdfMarketplaceItem, isClean: boolean = false) => {
+    setDownloadingPdf(item.id);
+    try {
+      const downloadUrl = `/api/pdf/download?pdfId=${item.id}&email=${encodeURIComponent(buyerEmail || user?.email || '')}&userId=${user?.id || ''}${isClean ? '&type=clean' : '&type=watermarked'}`;
+      const res = await fetch(downloadUrl);
+      
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        if (data.downloadUrl) {
+           const a = document.createElement('a');
+           a.style.display = 'none';
+           a.href = data.downloadUrl;
+           a.download = data.fileName || `${item.title.replace(/[^a-zA-Z0-9]+/g, '_')}.pdf`;
+           a.target = '_blank';
+           document.body.appendChild(a);
+           a.click();
+        } else {
+           alert(data.message || 'Error downloading PDF');
+        }
+      } else {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `${item.title.replace(/[^a-zA-Z0-9]+/g, '_')}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (err: any) {
+      alert('Verification or download failed: ' + err.message);
+    } finally {
+      setDownloadingPdf(null);
+    }
   };
 
   return (
@@ -136,8 +247,15 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
       <div className={styles.headerToolbar}>
         <div className={styles.headerHeading}>
           <h1 className={`${styles.toolbarTitle} text-gradient`}>
-            PDF Market
+            {activeTab === 'catalog' ? 'PDF Market' : 'My Secure PDF Vault'}
           </h1>
+          {activeTab === 'my-purchases' && (
+             <p className={styles.headerSubtitle}>
+               {user
+                 ? <>Logged in as <strong className={styles.userEmailHighlight}>{user.email}</strong>. Access your unlocked tracing sheets.</>
+                 : 'Check your email to find your purchased clean PDFs.'}
+             </p>
+          )}
         </div>
 
         {/* Search Bar */}
@@ -287,12 +405,6 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
       {/* Purchased PDFs Tab */}
       {activeTab === 'my-purchases' && (
         <div className={styles.purchasesContainer}>
-          <h2 className={styles.purchasesTitle}>My PDF Purchases & VIP Access</h2>
-          <p className={styles.purchasesSubtitle}>
-            {user
-              ? `Logged in as ${user.email}. All your unlocked PDF tracing sheets are listed below.`
-              : 'Enter your email below to find your purchased clean PDFs.'}
-          </p>
 
           {!user && (
             <div className={styles.emailLookupBox}>
@@ -305,25 +417,100 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
               />
               <button
                 className={styles.lookupBtn}
-                onClick={() => {
-                  /* re-trigger lookup */
-                }}
+                onClick={fetchPurchases}
               >
                 <span>Find My Orders</span>
               </button>
             </div>
           )}
 
-          <div className={styles.vipBanner}>
-            <Crown size={28} className={styles.goldIcon} />
-            <div>
-              <h4>Want Unlimited Access to ALL PDFs?</h4>
-              <p>Upgrade to Aari VIP Subscription for ₹499/year to download every single PDF design without watermarks.</p>
+          {isPurchasedLoading && (
+            <div className={styles.loadingGrid}>
+              {[1, 2, 3].map((i) => (
+                <div key={i} className={styles.skeletonCard} />
+              ))}
             </div>
-            <button className={styles.vipUpgradeBtn} onClick={openSubModal}>
-              <span>Get VIP Pass</span>
-            </button>
-          </div>
+          )}
+
+          {purchasesLoaded && !isPurchasedLoading && purchasedItems.length === 0 && (
+             <div className={styles.emptyState}>
+               <FileText size={48} className={styles.emptyIcon} />
+               <h3>No purchased PDFs found</h3>
+               <p>If you recently purchased, make sure you used exactly this email address.</p>
+             </div>
+          )}
+
+          {purchasedItems.length > 0 && (
+            <div className={styles.grid}>
+              {purchasedItems.map((item) => {
+                const failCount = failedImages[item.id] || 0;
+                const hasValidPreviewImg = failCount < 2;
+                const directUrl = item.preview_images && Array.isArray(item.preview_images) && item.preview_images[0] ? item.preview_images[0] : null;
+                const imageSrc = (directUrl && failCount === 0) ? directUrl : `/api/pdf/preview?id=${item.id}`;
+
+                return (
+                  <div key={item.id} className={styles.card} style={{ cursor: 'default' }}>
+                     <div className={styles.thumbArea}>
+                        {hasValidPreviewImg ? (
+                          <img
+                            src={imageSrc}
+                            alt={item.title}
+                            style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#FFFFFF' }}
+                            onError={() => setFailedImages((prev) => ({ ...prev, [item.id]: (prev[item.id] || 0) + 1 }))}
+                          />
+                        ) : (
+                          <div className={styles.thumbGraphic}><FileText size={48} color="rgba(212,175,55,0.4)" /></div>
+                        )}
+                     </div>
+                     <div className={styles.cardContent}>
+                       <h3 className={styles.cardTitle}>{item.title}</h3>
+                       <button
+                         id={`btn-pdf-${item.id}`}
+                         className={styles.gridBuyBtn}
+                         style={{
+                           width: '100%', 
+                           marginTop: '1rem', 
+                           display: 'flex', 
+                           justifyContent: 'center', 
+                           alignItems: 'center',
+                           gap: '0.4rem',
+                           background: 'rgba(34, 197, 94, 0.1)', 
+                           color: '#4ade80',
+                           borderColor: '#4ade80',
+                           borderWidth: '1px',
+                           borderStyle: 'solid',
+                           fontSize: '0.9rem',
+                           padding: '10px',
+                           borderRadius: '8px'
+                         }}
+                         onClick={(e) => { e.stopPropagation(); handleDownloadPdf(item, true); }}
+                         disabled={downloadingPdf === item.id}
+                       >
+                         {downloadingPdf === item.id ? (
+                           <span style={{ animation: 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>Downloading...</span>
+                         ) : (
+                           <><Download size={16} /> Download PDF</>
+                         )}
+                       </button>
+                     </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {!isVipMode && (
+            <div className={styles.vipBanner}>
+              <Crown size={28} className={styles.goldIcon} />
+              <div>
+                <h4>Want Unlimited Access to ALL PDFs?</h4>
+                <p>Upgrade to Aari VIP Subscription for ₹499/year to download every single PDF design without watermarks.</p>
+              </div>
+              <button className={styles.vipUpgradeBtn} onClick={openSubModal}>
+                <span>Get VIP Pass</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -450,7 +637,13 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
                 <button 
                   type="button" 
                   className={styles.submitPayBtn} 
-                  onClick={() => { setCheckoutItem(null); openSubModal(); }}
+                  onClick={() => { 
+                    localStorage.setItem('aari_checkout_pdf', checkoutItem.id);
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('auth_reason', 'pdf');
+                    window.history.pushState({}, '', url);
+                    openSubModal(); 
+                  }}
                 >
                   <User size={18} /> Sign In / Create Account
                 </button>

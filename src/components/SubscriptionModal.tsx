@@ -76,7 +76,9 @@ export default function SubscriptionModal() {
     try {
       const origin = typeof window !== 'undefined' ? window.location.origin : 'https://aariworkdesigns.com';
       const currentPath = typeof window !== 'undefined' ? window.location.pathname : `/${locale}/pdf-maker`;
-      const redirectTarget = `${currentPath}?openSubModal=true`;
+      const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+      searchParams.set('openSubModal', 'true');
+      const redirectTarget = `${currentPath}?${searchParams.toString()}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -130,7 +132,14 @@ export default function SubscriptionModal() {
         setAuthPassword('');
         setConfirmPassword('');
         if (data?.session) {
-          setShowGuestCheckout(true);
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('auth_reason') === 'pdf') {
+            urlParams.delete('auth_reason');
+            window.history.replaceState({}, '', window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : ''));
+            closeModal();
+          } else {
+            setShowGuestCheckout(true);
+          }
         } else {
           setAuthMode('signin');
           setAuthMessageType('success');
@@ -145,7 +154,14 @@ export default function SubscriptionModal() {
         if (data?.user?.email) {
           setEmail(data.user.email);
         }
-        setShowGuestCheckout(true);
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('auth_reason') === 'pdf') {
+          urlParams.delete('auth_reason');
+          window.history.replaceState({}, '', window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : ''));
+          closeModal();
+        } else {
+          setShowGuestCheckout(true);
+        }
       }
     } catch (err: any) {
       const rawMessage = String(err?.message || '');

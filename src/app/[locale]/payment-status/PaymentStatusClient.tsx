@@ -12,6 +12,8 @@ type Status = 'loading' | 'success' | 'failed' | 'cancelled';
 
 function PaymentStatusContent({ locale }: { locale: Locale }) {
   const searchParams = useSearchParams();
+  const itemType = searchParams ? searchParams.get('item_type') : null;
+  const pdfId = searchParams ? searchParams.get('pdf_id') : null;
   const { setSubscriptionStatus, checkSubscription, openModal } = useSubscription();
   const { t } = useTranslation();
   const [status, setStatus] = useState<Status>('loading');
@@ -23,6 +25,8 @@ function PaymentStatusContent({ locale }: { locale: Locale }) {
     const mockStatus = searchParams ? searchParams.get('status') : null;
     const email = searchParams ? searchParams.get('email') : null;
     const userId = searchParams ? searchParams.get('user_id') : null;
+    const itemType = searchParams ? searchParams.get('item_type') : null;
+    const pdfId = searchParams ? searchParams.get('pdf_id') : null;
     setOrderId(orderIdParam || '');
 
     if (mockStatus === 'CANCELLED' || mockStatus === 'cancel' || mockStatus === 'userCancelled' || mockStatus === 'USER_CANCELLED') {
@@ -32,12 +36,19 @@ function PaymentStatusContent({ locale }: { locale: Locale }) {
     }
 
     if (mockStatus === 'PAID') {
-      setSubscriptionStatus(true, email || '');
-      if (userId && email) {
-        checkSubscription(userId, email);
+      if (itemType !== 'pdf_single') {
+        setSubscriptionStatus(true, email || '');
+        if (userId && email) {
+          checkSubscription(userId, email);
+        }
       }
       setStatus('success');
-      setMessage(t('paymentStatus.paymentVerified', 'Payment verified! Premium features are now unlocked.'));
+      setMessage(itemType === 'pdf_single' ? 'PDF purchased successfully. Redirecting to download area...' : t('paymentStatus.paymentVerified', 'Payment verified! Premium features are now unlocked.'));
+      if (itemType === 'pdf_single') {
+         setTimeout(() => {
+           window.location.href = `/${locale}/pdf-market?tab=my-purchases&open_pdf=${pdfId}`;
+         }, 2000);
+      }
       return;
     }
 
@@ -61,12 +72,19 @@ function PaymentStatusContent({ locale }: { locale: Locale }) {
         const data = await res.json();
 
         if (data.success) {
-          setSubscriptionStatus(true, data.customerEmail || email || '');
-          if (userId && (data.customerEmail || email)) {
-            await checkSubscription(userId, data.customerEmail || email || '');
+          if (itemType !== 'pdf_single') {
+            setSubscriptionStatus(true, data.customerEmail || email || '');
+            if (userId && (data.customerEmail || email)) {
+              await checkSubscription(userId, data.customerEmail || email || '');
+            }
           }
           setStatus('success');
-          setMessage(t('paymentStatus.paymentVerified', 'Payment verified! Premium features are now unlocked.'));
+          setMessage(itemType === 'pdf_single' ? 'PDF purchased successfully... redirecting to download area.' : t('paymentStatus.paymentVerified', 'Payment verified! Premium features are now unlocked.'));
+          if (itemType === 'pdf_single') {
+            setTimeout(() => {
+              window.location.href = `/${locale}/pdf-market?tab=my-purchases&open_pdf=${pdfId}`;
+            }, 2000);
+          }
         } else if (data.status === 'CANCELLED' || data.status === 'cancel') {
           setStatus('cancelled');
           setMessage(t('paymentStatus.paymentCancelled', 'Payment was cancelled. You have not been charged.'));
@@ -128,26 +146,28 @@ function PaymentStatusContent({ locale }: { locale: Locale }) {
             </div>
             <Crown size={28} style={{ color: 'var(--accent)', marginBottom: '0.5rem', marginLeft: 'auto', marginRight: 'auto' }} />
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
-              {t('paymentStatus.welcomePremium', 'Welcome to ')}<span className="text-gradient">{t('paymentStatus.premiumHighlight', 'Premium!')}</span>
+              {itemType === 'pdf_single' ? 'Purchase Successful!' : <>{t('paymentStatus.welcomePremium', 'Welcome to ')}<span className="text-gradient">{t('paymentStatus.premiumHighlight', 'Premium!')}</span></>}
             </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>
               {message}
             </p>
             {orderId && <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Order ID: <strong>{orderId}</strong><br />A confirmation email is sent to the payment email when available. Your digital access is available from the account area.</p>}
-            <Link href={`/${locale}/pdf-maker`} style={{
-              display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-              padding: '0.9rem 2rem',
-              background: 'var(--accent-gradient)',
-              color: 'var(--bg-primary)',
-              borderRadius: '10px',
-              fontWeight: 800, fontSize: '1rem',
-              textDecoration: 'none',
-              transition: 'var(--transition)',
-              boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)',
-              marginLeft: 'auto', marginRight: 'auto',
-            }}>
-              {t('paymentStatus.startCreating', 'Start Creating')} <ArrowRight size={16} />
-            </Link>
+            {itemType === 'pdf_single' ? null : (
+              <Link href={`/${locale}/pdf-maker`} style={{
+                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                padding: '0.9rem 2rem',
+                background: 'var(--accent-gradient)',
+                color: 'var(--bg-primary)',
+                borderRadius: '10px',
+                fontWeight: 800, fontSize: '1rem',
+                textDecoration: 'none',
+                transition: 'var(--transition)',
+                boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)',
+                marginLeft: 'auto', marginRight: 'auto',
+              }}>
+                {t('paymentStatus.startCreating', 'Start Creating')} <ArrowRight size={16} />
+              </Link>
+            )}
           </>
         )}
 
