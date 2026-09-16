@@ -117,7 +117,7 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
         fetchPurchases();
       }
     }
-  }, [activeTab, user, items.length]);
+  }, [activeTab, user, buyerEmail, items.length]);
 
   useEffect(() => {
     if (user && items.length > 0) {
