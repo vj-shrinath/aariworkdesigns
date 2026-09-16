@@ -112,12 +112,12 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
   };
 
   useEffect(() => {
-    if (activeTab === 'my-purchases' && (user || buyerEmail)) {
+    if (user || buyerEmail) {
       if (items.length > 0) {
         fetchPurchases();
       }
     }
-  }, [activeTab, user, buyerEmail, items.length]);
+  }, [user, buyerEmail, items.length]);
 
   useEffect(() => {
     if (user && items.length > 0) {
@@ -377,12 +377,30 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
                           <span className={styles.priceAmount}>{item.price_inr}</span>
                         </div>
 
-                        <button 
-                          className={styles.gridBuyBtn} 
-                          onClick={(e) => { e.stopPropagation(); setSelectedProduct(item); }}
-                        >
-                          <FileText size={14} /> Get PDF
-                        </button>
+                        
+                        {purchasedItems.some(p => p.id === item.id) ? (
+                          <button 
+                            className={styles.gridBuyBtn} 
+                            style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#4ade80', borderColor: '#4ade80' }}
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              setActiveTab('my-purchases'); 
+                              setTimeout(() => {
+                                const targetBtn = document.getElementById(`btn-pdf-${item.id}`);
+                                if (targetBtn) targetBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                              }, 100);
+                            }}
+                          >
+                            <CheckCircle2 size={14} /> Owned
+                          </button>
+                        ) : (
+                          <button 
+                            className={styles.gridBuyBtn} 
+                            onClick={(e) => { e.stopPropagation(); setSelectedProduct(item); }}
+                          >
+                            <FileText size={14} /> Get PDF
+                          </button>
+                        )}
                       </div>
 
                       <div className={styles.storeRow}>
@@ -582,13 +600,28 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
                   </button>
                 ) : (
                   <>
-                    <button 
-                      className={styles.buyBtnFull} 
-                      onClick={() => { setSelectedProduct(null); setCheckoutItem(selectedProduct); }}
-                    >
-                      <ShoppingBag size={18} />
-                      Buy for ₹{selectedProduct.price_inr}
-                    </button>
+                    {purchasedItems.some(p => p.id === selectedProduct.id) ? (
+                      <button 
+                        className={styles.buyBtnFull} 
+                        style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderColor: '#22c55e', color: '#fff' }}
+                        onClick={() => { setSelectedProduct(null); handleDownloadPdf(selectedProduct, true); }}
+                        disabled={downloadingPdf === selectedProduct.id}
+                      >
+                        {downloadingPdf === selectedProduct.id ? (
+                          <span style={{ animation: 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>Downloading...</span>
+                        ) : (
+                          <><CheckCircle2 size={18} /> Download Owned PDF</>
+                        )}
+                      </button>
+                    ) : (
+                      <button 
+                        className={styles.buyBtnFull} 
+                        onClick={() => { setSelectedProduct(null); setCheckoutItem(selectedProduct); }}
+                      >
+                        <ShoppingBag size={18} />
+                        Buy for ₹{selectedProduct.price_inr}
+                      </button>
+                    )}
 
                     {selectedProduct.is_free_for_vip && (
                       <div className={styles.vipPromoBox}>

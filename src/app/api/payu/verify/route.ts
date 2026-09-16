@@ -54,6 +54,8 @@ export async function POST(req: Request) {
     const u9 = formData.get('udf9') as string || '';
     const u10 = formData.get('udf10') as string || '';
 
+    console.log(`[PAYU VERIFY WEBHOOK] TXN: ${txnid} | STATUS: ${rawStatus} | U1: ${u1} | U2 (pdfId): ${u2} | U3 (type): ${u3}`);
+
     const merchantKey = (process.env.PAYU_MERCHANT_KEY || key).trim();
     const salt = (process.env.PAYU_MERCHANT_SALT || '8eDpVmUaBzMMExBpYUVZqgU8DL4pbUls').trim();
     
@@ -92,7 +94,7 @@ export async function POST(req: Request) {
 
         if (u3 === 'pdf_single' && u2) {
           // Log PDF Purchase
-          await supabaseAdmin
+          const { error: insertErr } = await supabaseAdmin
             .from('pdf_purchases')
             .insert({
               user_id: validUserId,
@@ -102,6 +104,10 @@ export async function POST(req: Request) {
               amount_paid: parseFloat(amount || '0'),
               payment_status: 'PAID',
             });
+            
+          if (insertErr) {
+            console.error('[SUPABASE FATAL PDF INSERT]', insertErr, { validUserId, u2, txnid });
+          }
         } else {
           // Log Subscription
           const plan = Number(amount) >= 499 ? 'yearly' : 'monthly';
