@@ -81,35 +81,38 @@ export async function POST(req: Request) {
     if (rawStatus === 'success' && calculatedHash === postedHash) {
       finalStatus = 'PAID';
       const targetUserId = userId || (email ? `guest_${email}` : '');
-      if (targetUserId) {
-        try {
-          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-          const supabaseAdminKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-          const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAdminKey;
-          const supabaseAdmin = createClient(supabaseUrl, adminKey);
+      
+      try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const supabaseAdminKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+        const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAdminKey;
+        const supabaseAdmin = createClient(supabaseUrl, adminKey);
 
-          if (u3 === 'pdf_single' && u2) {
-            // Log PDF Purchase
-            await supabaseAdmin
-              .from('pdf_purchases')
-              .insert({
-                user_id: targetUserId,
-                email: email,
-                pdf_id: u2,
-                txnid: txnid,
-                amount_paid: parseFloat(amount || '0'),
-                payment_status: 'PAID',
-              });
-          } else {
-            // Log Subscription
-            const plan = Number(amount) >= 499 ? 'yearly' : 'monthly';
-            const expiresAt = new Date();
-            expiresAt.setMonth(expiresAt.getMonth() + (plan === 'yearly' ? 12 : 1));
+        const validUserId = (!targetUserId || targetUserId.startsWith('guest_')) ? null : targetUserId;
 
+        if (u3 === 'pdf_single' && u2) {
+          // Log PDF Purchase
+          await supabaseAdmin
+            .from('pdf_purchases')
+            .insert({
+              user_id: validUserId,
+              email: email,
+              pdf_id: u2,
+              txnid: txnid,
+              amount_paid: parseFloat(amount || '0'),
+              payment_status: 'PAID',
+            });
+        } else {
+          // Log Subscription
+          const plan = Number(amount) >= 499 ? 'yearly' : 'monthly';
+          const expiresAt = new Date();
+          expiresAt.setMonth(expiresAt.getMonth() + (plan === 'yearly' ? 12 : 1));
+
+          if (validUserId) {
             await supabaseAdmin
               .from('subscriptions')
               .upsert({
-                user_id: targetUserId,
+                user_id: validUserId,
                 email: email,
                 plan,
                 status: 'active',
@@ -117,9 +120,9 @@ export async function POST(req: Request) {
                 updated_at: new Date().toISOString(),
               }, { onConflict: 'user_id' });
           }
-        } catch (dbErr) {
-          console.error('Database error in PayU verify callback:', dbErr);
         }
+      } catch (dbErr) {
+        console.error('Database error in PayU verify callback:', dbErr);
       }
     } else if (rawStatus === 'cancel' || rawStatus === 'cancelled' || rawStatus === 'usercancelled') {
       finalStatus = 'CANCELLED';

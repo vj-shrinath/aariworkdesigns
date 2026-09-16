@@ -61,9 +61,11 @@ export async function POST(req: Request) {
       const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, adminKey!);
 
+      const validUserId = u1.startsWith('guest_') ? null : u1;
+
       if (isPdfSingle) {
         await supabaseAdmin.from('pdf_purchases').insert({
-          user_id: u1,
+          user_id: validUserId,
           email: customerEmail,
           pdf_id: pdfId,
           txnid: `mock_${txnid}`,
@@ -73,10 +75,13 @@ export async function POST(req: Request) {
       } else {
         const expiresAt = new Date();
         expiresAt.setMonth(expiresAt.getMonth() + (plan === 'yearly' ? 12 : 1));
-        await supabaseAdmin.from('subscriptions').upsert({
-          user_id: u1, email: customerEmail, plan, status: 'active',
-          expires_at: expiresAt.toISOString(), updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
+        
+        if (validUserId) {
+          await supabaseAdmin.from('subscriptions').upsert({
+            user_id: validUserId, email: customerEmail, plan, status: 'active',
+            expires_at: expiresAt.toISOString(), updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' });
+        }
       }
 
       const mockRedirectUrl = `${appUrl}/payment-status?order_id=mock_${txnid}&status=PAID&email=${encodeURIComponent(customerEmail)}&item_type=${u3}${pdfId ? `&pdf_id=${pdfId}` : ''}`;
