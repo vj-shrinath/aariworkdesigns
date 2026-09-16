@@ -14,10 +14,8 @@ export async function GET(req: Request) {
     const pdfId = searchParams.get('pdf_id') || searchParams.get('udf2') || '';
 
     const host = req.headers.get('host');
-    const protocol = req.headers.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
-    const requestOrigin = host ? `${protocol}://${host}` : 'https://aariworkdesigns.com';
     const isLocal = host?.includes('localhost') || host?.includes('127.0.0.1');
-    const appUrl = (isLocal ? requestOrigin : (process.env.NEXT_PUBLIC_APP_URL || requestOrigin)).replace(/\/$/, '');
+    const appUrl = isLocal ? `http://${host}` : 'https://aariworkdesigns.com';
 
     const redirectUrl = `${appUrl}/payment-status?order_id=${txnid}&status=${statusParam}&email=${encodeURIComponent(email)}${userId ? `&user_id=${encodeURIComponent(userId)}` : ''}&item_type=${itemType}${pdfId ? `&pdf_id=${pdfId}` : ''}`;
 
@@ -25,10 +23,8 @@ export async function GET(req: Request) {
   } catch (err: any) {
     console.error('API exception in GET PayU verify:', err);
     const host = req.headers.get('host');
-    const protocol = req.headers.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
-    const requestOrigin = host ? `${protocol}://${host}` : 'https://aariworkdesigns.com';
     const isLocal = host?.includes('localhost') || host?.includes('127.0.0.1');
-    const appUrl = (isLocal ? requestOrigin : (process.env.NEXT_PUBLIC_APP_URL || requestOrigin)).replace(/\/$/, '');
+    const appUrl = isLocal ? `http://${host}` : 'https://aariworkdesigns.com';
     return NextResponse.redirect(`${appUrl}/payment-status?status=CANCELLED`, 303);
   }
 }
@@ -62,10 +58,8 @@ export async function POST(req: Request) {
     const salt = (process.env.PAYU_MERCHANT_SALT || '8eDpVmUaBzMMExBpYUVZqgU8DL4pbUls').trim();
     
     const host = req.headers.get('host');
-    const protocol = req.headers.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
-    const requestOrigin = host ? `${protocol}://${host}` : 'https://aariworkdesigns.com';
     const isLocal = host?.includes('localhost') || host?.includes('127.0.0.1');
-    const appUrl = (isLocal ? requestOrigin : (process.env.NEXT_PUBLIC_APP_URL || requestOrigin)).replace(/\/$/, '');
+    const appUrl = isLocal ? `http://${host}` : 'https://aariworkdesigns.com';
 
     const additionalCharges = formData.get('additionalCharges') as string || '';
 
