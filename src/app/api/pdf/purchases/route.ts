@@ -17,27 +17,39 @@ export async function GET(req: Request) {
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    const orConditions = [];
+    if (email) orConditions.push(`email.eq.${email}`);
+    if (userId) orConditions.push(`user_id.eq.${userId}`);
+    const orQueryStr = orConditions.length > 0 ? orConditions.join(',') : '';
+
     // Check VIP
     let isVip = false;
-    const { data: subData } = await supabase
-      .from('subscriptions')
-      .select('status, expires_at')
-      .or(`user_id.eq.${userId || ''},email.eq.${email || ''}`)
-      .eq('status', 'active')
-      .maybeSingle();
+    if (orQueryStr) {
+      const { data: subData } = await supabase
+        .from('subscriptions')
+        .select('status, expires_at')
+        .or(orQueryStr)
+        .eq('status', 'active')
+        .maybeSingle();
 
-    if (subData && new Date(subData.expires_at) > new Date()) {
-      isVip = true;
+      if (subData && new Date(subData.expires_at) > new Date()) {
+        isVip = true;
+      }
     }
 
     // Check purchased
-    const { data: purchases } = await supabase
-      .from('pdf_purchases')
-      .select('pdf_id')
-      .eq('payment_status', 'PAID')
-      .or(`email.eq.${email || ''},user_id.eq.${userId || ''}`);
-      
-    const purchasedPdfIds = purchases ? purchases.map((p) => p.pdf_id) : [];
+    let purchasedPdfIds: string[] = [];
+    if (orQueryStr) {
+      const { data: purchases } = await supabase
+        .from('pdf_purchases')
+        .select('pdf_id')
+        .eq('payment_status', 'PAID')
+        .or(orQueryStr);
+        
+      if (purchases) {
+        purchasedPdfIds = purchases.map((p: any) => p.pdf_id);
+      }
+    }
 
     return NextResponse.json({ purchasedPdfIds, isVip });
   } catch (err: any) {
