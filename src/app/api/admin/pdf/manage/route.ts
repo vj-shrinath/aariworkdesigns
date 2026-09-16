@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'edge';
 
-const ADMIN_SECRET = process.env.ADMIN_SECRET_KEY || 'aari_admin_secret_2026';
+const ADMIN_SECRET = (process.env.ADMIN_SECRET_KEY || 'aari_admin_secret_2026').replace(/['"]/g, '').trim();
 
 function verifyAdmin(req: Request) {
   const authHeader = req.headers.get('x-admin-secret');

@@ -4,7 +4,7 @@ import { injectWatermarkToPdf, getPdfPageCount } from '@/lib/watermarkPdfEngine'
 
 export const runtime = 'edge';
 
-const ADMIN_SECRET = process.env.ADMIN_SECRET_KEY || 'aari_admin_secret_2026';
+const ADMIN_SECRET = (process.env.ADMIN_SECRET_KEY || 'aari_admin_secret_2026').replace(/['"]/g, '').trim();
 
 export async function POST(req: Request) {
   try {
