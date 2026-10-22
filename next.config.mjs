@@ -28,12 +28,12 @@ const nextConfig = {
   async headers() {
     const cspHeader = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://static.cloudflareinsights.com https://accounts.google.com https://*.google.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://static.cloudflareinsights.com https://accounts.google.com https://*.google.com https://*.profitableratecpmnetwork.com https://*.adsterra.com https://*.bauval.org https://bauval.org",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
-      "img-src 'self' data: blob: https://cdn.sanity.io https://m.media-amazon.com https://images.unsplash.com https://image.pollinations.ai https://pagead2.googlesyndication.com https://www.google-analytics.com https://lh3.googleusercontent.com https://*.google.com https://*.gstatic.com",
-      "connect-src 'self' https://test.payu.in https://secure.payu.in https://*.payu.in https://*.supabase.co https://*.sanity.io https://pagead2.googlesyndication.com https://www.googletagmanager.com https://www.google-analytics.com https://static.cloudflareinsights.com https://fonts.googleapis.com https://fonts.gstatic.com https://accounts.google.com https://*.google-analytics.com",
-      "frame-src 'self' https://test.payu.in https://secure.payu.in https://*.payu.in https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://accounts.google.com",
+      "img-src 'self' data: blob: https://cdn.sanity.io https://m.media-amazon.com https://images.unsplash.com https://image.pollinations.ai https://pagead2.googlesyndication.com https://www.google-analytics.com https://lh3.googleusercontent.com https://*.google.com https://*.gstatic.com https://*.profitableratecpmnetwork.com https://*.adsterra.com https://*.bauval.org https://bauval.org",
+      "connect-src 'self' https://test.payu.in https://secure.payu.in https://*.payu.in https://*.supabase.co https://*.sanity.io https://pagead2.googlesyndication.com https://www.googletagmanager.com https://www.google-analytics.com https://static.cloudflareinsights.com https://fonts.googleapis.com https://fonts.gstatic.com https://accounts.google.com https://*.google-analytics.com https://*.profitableratecpmnetwork.com https://*.adsterra.com https://*.bauval.org https://bauval.org",
+      "frame-src 'self' https://test.payu.in https://secure.payu.in https://*.payu.in https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://accounts.google.com https://*.profitableratecpmnetwork.com https://*.adsterra.com https://*.bauval.org https://bauval.org",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self' mailto: https://test.payu.in https://secure.payu.in https://*.payu.in https://accounts.google.com",

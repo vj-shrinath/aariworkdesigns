@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 const ADMIN_SECRET = (process.env.ADMIN_SECRET_KEY || 'aari_admin_secret_2026').replace(/['"]/g, '').trim();
 
@@ -114,11 +115,11 @@ export async function DELETE(req: Request) {
         `pdf-marketplace/${slug}_clean.pdf`,
         `pdf-marketplace/${slug}_watermarked.pdf`,
         `pdf-marketplace/${slug}_preview.png`,
-        // Also clean up any legacy folder paths if present
-        `pdf-marketplace/clean/${slug}.pdf`,
-        `pdf-marketplace/watermarked/${slug}.pdf`,
-        `pdf-marketplace/previews/${slug}.png`,
       ];
+
+      if (item.clean_file_url && !item.clean_file_url.startsWith('http')) {
+        filesToRemove.push(item.clean_file_url);
+      }
 
       try {
         await supabase.storage.from(bucketName).remove(filesToRemove);
@@ -137,7 +138,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, message: 'Item and associated files deleted successfully' });
+    return NextResponse.json({ success: true, message: 'Item and associated master files deleted successfully' });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 });
   }

@@ -7,6 +7,8 @@ import ImageProtection from '@/components/ImageProtection';
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import SubscriptionModal from '@/components/SubscriptionModal';
 import TelegramPopup from '@/components/TelegramPopup';
+import AdsterraPopunder from '@/components/AdsterraPopunder';
+import AdsterraSocialBar from '@/components/AdsterraSocialBar';
 import { locales, isRtl, getDictionary } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 import { LanguageProvider } from '@/context/LanguageContext';
@@ -158,6 +160,8 @@ gtag('config', ${JSON.stringify(gaMeasurementId)});`}
             </div>
             <SubscriptionModal />
             <TelegramPopup />
+            <AdsterraPopunder />
+            <AdsterraSocialBar />
           </SubscriptionProvider>
         </LanguageProvider>
       </body>

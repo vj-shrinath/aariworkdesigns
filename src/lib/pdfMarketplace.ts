@@ -9,7 +9,7 @@ export interface PdfMarketplaceItem {
   tags: string[];
   price_inr: number;
   is_free_for_vip: boolean;
-  clean_file_url?: string;
+  clean_file_url?: string; // Private storage path (e.g. pdf-masters/slug.pdf)
   watermarked_file_url?: string;
   preview_images: string[];
   page_count: number;
@@ -28,6 +28,14 @@ export interface PdfPurchaseRecord {
   amount_paid: number;
   payment_status: string;
   created_at: string;
+}
+
+export interface UserPdfAccessResult {
+  hasAccess: boolean;
+  isVip: boolean;
+  isPurchased: boolean;
+  orderId?: string;
+  accessType: 'subscription' | 'purchase' | 'none';
 }
 
 export const CATEGORIES = [
@@ -63,7 +71,7 @@ export async function getMarketplacePdfs(category?: string, searchQuery?: string
 
     let query = supabase
       .from('pdf_marketplace')
-      .select('*')
+      .select('id, title, slug, description, category, tags, price_inr, is_free_for_vip, preview_images, page_count, download_count, is_published, created_at, updated_at')
       .order('created_at', { ascending: false });
 
     if (category && category !== 'All Designs') {
@@ -89,19 +97,29 @@ export async function getMarketplacePdfs(category?: string, searchQuery?: string
 /**
  * Check if a user (or email) has purchased a specific PDF or has an active VIP subscription
  */
-export async function checkUserPdfAccess(pdfId: string, email?: string, userId?: string): Promise<{ hasAccess: boolean; isVip: boolean; isPurchased: boolean }> {
+export async function checkUserPdfAccess(pdfId: string, email?: string, userId?: string): Promise<UserPdfAccessResult> {
   try {
-    if (!email && !userId) {
-      return { hasAccess: false, isVip: false, isPurchased: false };
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanUserId = (userId || '').trim();
+
+    if (!cleanEmail && !cleanUserId) {
+      return { hasAccess: false, isVip: false, isPurchased: false, accessType: 'none' };
     }
 
     // 1. Check VIP Subscription status
     let isVip = false;
-    if (userId || email) {
+    const subFilters = [];
+    if (cleanUserId) subFilters.push(`user_id.eq.${cleanUserId}`);
+    if (cleanEmail) {
+      subFilters.push(`email.eq.${cleanEmail}`);
+      subFilters.push(`user_id.eq.guest_${cleanEmail}`);
+    }
+
+    if (subFilters.length > 0) {
       const { data: subData } = await supabase
         .from('subscriptions')
         .select('status, expires_at')
-        .or(`user_id.eq.${userId || ''},email.eq.${email || ''}`)
+        .or(subFilters.join(','))
         .eq('status', 'active')
         .maybeSingle();
 
@@ -126,32 +144,46 @@ export async function checkUserPdfAccess(pdfId: string, email?: string, userId?:
     const isFreeForVip = itemData ? itemData.is_free_for_vip : true;
 
     if (isVip && isFreeForVip) {
-      return { hasAccess: true, isVip: true, isPurchased: false };
+      return { hasAccess: true, isVip: true, isPurchased: false, accessType: 'subscription' };
     }
 
     // 2. Check direct purchase record
     let isPurchased = false;
-    if (email || userId) {
+    let orderId = '';
+    const purchaseFilters = [];
+    if (cleanUserId) purchaseFilters.push(`user_id.eq.${cleanUserId}`);
+    if (cleanEmail) {
+      purchaseFilters.push(`email.eq.${cleanEmail}`);
+      purchaseFilters.push(`user_id.eq.guest_${cleanEmail}`);
+    }
+
+    if (purchaseFilters.length > 0) {
       const { data: purchaseData } = await supabase
         .from('pdf_purchases')
-        .select('id')
+        .select('id, txnid')
         .eq('pdf_id', pdfId)
         .eq('payment_status', 'PAID')
-        .or(`email.eq.${email || ''},user_id.eq.${userId || ''}`)
+        .or(purchaseFilters.join(','))
         .maybeSingle();
 
       if (purchaseData) {
         isPurchased = true;
+        orderId = purchaseData.txnid || purchaseData.id;
       }
     }
 
+    if (isPurchased) {
+      return { hasAccess: true, isVip, isPurchased: true, orderId, accessType: 'purchase' };
+    }
+
     return {
-      hasAccess: isVip || isPurchased,
+      hasAccess: isVip,
       isVip,
-      isPurchased,
+      isPurchased: false,
+      accessType: isVip ? 'subscription' : 'none',
     };
   } catch (err) {
     console.error('Error checking PDF access:', err);
-    return { hasAccess: false, isVip: false, isPurchased: false };
+    return { hasAccess: false, isVip: false, isPurchased: false, accessType: 'none' };
   }
 }

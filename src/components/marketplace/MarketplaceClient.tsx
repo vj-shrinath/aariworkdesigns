@@ -28,6 +28,7 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
 
   // Single Item Checkout & Product Detail State
   const [selectedProduct, setSelectedProduct] = useState<PdfMarketplaceItem | null>(null);
+  const [activePreviewPageIndex, setActivePreviewPageIndex] = useState<number>(0);
   const [checkoutItem, setCheckoutItem] = useState<PdfMarketplaceItem | null>(null);
   const [buyerName, setBuyerName] = useState('');
   const [buyerEmail, setBuyerEmail] = useState(user?.email || '');
@@ -205,37 +206,40 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
   const handleDownloadPdf = async (item: PdfMarketplaceItem, isClean: boolean = false) => {
     setDownloadingPdf(item.id);
     try {
+      const { supabase } = await import('@/lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const headers: Record<string, string> = {};
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
       const downloadUrl = `/api/pdf/download?pdfId=${item.id}&email=${encodeURIComponent(buyerEmail || user?.email || '')}&userId=${user?.id || ''}${isClean ? '&type=clean' : '&type=watermarked'}`;
-      const res = await fetch(downloadUrl);
+      const res = await fetch(downloadUrl, { headers });
       
       const contentType = res.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
-        if (data.downloadUrl) {
-           const a = document.createElement('a');
-           a.style.display = 'none';
-           a.href = data.downloadUrl;
-           a.download = data.fileName || `${item.title.replace(/[^a-zA-Z0-9]+/g, '_')}.pdf`;
-           a.target = '_blank';
-           document.body.appendChild(a);
-           a.click();
-        } else {
-           alert(data.message || 'Error downloading PDF');
-        }
-      } else {
+        alert(data.message || 'Download status: ' + (data.success ? 'Success' : 'Notice'));
+      } else if (res.ok) {
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        a.download = `${item.title.replace(/[^a-zA-Z0-9]+/g, '_')}.pdf`;
+        a.download = `${item.title.replace(/[^a-zA-Z0-9]+/g, '_')}_Aari_Design.pdf`;
         document.body.appendChild(a);
         a.click();
-        window.URL.revokeObjectURL(url);
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }, 1000);
+      } else {
+        throw new Error(`Download request failed (${res.status})`);
       }
     } catch (err: any) {
-      alert('Verification or download failed: ' + err.message);
+      alert(err.message || 'Verification or download failed. Please try again.');
     } finally {
       setDownloadingPdf(null);
     }
@@ -333,12 +337,12 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
                     {/* Thumbnail Preview Area */}
                     <div 
                       className={styles.thumbArea} 
-                      onClick={(e) => { e.stopPropagation(); setSelectedProduct(item); }}
+                      onClick={(e) => { e.stopPropagation(); setSelectedProduct(item); setActivePreviewPageIndex(0); }}
                       style={{ cursor: 'pointer' }}
                     >
                       <div className={styles.pdfOverlayBadge}>
                         <FileText size={12} />
-                        <span>PDF</span>
+                        <span>PDF • {item.page_count || 1} {item.page_count === 1 ? 'Page' : 'Pages'}</span>
                       </div>
                       {hasValidPreviewImg ? (
                         <img
@@ -396,7 +400,7 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
                         ) : (
                           <button 
                             className={styles.gridBuyBtn} 
-                            onClick={(e) => { e.stopPropagation(); setSelectedProduct(item); }}
+                            onClick={(e) => { e.stopPropagation(); setSelectedProduct(item); setActivePreviewPageIndex(0); }}
                           >
                             <FileText size={14} /> Get PDF
                           </button>
@@ -547,13 +551,14 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
                 <div className={styles.productModalImageFrame}>
                   {(() => {
                     const failCount = failedImages[selectedProduct.id] || 0;
-                    const directUrl = selectedProduct.preview_images && Array.isArray(selectedProduct.preview_images) && selectedProduct.preview_images[0] ? selectedProduct.preview_images[0] : null;
-                    const modalImgSrc = (directUrl && failCount === 0) ? directUrl : `/api/pdf/preview?id=${selectedProduct.id}`;
+                    const previews = selectedProduct.preview_images && Array.isArray(selectedProduct.preview_images) && selectedProduct.preview_images.length > 0 ? selectedProduct.preview_images : [];
+                    const activeUrl = previews[activePreviewPageIndex] || previews[0];
+                    const modalImgSrc = (activeUrl && failCount === 0) ? activeUrl : `/api/pdf/preview?id=${selectedProduct.id}`;
                     
                     return failCount < 2 ? (
                       <img
                         src={modalImgSrc}
-                        alt={selectedProduct.title}
+                        alt={`${selectedProduct.title} - Preview Page ${activePreviewPageIndex + 1}`}
                         className={styles.productModalImg}
                         onError={() => setFailedImages((prev) => ({ ...prev, [selectedProduct.id]: (prev[selectedProduct.id] || 0) + 1 }))}
                       />
@@ -564,6 +569,31 @@ export default function MarketplaceClient({ initialItems = [], locale = 'en' }: 
                     );
                   })()}
                 </div>
+
+                {/* Multi-Page Preview Thumbnail Strip */}
+                {selectedProduct.preview_images && selectedProduct.preview_images.length > 1 && (
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', justifyContent: 'center' }}>
+                    {selectedProduct.preview_images.map((imgUrl, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setActivePreviewPageIndex(idx)}
+                        style={{
+                          width: '56px',
+                          height: '70px',
+                          borderRadius: '6px',
+                          border: activePreviewPageIndex === idx ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.2)',
+                          padding: '2px',
+                          background: '#1A1625',
+                          cursor: 'pointer',
+                          overflow: 'hidden',
+                          opacity: activePreviewPageIndex === idx ? 1 : 0.6,
+                        }}
+                      >
+                        <img src={imgUrl} alt={`Page ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Right Column: Information */}

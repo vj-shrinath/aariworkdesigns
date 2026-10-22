@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Upload, FileText, CheckCircle2, AlertCircle, Loader2, Trash2, Edit3, Eye, ShieldCheck, DollarSign, Tag, RefreshCw, Lock } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, AlertCircle, Loader2, Trash2, Edit3, Eye, ShieldCheck, DollarSign, Tag, RefreshCw, Lock, Image as ImageIcon } from 'lucide-react';
 import { CATEGORIES, PdfMarketplaceItem } from '@/lib/pdfMarketplace';
 
 export default function AdminPdfMarketplace() {
@@ -20,6 +20,12 @@ export default function AdminPdfMarketplace() {
   const [isFreeForVip, setIsFreeForVip] = useState(true);
   const [tags, setTags] = useState('bridal, tracing, modern');
   const [formKey, setFormKey] = useState(0);
+
+  // Auto PDF Preview Generator State
+  const [generatedWebpBlobs, setGeneratedWebpBlobs] = useState<Blob[]>([]);
+  const [isRenderingThumbnails, setIsRenderingThumbnails] = useState(false);
+  const [renderThumbStatus, setRenderThumbStatus] = useState('');
+  const [detectedPageCount, setDetectedPageCount] = useState<number>(1);
 
   // Edit Item State
   const [editingItem, setEditingItem] = useState<PdfMarketplaceItem | null>(null);
@@ -41,6 +47,7 @@ export default function AdminPdfMarketplace() {
   // List State
   const [items, setItems] = useState<PdfMarketplaceItem[]>([]);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
+  const [regeneratingItemId, setRegeneratingItemId] = useState<string | null>(null);
 
   // Check saved secret in localStorage
   useEffect(() => {
@@ -55,8 +62,9 @@ export default function AdminPdfMarketplace() {
     setIsLoadingItems(true);
     setAuthError('');
     try {
-      const res = await fetch('/api/admin/pdf/manage', {
+      const res = await fetch(`/api/admin/pdf/manage?t=${Date.now()}`, {
         headers: { 'x-admin-secret': secretToTest },
+        cache: 'no-store',
       });
       if (res.ok) {
         const data = await res.json();
@@ -86,19 +94,39 @@ export default function AdminPdfMarketplace() {
     setIsAuthenticated(false);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selected = e.target.files[0];
-      if (selected.type !== 'application/pdf') {
+      if (selected.type !== 'application/pdf' && !selected.name.toLowerCase().endsWith('.pdf')) {
         setErrorMsg('Please select a valid PDF file (.pdf)');
         return;
       }
       setFile(selected);
       setErrorMsg('');
+      setGeneratedWebpBlobs([]);
+      
       if (!title) {
-        // Auto format title from file name
         const cleanName = selected.name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ');
         setTitle(cleanName.charAt(0).toUpperCase() + cleanName.slice(1));
+      }
+
+      // Automatically render watermarked WebP thumbnail images from PDF pages 1-3
+      try {
+        setIsRenderingThumbnails(true);
+        setRenderThumbStatus('Loading PDF renderer...');
+
+        const { renderPdfToWebpBlobs } = await import('@/lib/pdfThumbnailRenderer');
+        setRenderThumbStatus('Extracting & watermarking WebP pages 1-3...');
+
+        const result = await renderPdfToWebpBlobs(selected, 3, 1200);
+        setGeneratedWebpBlobs(result.webpBlobs);
+        setDetectedPageCount(result.pageCount);
+        setRenderThumbStatus(`Generated ${result.webpBlobs.length} WebP thumbnail preview(s) (${result.pageCount} total pages).`);
+      } catch (renderErr: any) {
+        console.warn('Auto PDF WebP preview extraction error:', renderErr);
+        setRenderThumbStatus('Auto-preview rendering skipped. Standard cover fallback will be used.');
+      } finally {
+        setIsRenderingThumbnails(false);
       }
     }
   };
@@ -113,25 +141,33 @@ export default function AdminPdfMarketplace() {
     setIsUploading(true);
     setErrorMsg('');
     setSuccessMsg('');
-    setUploadProgressMsg('1/3 Uploading original PDF file...');
+    setUploadProgressMsg('1/3 Preparing master PDF & WebP thumbnails...');
 
     try {
       const formData = new FormData();
       formData.append('file', file);
-      if (previewImageFile) {
-        formData.append('preview_image', previewImageFile);
-      }
-      if (previewImageUrl) {
-        formData.append('preview_image_url', previewImageUrl);
-      }
       formData.append('title', title);
       formData.append('description', description);
       formData.append('category', category);
       formData.append('price_inr', priceInr.toString());
       formData.append('is_free_for_vip', isFreeForVip ? 'true' : 'false');
       formData.append('tags', tags);
+      formData.append('page_count', detectedPageCount.toString());
 
-      setUploadProgressMsg('2/3 Injecting automatic watermark with pdf-lib...');
+      // Append generated WebP preview Blobs
+      if (generatedWebpBlobs.length > 0) {
+        generatedWebpBlobs.forEach((blob, idx) => {
+          formData.append(`preview_image_${idx}`, blob, `preview_${idx + 1}.webp`);
+        });
+      } else if (previewImageFile) {
+        formData.append('preview_image', previewImageFile);
+      }
+
+      if (previewImageUrl) {
+        formData.append('preview_image_url', previewImageUrl);
+      }
+
+      setUploadProgressMsg('2/3 Uploading private master PDF and WebP previews...');
 
       const res = await fetch('/api/admin/pdf/process', {
         method: 'POST',
@@ -147,8 +183,8 @@ export default function AdminPdfMarketplace() {
         throw new Error(data.error || 'Upload failed');
       }
 
-      setUploadProgressMsg('3/3 Saving listing to Marketplace!');
-      setSuccessMsg(`Success! "${title}" is watermarked and listed at ₹${priceInr}.`);
+      setUploadProgressMsg('3/3 Catalog listing complete!');
+      setSuccessMsg(`Success! "${title}" added with ${generatedWebpBlobs.length || 1} WebP preview(s) & ₹${priceInr} price.`);
       
       // Reset form fields completely
       setFile(null);
@@ -156,12 +192,12 @@ export default function AdminPdfMarketplace() {
       setPreviewImageUrl('');
       setTitle('');
       setDescription('');
+      setGeneratedWebpBlobs([]);
       setFormKey((prev) => prev + 1);
       
-      // Refresh items list in table immediately
       await verifySecret(adminSecret);
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to upload & watermark PDF');
+      setErrorMsg(err.message || 'Failed to upload & process PDF');
     } finally {
       setIsUploading(false);
       setUploadProgressMsg('');
@@ -213,6 +249,27 @@ export default function AdminPdfMarketplace() {
       setEditMsg(err.message || 'Failed to update listing');
     } finally {
       setIsSavingEdit(false);
+    }
+  };
+
+  const handleRegeneratePreview = async (item: PdfMarketplaceItem) => {
+    setRegeneratingItemId(item.id);
+    try {
+      const res = await fetch('/api/admin/pdf/regenerate-thumbnail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-secret': adminSecret,
+        },
+        body: JSON.stringify({ id: item.id }),
+      });
+      if (res.ok) {
+        await verifySecret(adminSecret);
+      }
+    } catch (err) {
+      console.error('Error regenerating thumbnail:', err);
+    } finally {
+      setRegeneratingItemId(null);
     }
   };
 
@@ -326,7 +383,7 @@ export default function AdminPdfMarketplace() {
             PDF Marketplace Admin Portal
           </h1>
           <p style={{ fontSize: '0.9rem', color: '#9CA3AF' }}>
-            Upload PDFs, set prices, and let the engine automatically inject watermarks
+            Upload PDFs, auto-extract watermarked WebP thumbnails, and manage digital catalog
           </p>
         </div>
         <button
@@ -351,7 +408,7 @@ export default function AdminPdfMarketplace() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem', color: '#D4AF37' }}>
             <Upload size={22} />
             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#FFF', margin: 0 }}>
-              Upload & Watermark PDF
+              Upload PDF & Auto-Generate WebP Previews
             </h2>
           </div>
 
@@ -373,31 +430,43 @@ export default function AdminPdfMarketplace() {
             {/* File Input Zone */}
             <div style={{ marginBottom: '1.25rem' }}>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#D1D5DB', marginBottom: '0.4rem' }}>
-                Select Clean PDF File *
+                Select Master PDF File *
               </label>
               <input
                 key={`pdf-file-${formKey}`}
                 type="file"
                 accept=".pdf,application/pdf"
                 onChange={handleFileChange}
-                disabled={isUploading}
+                disabled={isUploading || isRenderingThumbnails}
                 style={{
                   width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.04)',
                   border: '1px dashed rgba(212, 175, 55, 0.4)', color: '#FFF', fontSize: '0.85rem', cursor: 'pointer'
                 }}
               />
-              {file && (
+              {isRenderingThumbnails && (
+                <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#FCD34D', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Loader2 className="animate-spin" size={14} />
+                  <span>{renderThumbStatus}</span>
+                </div>
+              )}
+              {file && !isRenderingThumbnails && (
                 <div style={{ marginTop: '0.4rem', fontSize: '0.8rem', color: '#86efac', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                   <FileText size={14} />
-                  <span>Selected PDF: {file.name} ({(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
+                  <span>Selected: {file.name} ({(file.size / (1024 * 1024)).toFixed(2)} MB) • {detectedPageCount} Page(s)</span>
+                </div>
+              )}
+              {generatedWebpBlobs.length > 0 && (
+                <div style={{ marginTop: '0.4rem', fontSize: '0.78rem', color: '#D4AF37', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <ImageIcon size={14} />
+                  <span>✓ {generatedWebpBlobs.length} Watermarked WebP Thumbnail Page(s) Auto-Rendered</span>
                 </div>
               )}
             </div>
 
-            {/* Optional Cover/Preview Image */}
+            {/* Optional Manual Thumbnail Image Fallback */}
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#D1D5DB', marginBottom: '0.4rem' }}>
-                Preview Thumbnail Image <span style={{ fontSize: '0.75rem', color: '#9CA3AF', fontWeight: 400 }}>(File Upload or URL)</span>
+                Manual Cover Image <span style={{ fontSize: '0.75rem', color: '#9CA3AF', fontWeight: 400 }}>(Optional - overrides auto-generated PDF preview)</span>
               </label>
               <input
                 key={`preview-file-${formKey}`}
@@ -416,7 +485,7 @@ export default function AdminPdfMarketplace() {
               />
               <input
                 type="text"
-                placeholder="Or paste image URL (e.g. Sanity image URL)..."
+                placeholder="Or paste cover image URL..."
                 value={previewImageUrl}
                 onChange={(e) => setPreviewImageUrl(e.target.value)}
                 disabled={isUploading}
@@ -425,11 +494,6 @@ export default function AdminPdfMarketplace() {
                   border: '1px solid rgba(255,255,255,0.12)', color: '#FFF', fontSize: '0.8rem'
                 }}
               />
-              {previewImageFile && (
-                <div style={{ marginTop: '0.3rem', fontSize: '0.78rem', color: '#FCD34D' }}>
-                  ✓ Cover Image File Selected: {previewImageFile.name}
-                </div>
-              )}
             </div>
 
             {/* Title */}
@@ -439,7 +503,7 @@ export default function AdminPdfMarketplace() {
               </label>
               <input
                 type="text"
-                placeholder="e.g. Royal Bridal Peacock Neck Trace Pattern"
+                placeholder="e.g. Royal Peacock Aari Blouse Tracing Pattern"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 disabled={isUploading}
@@ -526,7 +590,7 @@ export default function AdminPdfMarketplace() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isUploading}
+              disabled={isUploading || isRenderingThumbnails}
               style={{
                 width: '100%', padding: '0.85rem', borderRadius: '8px', background: 'linear-gradient(135deg, #D4AF37, #AA771C)',
                 border: 'none', color: '#000', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
@@ -536,12 +600,12 @@ export default function AdminPdfMarketplace() {
               {isUploading ? (
                 <>
                   <Loader2 className="animate-spin" size={18} />
-                  <span>{uploadProgressMsg || 'Watermarking & Saving...'}</span>
+                  <span>{uploadProgressMsg || 'Uploading Master PDF & Previews...'}</span>
                 </>
               ) : (
                 <>
                   <Upload size={18} />
-                  <span>Upload & Inject Watermark</span>
+                  <span>Upload & Publish Product Listing</span>
                 </>
               )}
             </button>
@@ -558,11 +622,12 @@ export default function AdminPdfMarketplace() {
               Live Marketplace Listings ({items.length})
             </h2>
             <button
+              type="button"
               onClick={() => verifySecret(adminSecret)}
               style={{ background: 'transparent', border: 'none', color: '#D4AF37', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem' }}
             >
-              <RefreshCw size={14} />
-              <span>Refresh</span>
+              <RefreshCw size={14} className={isLoadingItems ? "animate-spin" : ""} />
+              <span>{isLoadingItems ? 'Refreshing...' : 'Refresh'}</span>
             </button>
           </div>
 
@@ -588,7 +653,7 @@ export default function AdminPdfMarketplace() {
                     <tr key={item.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                       <td style={{ padding: '0.75rem 0.5rem', fontWeight: 600, color: '#FFF' }}>
                         <div>{item.title}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>Pages: {item.page_count}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>Pages: {item.page_count || 1} • Previews: {item.preview_images?.length || 0}</div>
                       </td>
                       <td style={{ padding: '0.75rem 0.5rem', color: '#D1D5DB' }}>
                         {item.category}
@@ -605,6 +670,15 @@ export default function AdminPdfMarketplace() {
                       </td>
                       <td style={{ padding: '0.75rem 0.5rem' }}>
                         <div style={{ display: 'flex', gap: '0.4rem' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleRegeneratePreview(item)}
+                            title="Regenerate Preview"
+                            disabled={regeneratingItemId === item.id}
+                            style={{ background: 'rgba(59, 130, 246, 0.2)', border: 'none', color: '#60a5fa', padding: '0.3rem 0.5rem', borderRadius: '4px', cursor: 'pointer' }}
+                          >
+                            <RefreshCw size={14} className={regeneratingItemId === item.id ? "animate-spin" : ""} />
+                          </button>
                           <button
                             onClick={() => handleStartEdit(item)}
                             title="Edit Listing"
